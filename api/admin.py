@@ -6,28 +6,28 @@ from .models import *
 # Register your models here.
 @admin.register(HighSchool)
 class HighSchoolAdmin(admin.ModelAdmin):
-    list_display = ["name", "id", "abbreviation"]
+    list_display = ["name", "id", "abbreviation", "active"]
     readonly_fields = ("id",)
     search_fields = ["name", "abbreviation"]
 
 
 @admin.register(Faculty)
 class FacultyAdmin(admin.ModelAdmin):
-    list_display = ["name", "id", "abbreviation"]
+    list_display = ["name", "id", "abbreviation", "active"]
     readonly_fields = ("id",)
     search_fields = ["name", "abbreviation"]
 
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ["name", "id", "abbreviation"]
+    list_display = ["name", "id", "abbreviation", "active"]
     readonly_fields = ("id",)
     search_fields = ["name", "abbreviation"]
 
 
 @admin.register(Specialization)
 class SpecializationAdmin(admin.ModelAdmin):
-    list_display = ["name", "id", "abbreviation"]
+    list_display = ["name", "id", "abbreviation", "active"]
     readonly_fields = ("id",)
     search_fields = ["name", "abbreviation"]
 

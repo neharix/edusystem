@@ -13,6 +13,7 @@ class HighSchool(models.Model):
     faculties = models.ManyToManyField("Faculty")
     departments = models.ManyToManyField("Department")
     specializations = models.ManyToManyField("Specialization")
+    active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -21,6 +22,7 @@ class HighSchool(models.Model):
 class Faculty(models.Model):
     name = models.CharField(max_length=500)
     abbreviation = models.CharField(max_length=100)
+    active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -29,6 +31,7 @@ class Faculty(models.Model):
 class Department(models.Model):
     name = models.CharField(max_length=500)
     abbreviation = models.CharField(max_length=100)
+    active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -55,6 +58,7 @@ class Specialization(models.Model):
     classificator = models.ForeignKey(
         "Classificator", on_delete=models.SET_NULL, null=True, blank=True
     )
+    active = models.BooleanField(default=False)
     degree = models.CharField(max_length=2, choices=DegreeType.choices)
 
     def __str__(self):
