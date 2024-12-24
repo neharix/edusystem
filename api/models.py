@@ -2,6 +2,16 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    password = models.CharField(max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return self.user
 
 
 class HighSchool(models.Model):
@@ -10,9 +20,9 @@ class HighSchool(models.Model):
     manager = models.OneToOneField(
         User, on_delete=models.SET_NULL, null=True, blank=True
     )
-    faculties = models.ManyToManyField("Faculty")
-    departments = models.ManyToManyField("Department")
-    specializations = models.ManyToManyField("Specialization")
+    faculties = models.ManyToManyField("Faculty", blank=True)
+    departments = models.ManyToManyField("Department", blank=True)
+    specializations = models.ManyToManyField("Specialization", blank=True)
     active = models.BooleanField(default=False)
 
     def __str__(self):
@@ -129,3 +139,9 @@ class Region(models.Model):
 
     class Meta:
         ordering = ["name"]
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)

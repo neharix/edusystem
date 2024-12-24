@@ -28,4 +28,7 @@ urlpatterns = [
         get_example,
     ),
     path("root-dashboard/", root_dashboard_api_view),
+    path("create-high-school/", create_high_school_api_view),
+    path("high-schools/", get_high_schools_api_view),
+    path("high-school/<int:high_school_id>/", get_high_school_api_view),
 ]
