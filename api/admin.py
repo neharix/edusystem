@@ -27,7 +27,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Specialization)
 class SpecializationAdmin(admin.ModelAdmin):
-    list_display = ["name", "id", "abbreviation", "active"]
+    list_display = ["name", "id", "abbreviation", "degree", "active"]
     readonly_fields = ("id",)
     search_fields = ["name", "abbreviation"]
 
@@ -56,5 +56,12 @@ class RegionAdmin(admin.ModelAdmin):
 @admin.register(Nationality)
 class NationalityAdmin(admin.ModelAdmin):
     list_display = ["name", "id"]
+    readonly_fields = ("id",)
+    search_fields = ["name"]
+
+
+@admin.register(Degree)
+class DegreeAdmin(admin.ModelAdmin):
+    list_display = ["name", "duration", "id"]
     readonly_fields = ("id",)
     search_fields = ["name"]

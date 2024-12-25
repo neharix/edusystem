@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -54,14 +55,17 @@ class Classificator(models.Model):
         return self.name
 
 
+class Degree(models.Model):
+    name = models.CharField(max_length=100)
+    duration = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(7)]
+    )
+
+    def __str__(self):
+        return f"{self.name} ({self.duration} ýyl)"
+
+
 class Specialization(models.Model):
-    class DegreeType(models.TextChoices):
-        POSTGRADUATE = "A7", "Aspirantura (7 ýyl)"
-        BACHELOR = "B4", "Bakalawr (4 ýyl)"
-        SPECIALIST5 = "S5", "Hünärmen (5 ýyl)"
-        SPECIALIST6 = "S6", "Hünärmen (6 ýyl)"
-        MASTER1 = "M1", "Magistratura (1 ýyl)"
-        MASTER2 = "M2", "Magistratura (2 ýyl)"
 
     name = models.CharField(max_length=500)
     abbreviation = models.CharField(max_length=100)
@@ -69,7 +73,7 @@ class Specialization(models.Model):
         "Classificator", on_delete=models.SET_NULL, null=True, blank=True
     )
     active = models.BooleanField(default=False)
-    degree = models.CharField(max_length=2, choices=DegreeType.choices)
+    degree = models.ForeignKey("Degree", on_delete=models.PROTECT)
 
     def __str__(self):
         return self.name

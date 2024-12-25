@@ -31,4 +31,10 @@ urlpatterns = [
     path("create-high-school/", create_high_school_api_view),
     path("high-schools/", get_high_schools_api_view),
     path("high-school/<int:high_school_id>/", get_high_school_api_view),
+    path("create-department/", create_department_api_view),
+    path("departments/", get_departments_api_view),
+    path("department/<int:department_id>/", get_department_api_view),
+    path("create-degree/", create_department_api_view),
+    path("degrees/", get_degrees_api_view),
+    path("degree/<int:degree_id>/", get_degree_api_view),
 ]

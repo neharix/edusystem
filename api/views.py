@@ -10,6 +10,7 @@ from rest_framework.response import Response
 
 from .decorators import validate_payload
 from .models import (
+    Degree,
     Department,
     Faculty,
     HighSchool,
@@ -17,7 +18,7 @@ from .models import (
     Profile,
     Specialization,
 )
-from .serializers import HighSchoolSerializer
+from .serializers import DegreeSerializer, DepartmentSerializer, HighSchoolSerializer
 from .utils import create_example
 
 
@@ -42,6 +43,9 @@ def get_example(request: HttpRequest, high_school_id: int, row_count: int):
     return response
 
 
+# Dashboard API view
+
+
 @api_view(http_method_names=["GET"])
 def root_dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser:
@@ -58,6 +62,9 @@ def root_dashboard_api_view(request: HttpRequest):
         )
     else:
         return Response({"detail": "Permission denied."})
+
+
+# High school API views
 
 
 @api_view(http_method_names=["POST"])
@@ -95,3 +102,66 @@ def get_high_school_api_view(request: HttpRequest, high_school_id: int):
         return Response({"detail": "High school doesn't exist"})
     high_school_serializer = HighSchoolSerializer(high_school)
     return Response(high_school_serializer.data)
+
+
+# Department API views
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(keys=["name", "abbreviation"])
+def create_department_api_view(request: HttpRequest):
+    department = Department.objects.create(
+        name=request.data["name"],
+        abbreviation=request.data["abbreviation"],
+    )
+    return Response({"detail": "Success", "id": department.id})
+
+
+@api_view(http_method_names=["GET"])
+def get_departments_api_view(request: HttpRequest):
+    department_serializer = DepartmentSerializer(
+        Department.objects.filter(active=True), many=True
+    )
+    return Response(department_serializer.data)
+
+
+@api_view(http_method_names=["GET"])
+def get_department_api_view(request: HttpRequest, department_id: int):
+    if Department.objects.filter(id=department_id).exists():
+        department = HighSchool.objects.get(id=department_id)
+    else:
+        return Response({"detail": "Department doesn't exist"})
+    department_serializer = HighSchoolSerializer(department)
+    return Response(department_serializer.data)
+
+
+# Degree API views
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(keys=["name", "duration"])
+def create_degree_api_view(request: HttpRequest):
+    degree = Degree.objects.create(
+        name=request.data["name"],
+        duration=int(request.data["duration"]),
+    )
+    return Response({"detail": "Success", "id": degree.id})
+
+
+@api_view(http_method_names=["GET"])
+def get_degrees_api_view(request: HttpRequest):
+    degree_serializer = DegreeSerializer(Degree.objects.filter(active=True), many=True)
+    return Response(degree_serializer.data)
+
+
+@api_view(http_method_names=["GET"])
+def get_degree_api_view(request: HttpRequest, degree_id: int):
+    if Degree.objects.filter(id=degree_id).exists():
+        degree = HighSchool.objects.get(id=degree_id)
+    else:
+        return Response({"detail": "Degree doesn't exist"})
+    degree_serializer = HighSchoolSerializer(degree)
+    return Response(degree_serializer.data)
+
+
+# Specialization API views
