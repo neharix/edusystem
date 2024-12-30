@@ -21,20 +21,29 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import *
 
 urlpatterns = [
+    # Authentication routes
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # Special routes
     path(
         "get-example/high-school/<int:high_school_id>/row-count/<int:row_count>/",
         get_example,
     ),
     path("root-dashboard/", root_dashboard_api_view),
+    # High school routes
     path("create-high-school/", create_high_school_api_view),
     path("high-schools/", get_high_schools_api_view),
     path("high-school/<int:high_school_id>/", get_high_school_api_view),
+    # Department routes
     path("create-department/", create_department_api_view),
     path("departments/", get_departments_api_view),
     path("department/<int:department_id>/", get_department_api_view),
+    # Degree routes
     path("create-degree/", create_department_api_view),
     path("degrees/", get_degrees_api_view),
     path("degree/<int:degree_id>/", get_degree_api_view),
+    # Classificator routes
+    path("create-classificator/", create_classificator_api_view),
+    path("classificators/", get_classificators_api_view),
+    path("classificator/<int:classificator_id>/", get_classificator_api_view),
 ]
