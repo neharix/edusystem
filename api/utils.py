@@ -1,10 +1,12 @@
 from string import ascii_uppercase
+from typing import List
 
 from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Side
 from openpyxl.utils import quote_sheetname
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.worksheet.worksheet import Worksheet
+from pandas.core.series import Series
 
 from .models import *
 
@@ -181,3 +183,14 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
         payment_type_data_val.add(ws[f"L{row_index}"])
 
     return wb
+
+
+def validate_not_null_field(row: Series, excepted_fields: List[str]):
+    not_valid_fields = []
+
+    for key in row.keys():
+        if row.isnull()[key]:
+            if not key in excepted_fields:
+                not_valid_fields.append(key)
+
+    return (False, not_valid_fields) if len(not_valid_fields) > 0 else (True, [])

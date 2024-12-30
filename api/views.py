@@ -1,6 +1,8 @@
 import io
 
+import numpy as np
 import openpyxl
+import pandas as pd
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
@@ -8,7 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
-from .decorators import validate_payload
+from .decorators import validate_files, validate_post
 from .models import (
     Classificator,
     Degree,
@@ -25,7 +27,9 @@ from .serializers import (
     DepartmentSerializer,
     HighSchoolSerializer,
 )
-from .utils import create_example
+from .utils import create_example, validate_not_null_field
+
+# Special API views
 
 
 @api_view(http_method_names=["GET"])
@@ -49,7 +53,24 @@ def get_example(request: HttpRequest, high_school_id: int, row_count: int):
     return response
 
 
-# Dashboard API view
+@api_view(http_method_names=["POST"])
+@validate_post(keys=["name"])
+@validate_files(keys=["excel"])
+def import_excel_data(request: HttpRequest):
+    dataframe = pd.read_excel(request.FILES["excel"])
+    invalid_fields = []
+    for index, row in dataframe.iterrows():
+        row_status = validate_not_null_field(row, ["T/B", "Harby borç", "Bellikler"])
+        if not row_status[0]:
+            invalid_fields.append(
+                f"Setir №{index + 2}: f{','.join(row_status[1])} meýdançasy boş bolup bilmez"
+            )
+        else:
+            # TODO add student
+            pass
+        print(index, "\n", row)
+
+    return Response({"detail": "Success"})
 
 
 @api_view(http_method_names=["GET"])
@@ -74,7 +95,7 @@ def root_dashboard_api_view(request: HttpRequest):
 
 
 @api_view(http_method_names=["POST"])
-@validate_payload(keys=["name", "abbreviation", "username", "password"])
+@validate_post(keys=["name", "abbreviation", "username", "password"])
 def create_high_school_api_view(request: HttpRequest):
     user = User.objects.create_user(
         username=request.data["username"],
@@ -114,7 +135,7 @@ def get_high_school_api_view(request: HttpRequest, high_school_id: int):
 
 
 @api_view(http_method_names=["POST"])
-@validate_payload(keys=["name", "abbreviation"])
+@validate_post(keys=["name", "abbreviation"])
 def create_department_api_view(request: HttpRequest):
     department = Department.objects.create(
         name=request.data["name"],
@@ -145,7 +166,7 @@ def get_department_api_view(request: HttpRequest, department_id: int):
 
 
 @api_view(http_method_names=["POST"])
-@validate_payload(keys=["name", "duration"])
+@validate_post(keys=["name", "duration"])
 def create_degree_api_view(request: HttpRequest):
     degree = Degree.objects.create(
         name=request.data["name"],
@@ -174,7 +195,7 @@ def get_degree_api_view(request: HttpRequest, degree_id: int):
 
 
 @api_view(http_method_names=["POST"])
-@validate_payload(keys=["name"])
+@validate_post(keys=["name"])
 def create_classificator_api_view(request: HttpRequest):
     classificator = Classificator.objects.create(name=request.data["name"])
     return Response({"detail": "Success", "id": classificator.id})
