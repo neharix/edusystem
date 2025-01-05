@@ -65,3 +65,8 @@ class DegreeAdmin(admin.ModelAdmin):
     list_display = ["name", "duration", "id"]
     readonly_fields = ("id",)
     search_fields = ["name"]
+
+
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ["full_name"]
