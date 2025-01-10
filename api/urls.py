@@ -47,4 +47,11 @@ urlpatterns = [
     path("create-classificator/", create_classificator_api_view),
     path("classificators/", get_classificators_api_view),
     path("classificator/<int:classificator_id>/", get_classificator_api_view),
+    # Specialization routes
+    path("create-specialization/", create_specialization_api_view),
+    path("specializations/", get_specializations_api_view),
+    path("specialization/<int:specialization_id>/", get_specialization_api_view),
+    # Student routes
+    path("students/", get_students_api_view),
+    path("student/<int:student_id>/", get_student_api_view),
 ]

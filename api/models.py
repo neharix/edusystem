@@ -73,7 +73,9 @@ class Specialization(models.Model):
         "Classificator", on_delete=models.SET_NULL, null=True, blank=True
     )
     active = models.BooleanField(default=False)
-    degree = models.ForeignKey("Degree", on_delete=models.PROTECT)
+    degree = models.ForeignKey(
+        "Degree", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     def __str__(self):
         return self.name
@@ -98,10 +100,18 @@ class Student(models.Model):
     gender = models.CharField(max_length=1, choices=Gender.choices)
     family_status = models.CharField(max_length=2, choices=FamilyStatus.choices)
     payment_type = models.CharField(max_length=1, choices=PaymentType.choices)
-    nationality = models.ForeignKey("Nationality", on_delete=models.PROTECT)
-    country = models.ForeignKey("Country", on_delete=models.PROTECT)
-    region = models.ForeignKey("Region", on_delete=models.PROTECT)
-    specialization = models.ForeignKey("Specialization", on_delete=models.PROTECT)
+    nationality = models.ForeignKey(
+        "Nationality", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    country = models.ForeignKey(
+        "Country", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    region = models.ForeignKey(
+        "Region", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    specialization = models.ForeignKey(
+        "Specialization", on_delete=models.SET_NULL, null=True, blank=True
+    )
     birth_date = models.DateField(default=datetime.date(1970, 1, 1))
     admission_date = models.DateField()
     registered_place = models.TextField()

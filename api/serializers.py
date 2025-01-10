@@ -1,6 +1,13 @@
 from rest_framework import serializers
 
-from .models import Classificator, Degree, Department, HighSchool, Specialization
+from .models import (
+    Classificator,
+    Degree,
+    Department,
+    HighSchool,
+    Specialization,
+    Student,
+)
 
 
 class HighSchoolSerializer(serializers.ModelSerializer):
@@ -24,4 +31,16 @@ class DegreeSerializer(serializers.ModelSerializer):
 class ClassificatorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Classificator
+        fields = "__all__"
+
+
+class SpecializationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Specialization
+        fields = "__all__"
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
         fields = "__all__"

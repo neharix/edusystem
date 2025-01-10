@@ -3,6 +3,7 @@ import io
 import numpy as np
 import openpyxl
 import pandas as pd
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
@@ -29,6 +30,8 @@ from .serializers import (
     DegreeSerializer,
     DepartmentSerializer,
     HighSchoolSerializer,
+    SpecializationSerializer,
+    StudentSerializer,
 )
 from .utils import create_example, validate_not_null_field
 
@@ -227,7 +230,7 @@ def import_excel_data(request: HttpRequest):
 
 @api_view(http_method_names=["GET"])
 def root_dashboard_api_view(request: HttpRequest):
-    if request.user.is_superuser:
+    if request.user.is_superuser or settings.DEV_STATUS:
         return Response(
             {
                 "high_schools_count": HighSchool.objects.filter(active=True).count(),
@@ -237,6 +240,9 @@ def root_dashboard_api_view(request: HttpRequest):
                     active=True
                 ).count(),
                 "nationalities_count": Nationality.objects.all().count(),
+                "students_count": Student.objects.all().count(),
+                "male_students_count": Student.objects.filter(gender="M").count(),
+                "female_students_count": Student.objects.filter(gender="F").count(),
             }
         )
     else:
@@ -372,3 +378,61 @@ def get_classificator_api_view(request: HttpRequest, classificator_id: int):
 
 
 # Specialization API views
+
+
+@api_view(http_method_names=["POST"])
+@validate_post(keys=["name", "abbreviation", "classificator", "degree"])
+def create_specialization_api_view(request: HttpRequest):
+    if Classificator.objects.filter(id=request.data["classificator"]).exists():
+        classificator = Classificator.objects.get(id=request.data["classificator"])
+    else:
+        return Response({"detail": "Classificator doesn't exist"})
+    if Degree.objects.filter(id=request.data["degree"]).exists():
+        degree = Degree.objects.get(id=request.data["degree"])
+    else:
+        return Response({"detail": "Degree doesn't exist"})
+
+    specialization = Specialization.objects.create(
+        name=request.data["name"],
+        abbreviation=request.data["abbreviation"],
+        classificator=classificator,
+        degree=degree,
+    )
+    return Response({"detail": "Success", "id": specialization.id})
+
+
+@api_view(http_method_names=["GET"])
+def get_specializations_api_view(request: HttpRequest):
+    specialization_serializer = SpecializationSerializer(
+        Specialization.objects.filter(active=True), many=True
+    )
+    return Response(specialization_serializer.data)
+
+
+@api_view(http_method_names=["GET"])
+def get_specialization_api_view(request: HttpRequest, specialization_id: int):
+    if Specialization.objects.filter(id=specialization_id).exists():
+        specialization = Specialization.objects.get(id=specialization_id)
+    else:
+        return Response({"detail": "Specialization doesn't exist"})
+    specialization_serializer = SpecializationSerializer(specialization)
+    return Response(specialization_serializer.data)
+
+
+# Student API views
+
+
+@api_view(http_method_names=["GET"])
+def get_students_api_view(request: HttpRequest):
+    student_serializer = StudentSerializer(Student.objects.all(), many=True)
+    return Response(student_serializer.data)
+
+
+@api_view(http_method_names=["GET"])
+def get_student_api_view(request: HttpRequest, student_id: int):
+    if Student.objects.filter(id=student_id).exists():
+        student = Student.objects.get(id=student_id)
+    else:
+        return Response({"detail": "Student doesn't exist"})
+    student_serializer = StudentSerializer(student)
+    return Response(student_serializer.data)
