@@ -5,6 +5,7 @@ from .models import (
     Degree,
     Department,
     HighSchool,
+    Nationality,
     Specialization,
     Student,
 )
@@ -43,4 +44,10 @@ class SpecializationSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
+        fields = "__all__"
+
+
+class NationalitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Nationality
         fields = "__all__"

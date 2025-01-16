@@ -8,7 +8,11 @@ from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from rest_framework.decorators import api_view
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
@@ -31,6 +35,7 @@ from .serializers import (
     DegreeSerializer,
     DepartmentSerializer,
     HighSchoolSerializer,
+    NationalitySerializer,
     SpecializationSerializer,
     StudentSerializer,
 )
@@ -272,22 +277,15 @@ def create_high_school_api_view(request: HttpRequest):
     return Response({"detail": "Success", "id": high_school.id})
 
 
-@api_view(http_method_names=["GET"])
-def get_high_schools_api_view(request: HttpRequest):
-    high_school_serializer = HighSchoolSerializer(
-        HighSchool.objects.filter(active=True), many=True
-    )
-    return Response(high_school_serializer.data)
+class HighSchoolListAPIView(ListAPIView):
+    queryset = HighSchool.objects.all()
+    serializer_class = HighSchoolSerializer
 
 
-@api_view(http_method_names=["GET"])
-def get_high_school_api_view(request: HttpRequest, high_school_id: int):
-    if HighSchool.objects.filter(id=high_school_id).exists():
-        high_school = HighSchool.objects.get(id=high_school_id)
-    else:
-        return Response({"detail": "High school doesn't exist"})
-    high_school_serializer = HighSchoolSerializer(high_school)
-    return Response(high_school_serializer.data)
+class HighSchoolRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = HighSchool.objects.all()
+    serializer_class = HighSchoolSerializer
+    lookup_field = "id"
 
 
 # Department API views
@@ -323,129 +321,58 @@ class DegreeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 # Classificator API views
 
 
-@api_view(http_method_names=["POST"])
-@validate_post(keys=["name"])
-def create_classificator_api_view(request: HttpRequest):
-    classificator = Classificator.objects.create(name=request.data["name"])
-    return Response({"detail": "Success", "id": classificator.id})
+class ClassificatorListCreateAPIView(ListCreateAPIView):
+    queryset = Classificator.objects.all()
+    serializer_class = ClassificatorSerializer
+    lookup_field = "id"
 
 
-@api_view(http_method_names=["GET"])
-def get_classificators_api_view(request: HttpRequest):
-    classificator_serializer = ClassificatorSerializer(
-        Classificator.objects.all(), many=True
-    )
-    return Response(classificator_serializer.data)
-
-
-@api_view(http_method_names=["GET"])
-def get_classificator_api_view(request: HttpRequest, classificator_id: int):
-    if Classificator.objects.filter(id=classificator_id).exists():
-        classificator = Classificator.objects.get(id=classificator_id)
-    else:
-        return Response({"detail": "Classificator doesn't exist"})
-    classificator_serializer = ClassificatorSerializer(classificator)
-    return Response(classificator_serializer.data)
+class ClassificatorRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Classificator.objects.all()
+    serializer_class = ClassificatorSerializer
+    lookup_field = "id"
 
 
 # Specialization API views
 
 
-@api_view(http_method_names=["POST"])
-@validate_post(keys=["name", "abbreviation", "classificator", "degree"])
-def create_specialization_api_view(request: HttpRequest):
-    if Classificator.objects.filter(id=request.data["classificator"]).exists():
-        classificator = Classificator.objects.get(id=request.data["classificator"])
-    else:
-        return Response({"detail": "Classificator doesn't exist"})
-    if Degree.objects.filter(id=request.data["degree"]).exists():
-        degree = Degree.objects.get(id=request.data["degree"])
-    else:
-        return Response({"detail": "Degree doesn't exist"})
-
-    specialization = Specialization.objects.create(
-        name=request.data["name"],
-        abbreviation=request.data["abbreviation"],
-        classificator=classificator,
-        degree=degree,
-    )
-    return Response({"detail": "Success", "id": specialization.id})
+class SpecializationListCreateAPIView(ListCreateAPIView):
+    queryset = Specialization.objects.all()
+    serializer_class = SpecializationSerializer
+    lookup_field = "id"
 
 
-@api_view(http_method_names=["GET"])
-def get_specializations_api_view(request: HttpRequest):
-    specialization_serializer = SpecializationSerializer(
-        Specialization.objects.filter(active=True), many=True
-    )
-    return Response(specialization_serializer.data)
-
-
-@api_view(http_method_names=["GET"])
-def get_specialization_api_view(request: HttpRequest, specialization_id: int):
-    if Specialization.objects.filter(id=specialization_id).exists():
-        specialization = Specialization.objects.get(id=specialization_id)
-    else:
-        return Response({"detail": "Specialization doesn't exist"})
-    specialization_serializer = SpecializationSerializer(specialization)
-    return Response(specialization_serializer.data)
+class SpecializationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Specialization.objects.all()
+    serializer_class = SpecializationSerializer
+    lookup_field = "id"
 
 
 # Student API views
 
 
-@api_view(http_method_names=["GET"])
-def get_students_api_view(request: HttpRequest):
-    student_serializer = StudentSerializer(Student.objects.all(), many=True)
-    return Response(student_serializer.data)
+class StudentListAPIView(ListAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    lookup_field = "id"
 
 
-@api_view(http_method_names=["GET"])
-def get_student_api_view(request: HttpRequest, student_id: int):
-    if Student.objects.filter(id=student_id).exists():
-        student = Student.objects.get(id=student_id)
-    else:
-        return Response({"detail": "Student doesn't exist"})
-    student_serializer = StudentSerializer(student)
-    return Response(student_serializer.data)
+class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    lookup_field = "id"
 
 
 # Nationalization API views
 
 
-@api_view(http_method_names=["POST"])
-@validate_post(keys=["name", "abbreviation", "classificator", "degree"])
-def create_specialization_api_view(request: HttpRequest):
-    if Classificator.objects.filter(id=request.data["classificator"]).exists():
-        classificator = Classificator.objects.get(id=request.data["classificator"])
-    else:
-        return Response({"detail": "Classificator doesn't exist"})
-    if Degree.objects.filter(id=request.data["degree"]).exists():
-        degree = Degree.objects.get(id=request.data["degree"])
-    else:
-        return Response({"detail": "Degree doesn't exist"})
-
-    specialization = Specialization.objects.create(
-        name=request.data["name"],
-        abbreviation=request.data["abbreviation"],
-        classificator=classificator,
-        degree=degree,
-    )
-    return Response({"detail": "Success", "id": specialization.id})
+class NationalityListCreateAPIView(ListCreateAPIView):
+    queryset = Nationality.objects.all()
+    serializer_class = NationalitySerializer
+    lookup_field = "id"
 
 
-@api_view(http_method_names=["GET"])
-def get_specializations_api_view(request: HttpRequest):
-    specialization_serializer = SpecializationSerializer(
-        Specialization.objects.filter(active=True), many=True
-    )
-    return Response(specialization_serializer.data)
-
-
-@api_view(http_method_names=["GET"])
-def get_specialization_api_view(request: HttpRequest, specialization_id: int):
-    if Specialization.objects.filter(id=specialization_id).exists():
-        specialization = Specialization.objects.get(id=specialization_id)
-    else:
-        return Response({"detail": "Specialization doesn't exist"})
-    specialization_serializer = SpecializationSerializer(specialization)
-    return Response(specialization_serializer.data)
+class NationalityRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Nationality.objects.all()
+    serializer_class = NationalitySerializer
+    lookup_field = "id"

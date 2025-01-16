@@ -16,8 +16,12 @@ urlpatterns = [
     path("root-dashboard/", root_dashboard_api_view),
     # High school routes
     path("create-high-school/", create_high_school_api_view),
-    path("high-schools/", get_high_schools_api_view),
-    path("high-school/<int:high_school_id>/", get_high_school_api_view),
+    path("high-schools/", HighSchoolListAPIView.as_view(), name="high-school-list"),
+    path(
+        "high-schools/<int:id>/",
+        HighSchoolRetrieveUpdateDestroyAPIView.as_view(),
+        name="high-school-retrieve-update-destroy",
+    ),
     # Department routes
     path(
         "departments/",
@@ -41,14 +45,47 @@ urlpatterns = [
         name="degree-retrieve-update-destroy",
     ),
     # Classificator routes
-    path("create-classificator/", create_classificator_api_view),
-    path("classificators/", get_classificators_api_view),
-    path("classificator/<int:classificator_id>/", get_classificator_api_view),
+    path(
+        "classificators/",
+        ClassificatorListCreateAPIView.as_view(),
+        name="classificator-list-create",
+    ),
+    path(
+        "classificators/<int:id>/",
+        ClassificatorRetrieveUpdateDestroyAPIView.as_view(),
+        name="classificator-retrieve-update-destroy",
+    ),
     # Specialization routes
-    path("create-specialization/", create_specialization_api_view),
-    path("specializations/", get_specializations_api_view),
-    path("specialization/<int:specialization_id>/", get_specialization_api_view),
+    path(
+        "specializations/",
+        SpecializationListCreateAPIView.as_view(),
+        name="specialization-list-create",
+    ),
+    path(
+        "specializations/<int:id>/",
+        SpecializationRetrieveUpdateDestroyAPIView.as_view(),
+        name="specialization-retrieve-update-destroy",
+    ),
     # Student routes
-    path("students/", get_students_api_view),
-    path("student/<int:student_id>/", get_student_api_view),
+    path(
+        "students/",
+        StudentListAPIView.as_view(),
+        name="student-list-create",
+    ),
+    path(
+        "students/<int:id>/",
+        StudentRetrieveUpdateDestroyAPIView.as_view(),
+        name="student-retrieve-update-destroy",
+    ),
+    # Nationality routes
+    path(
+        "nationalities/",
+        NationalityListCreateAPIView.as_view(),
+        name="nationality-list-create",
+    ),
+    path(
+        "nationalities/<int:id>/",
+        NationalityRetrieveUpdateDestroyAPIView.as_view(),
+        name="nationality-retrieve-update-destroy",
+    ),
 ]
