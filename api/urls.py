@@ -1,20 +1,3 @@
-"""
-URL configuration for server project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -36,13 +19,27 @@ urlpatterns = [
     path("high-schools/", get_high_schools_api_view),
     path("high-school/<int:high_school_id>/", get_high_school_api_view),
     # Department routes
-    path("create-department/", create_department_api_view),
-    path("departments/", get_departments_api_view),
-    path("department/<int:department_id>/", get_department_api_view),
+    path(
+        "departments/",
+        DepartmentListCreateAPIView.as_view(),
+        name="department-list-create",
+    ),
+    path(
+        "departments/<int:id>/",
+        DepartmentRetrieveUpdateDestroyAPIView.as_view(),
+        name="department-retrieve-update-destroy",
+    ),
     # Degree routes
-    path("create-degree/", create_department_api_view),
-    path("degrees/", get_degrees_api_view),
-    path("degree/<int:degree_id>/", get_degree_api_view),
+    path(
+        "degrees/",
+        DegreeListCreateAPIView.as_view(),
+        name="degree-list-create",
+    ),
+    path(
+        "degrees/<int:id>/",
+        DegreeRetrieveUpdateDestroyAPIView.as_view(),
+        name="degree-retrieve-update-destroy",
+    ),
     # Classificator routes
     path("create-classificator/", create_classificator_api_view),
     path("classificators/", get_classificators_api_view),

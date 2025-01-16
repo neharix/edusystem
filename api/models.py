@@ -100,6 +100,7 @@ class Student(models.Model):
     gender = models.CharField(max_length=1, choices=Gender.choices)
     family_status = models.CharField(max_length=2, choices=FamilyStatus.choices)
     payment_type = models.CharField(max_length=1, choices=PaymentType.choices)
+    high_school = models.ForeignKey("HighSchool", on_delete=models.SET_NULL, null=True)
     nationality = models.ForeignKey(
         "Nationality", on_delete=models.SET_NULL, null=True, blank=True
     )

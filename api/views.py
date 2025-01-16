@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from rest_framework.decorators import api_view
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
@@ -292,61 +293,31 @@ def get_high_school_api_view(request: HttpRequest, high_school_id: int):
 # Department API views
 
 
-@api_view(http_method_names=["POST"])
-@validate_post(keys=["name", "abbreviation"])
-def create_department_api_view(request: HttpRequest):
-    department = Department.objects.create(
-        name=request.data["name"],
-        abbreviation=request.data["abbreviation"],
-    )
-    return Response({"detail": "Success", "id": department.id})
+class DepartmentListCreateAPIView(ListCreateAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    lookup_field = "id"
 
 
-@api_view(http_method_names=["GET"])
-def get_departments_api_view(request: HttpRequest):
-    department_serializer = DepartmentSerializer(
-        Department.objects.filter(active=True), many=True
-    )
-    return Response(department_serializer.data)
-
-
-@api_view(http_method_names=["GET"])
-def get_department_api_view(request: HttpRequest, department_id: int):
-    if Department.objects.filter(id=department_id).exists():
-        department = Department.objects.get(id=department_id)
-    else:
-        return Response({"detail": "Department doesn't exist"})
-    department_serializer = DepartmentSerializer(department)
-    return Response(department_serializer.data)
+class DepartmentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    lookup_field = "id"
 
 
 # Degree API views
 
 
-@api_view(http_method_names=["POST"])
-@validate_post(keys=["name", "duration"])
-def create_degree_api_view(request: HttpRequest):
-    degree = Degree.objects.create(
-        name=request.data["name"],
-        duration=int(request.data["duration"]),
-    )
-    return Response({"detail": "Success", "id": degree.id})
+class DegreeListCreateAPIView(ListCreateAPIView):
+    queryset = Degree.objects.all()
+    serializer_class = DegreeSerializer
+    lookup_field = "id"
 
 
-@api_view(http_method_names=["GET"])
-def get_degrees_api_view(request: HttpRequest):
-    degree_serializer = DegreeSerializer(Degree.objects.all(), many=True)
-    return Response(degree_serializer.data)
-
-
-@api_view(http_method_names=["GET"])
-def get_degree_api_view(request: HttpRequest, degree_id: int):
-    if Degree.objects.filter(id=degree_id).exists():
-        degree = Degree.objects.get(id=degree_id)
-    else:
-        return Response({"detail": "Degree doesn't exist"})
-    degree_serializer = DegreeSerializer(degree)
-    return Response(degree_serializer.data)
+class DegreeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Degree.objects.all()
+    serializer_class = DegreeSerializer
+    lookup_field = "id"
 
 
 # Classificator API views
@@ -436,3 +407,45 @@ def get_student_api_view(request: HttpRequest, student_id: int):
         return Response({"detail": "Student doesn't exist"})
     student_serializer = StudentSerializer(student)
     return Response(student_serializer.data)
+
+
+# Nationalization API views
+
+
+@api_view(http_method_names=["POST"])
+@validate_post(keys=["name", "abbreviation", "classificator", "degree"])
+def create_specialization_api_view(request: HttpRequest):
+    if Classificator.objects.filter(id=request.data["classificator"]).exists():
+        classificator = Classificator.objects.get(id=request.data["classificator"])
+    else:
+        return Response({"detail": "Classificator doesn't exist"})
+    if Degree.objects.filter(id=request.data["degree"]).exists():
+        degree = Degree.objects.get(id=request.data["degree"])
+    else:
+        return Response({"detail": "Degree doesn't exist"})
+
+    specialization = Specialization.objects.create(
+        name=request.data["name"],
+        abbreviation=request.data["abbreviation"],
+        classificator=classificator,
+        degree=degree,
+    )
+    return Response({"detail": "Success", "id": specialization.id})
+
+
+@api_view(http_method_names=["GET"])
+def get_specializations_api_view(request: HttpRequest):
+    specialization_serializer = SpecializationSerializer(
+        Specialization.objects.filter(active=True), many=True
+    )
+    return Response(specialization_serializer.data)
+
+
+@api_view(http_method_names=["GET"])
+def get_specialization_api_view(request: HttpRequest, specialization_id: int):
+    if Specialization.objects.filter(id=specialization_id).exists():
+        specialization = Specialization.objects.get(id=specialization_id)
+    else:
+        return Response({"detail": "Specialization doesn't exist"})
+    specialization_serializer = SpecializationSerializer(specialization)
+    return Response(specialization_serializer.data)
