@@ -242,6 +242,22 @@ def import_excel_data(request: HttpRequest):
 @api_view(http_method_names=["GET"])
 def root_dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser or settings.DEV_STATUS:
+        male_graduates = 0
+        female_graduates = 0
+        for specialization in Specialization.objects.filter(active=True):
+            male_graduates += Student.objects.filter(
+                specialization=specialization,
+                study_year=specialization.degree.duration,
+                gender="M",
+                active=True,
+            ).count()
+            female_graduates += Student.objects.filter(
+                specialization=specialization,
+                study_year=specialization.degree.duration,
+                gender="F",
+                active=True,
+            ).count()
+
         return Response(
             {
                 "high_schools_count": HighSchool.objects.filter(active=True).count(),
@@ -258,6 +274,8 @@ def root_dashboard_api_view(request: HttpRequest):
                 "female_students_count": Student.objects.filter(
                     gender="F", active=True
                 ).count(),
+                "male_graduates": male_graduates,
+                "female_graduates": female_graduates,
                 "admissions": [
                     {
                         "year": year,
