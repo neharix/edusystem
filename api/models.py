@@ -116,10 +116,12 @@ class Student(models.Model):
     birth_date = models.DateField(default=datetime.date(1970, 1, 1))
     admission_date = models.DateField()
     registered_place = models.TextField()
+    study_year = models.IntegerField(default=1)
     phone_number = models.CharField(max_length=20)
     passport = models.CharField(max_length=20)
     military_service = models.CharField(max_length=20, blank=True, null=True)
     label = models.TextField(null=True, blank=True)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.full_name}"

@@ -143,8 +143,8 @@ def import_excel_data(request: HttpRequest):
                 )
                 row_validation = False
 
-            if type(row["Kursy"]) == int:
-                course = row["Kursy"]
+            if type(row["Kursy"]) == int or type(row["Kursy"]) == float:
+                course = int(row["Kursy"])
             else:
                 invalid_fields.append(
                     f"Setir №{index + 2}: 'Kursy' meýdançasynda ýalňyşlyk goýberildi"
@@ -184,8 +184,12 @@ def import_excel_data(request: HttpRequest):
             if (
                 type(row["Öý, iş, mobil telefony"]) == str
                 or type(row["Öý, iş, mobil telefony"]) == int
+                or type(row["Öý, iş, mobil telefony"]) == float
             ):
-                phone_number = row["Öý, iş, mobil telefony"]
+                if type(row["Öý, iş, mobil telefony"]) == float:
+                    phone_number = str(int(row["Öý, iş, mobil telefony"]))
+                else:
+                    phone_number = str(row["Öý, iş, mobil telefony"])
             else:
                 invalid_fields.append(
                     f"Setir №{index + 2}: 'Öý, iş, mobil telefony' meýdançasynda ýalňyşlyk goýberildi"
@@ -211,6 +215,7 @@ def import_excel_data(request: HttpRequest):
                     nationality=nationality,
                     country=country,
                     region=region,
+                    study_year=course,
                     specialization=specialization,
                     birth_date=birth_date,
                     admission_date=admission_date,
@@ -246,13 +251,74 @@ def root_dashboard_api_view(request: HttpRequest):
                     active=True
                 ).count(),
                 "nationalities_count": Nationality.objects.all().count(),
-                "students_count": Student.objects.all().count(),
-                "male_students_count": Student.objects.filter(gender="M").count(),
-                "female_students_count": Student.objects.filter(gender="F").count(),
+                "students_count": Student.objects.filter(active=True).count(),
+                "male_students_count": Student.objects.filter(
+                    gender="M", active=True
+                ).count(),
+                "female_students_count": Student.objects.filter(
+                    gender="F", active=True
+                ).count(),
+                "admissions": [
+                    {
+                        "year": year,
+                        "male_students_count": Student.objects.filter(
+                            gender="M",
+                            admission_date__year=year,
+                            active=True,
+                        ).count(),
+                        "female_students_count": Student.objects.filter(
+                            gender="F",
+                            admission_date__year=year,
+                            active=True,
+                        ).count(),
+                    }
+                    for year in range(2010, timezone.now().year + 1)
+                ],
             }
         )
-    else:
-        return Response({"detail": "Permission denied."})
+    elif request.user.is_authenticated:
+        high_school = HighSchool.objects.get(manager=request.user)
+        return Response(
+            {
+                "faculties_count": high_school.faculties.filter(active=True).count(),
+                "departments_count": high_school.departments.filter(
+                    active=True
+                ).count(),
+                "specializations_count": high_school.specializations.filter(
+                    active=True
+                ).count(),
+                # FIXME
+                "nationalities_count": Nationality.objects.all().count(),
+                "students_count": Student.objects.filter(
+                    active=True, high_school=high_school
+                ).count(),
+                "male_students_count": Student.objects.filter(
+                    gender="M", high_school=high_school, active=True
+                ).count(),
+                "female_students_count": Student.objects.filter(
+                    gender="F", high_school=high_school, active=True
+                ).count(),
+                "admissions": [
+                    {
+                        "year": year,
+                        "male_students_count": Student.objects.filter(
+                            high_school=high_school,
+                            gender="M",
+                            admission_date__year=year,
+                            active=True,
+                        ).count(),
+                        "female_students_count": Student.objects.filter(
+                            high_school=high_school,
+                            gender="F",
+                            admission_date__year=year,
+                            active=True,
+                        ).count(),
+                    }
+                    for year in range(2010, timezone.now().year + 1)
+                ],
+            }
+        )
+    return Response({"detail": "Permission denied."})
 
 
 # High school API views
@@ -287,6 +353,12 @@ class HighSchoolRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = HighSchoolSerializer
     lookup_field = "id"
 
+    def delete(self, request: HttpRequest, id: int):
+        instance = self.get_object()
+        instance.active = False
+        instance.save()
+        return Response({"detail": "Success"})
+
 
 # Department API views
 
@@ -301,6 +373,12 @@ class DepartmentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     lookup_field = "id"
+
+    def delete(self, request: HttpRequest, id: int):
+        instance = self.get_object()
+        instance.active = False
+        instance.save()
+        return Response({"detail": "Success"})
 
 
 # Degree API views
@@ -347,6 +425,12 @@ class SpecializationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = SpecializationSerializer
     lookup_field = "id"
 
+    def delete(self, request: HttpRequest, id: int):
+        instance = self.get_object()
+        instance.active = False
+        instance.save()
+        return Response({"detail": "Success"})
+
 
 # Student API views
 
@@ -361,6 +445,12 @@ class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
     lookup_field = "id"
+
+    def delete(self, request: HttpRequest, id: int):
+        instance = self.get_object()
+        instance.active = False
+        instance.save()
+        return Response({"detail": "Success"})
 
 
 # Nationalization API views
@@ -379,7 +469,7 @@ class NationalityRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 
 @api_view(http_method_names=["GET"])
-def get_students_by_nationality_all(request: HttpRequest):
+def get_students_count_by_nationality_all(request: HttpRequest):
     nationalities = Nationality.objects.all().order_by("id")
     data = []
     for nationality in nationalities:
@@ -399,7 +489,7 @@ def get_students_by_nationality_all(request: HttpRequest):
 
 
 @api_view(http_method_names=["GET"])
-def get_students_by_nationality(request: HttpRequest, nationality_id):
+def get_students_count_by_nationality(request: HttpRequest, nationality_id):
     if Nationality.objects.filter(id=nationality_id).exists():
         nationality = Nationality.objects.get(id=nationality_id)
     else:
