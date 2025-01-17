@@ -88,4 +88,6 @@ urlpatterns = [
         NationalityRetrieveUpdateDestroyAPIView.as_view(),
         name="nationality-retrieve-update-destroy",
     ),
+    path("nationality-filter/", get_students_by_nationality_all),
+    path("nationality-filter/<int:nationality_id>/", get_students_by_nationality),
 ]

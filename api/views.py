@@ -376,3 +376,43 @@ class NationalityRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Nationality.objects.all()
     serializer_class = NationalitySerializer
     lookup_field = "id"
+
+
+@api_view(http_method_names=["GET"])
+def get_students_by_nationality_all(request: HttpRequest):
+    nationalities = Nationality.objects.all().order_by("id")
+    data = []
+    for nationality in nationalities:
+        data.append(
+            {
+                "id": nationality.id,
+                "name": nationality.name,
+                "male_count": Student.objects.filter(
+                    nationality=nationality, gender="M"
+                ).count(),
+                "female_count": Student.objects.filter(
+                    nationality=nationality, gender="F"
+                ).count(),
+            }
+        )
+    return Response(data)
+
+
+@api_view(http_method_names=["GET"])
+def get_students_by_nationality(request: HttpRequest, nationality_id):
+    if Nationality.objects.filter(id=nationality_id).exists():
+        nationality = Nationality.objects.get(id=nationality_id)
+    else:
+        return Response({"detail": "Nationality doesn't exist"})
+    return Response(
+        {
+            "id": nationality.id,
+            "name": nationality.name,
+            "male_count": Student.objects.filter(
+                nationality=nationality, gender="M"
+            ).count(),
+            "female_count": Student.objects.filter(
+                nationality=nationality, gender="F"
+            ).count(),
+        }
+    )
