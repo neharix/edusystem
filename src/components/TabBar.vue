@@ -1,0 +1,26 @@
+<template>
+  <div
+    class="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+    <ul class="flex flex-wrap -mb-px" :class="{'justify-center': center}">
+      <slot name="default"></slot>
+    </ul>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    center: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
+  },
+  name: 'TabBar',
+}
+</script>
+
+
+<style scoped>
+
+</style>

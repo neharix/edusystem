@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import {createRouter, createWebHistory} from "vue-router";
 import HomeView from "../views/HomeView.vue";
 
 const router = createRouter({
@@ -10,14 +10,26 @@ const router = createRouter({
       component: HomeView,
       meta: {
         layout: "main",
+        title: "Baş sahypa"
       },
     },
-    // {
-    //   path: '/about',
-    //   name: 'about',
-    //   component: () => import('../views/AboutView.vue'),
-    // },
+    {
+      path: '/high-schools',
+      name: 'high-schools',
+      component: () => import('../views/HighSchoolsView.vue'),
+      meta: {
+        layout: "main",
+        title: "Ýokary okuw mekdepler",
+      }
+    },
   ],
+});
+
+
+router.beforeEach((to, from, next) => {
+  let title = to.meta.title || "";
+  document.title = title.length > 0  ? title + " | BMDU" : "BMDU";
+  next();
 });
 
 export default router;

@@ -5,6 +5,7 @@
 <script>
 import { computed } from "vue";
 import MainLayout from "./layouts/MainLayout.vue";
+import { useRoute } from "vue-router";
 
 export default {
   setup() {
