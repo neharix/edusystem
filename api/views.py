@@ -44,6 +44,25 @@ from .utils import create_example, validate_not_null_field
 # Special API views
 
 
+@api_view(http_method_names=["GET", "POST", "PUSH", "PATCH", "DELETE", "PUT"])
+def echo(request: HttpRequest):
+    return Response({"detail": "The API works correctly"})
+
+
+@api_view(http_method_names=["GET"])
+def get_user_data(request: HttpRequest):
+    return Response(
+        {
+            "id": request.user.id,
+            "username": request.user.username,
+            "first_name": request.user.first_name,
+            "last_name": request.user.last_name,
+            "email": request.user.email,
+            "is_superuser": request.user.is_superuser,
+        }
+    )
+
+
 @api_view(http_method_names=["GET"])
 def get_example(request: HttpRequest, high_school_id: int, row_count: int):
     if HighSchool.objects.filter(id=high_school_id).exists():

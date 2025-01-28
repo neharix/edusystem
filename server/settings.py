@@ -8,7 +8,29 @@ SECRET_KEY = "django-insecure-s2l-7eu!5s)n50pc&2)ya(-e=tehko1tp*(ol4s-x)8_0jub%*
 
 DEBUG = True
 
-DEV_STATUS = True
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "logs/debug.log",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}
+
+
+DEV_STATUS = False
+
 
 ALLOWED_HOSTS = ["*"]
 
@@ -56,16 +78,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "server.wsgi.application"
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "quizz",
-#         "USER": "postgres",
-#         "PASSWORD": "2928",
-#         "HOST": "localhost",
-#         "PORT": "5432",
-#     }
-# }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=12),
@@ -81,12 +93,24 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=5),
 }
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "bmdu",
+        "USER": "neharix",
+        "PASSWORD": "ghost2928",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -111,8 +135,8 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
-        # "rest_framework.permissions.IsAuthenticated",
+        # "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
