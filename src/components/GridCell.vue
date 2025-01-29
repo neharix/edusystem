@@ -1,9 +1,30 @@
 <script setup>
-
+defineProps({
+  label: String,
+  dataValue: {
+    type: Number,
+    default: 0,
+    required: false,
+  },
+  iconBgClass: String,
+})
 </script>
 
 <template>
-  $END$
+  <!-- TODO add router-link like a wrapper for this component -->
+  <div class="bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4">
+    <div>
+      <div class="text-sm my-2">
+        {{ label }}
+      </div>
+      <div class="font-bold mt-2 text-lg">{{ dataValue }}</div>
+    </div>
+    <div>
+      <div :class="iconBgClass" class="w-12 h-12 rounded-full flex justify-center items-center">
+        <slot name="default"></slot>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>

@@ -1,10 +1,11 @@
+<template>
+  <p>faculties</p>
+</template>
+
 <script setup>
 
 </script>
 
-<template>
-  $END$
-</template>
 
 <style scoped>
 

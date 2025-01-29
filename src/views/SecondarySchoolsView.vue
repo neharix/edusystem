@@ -1,10 +1,11 @@
+<template>
+  <p>secondary-schools</p>
+</template>
+
 <script setup>
 
 </script>
 
-<template>
-  $END$
-</template>
 
 <style scoped>
 
