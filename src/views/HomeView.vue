@@ -156,10 +156,7 @@ import RadialBarChart from "@/components/RadialBarChart.vue";
 
 import {storeToRefs} from 'pinia';
 import {useDashboardStore} from '@/stores/api.store.js';
-import {useAuthStore} from "@/stores/auth.store.js";
 
-const authStore = useAuthStore();
-const {accessToken} = storeToRefs(authStore);
 
 const dashboardStore = useDashboardStore();
 const {data} = storeToRefs(dashboardStore);

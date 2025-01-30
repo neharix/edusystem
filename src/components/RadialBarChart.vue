@@ -7,8 +7,6 @@ const props = defineProps({
   femaleCount: Number,
 })
 
-console.log(props)
-
 const radialOptions = {
   colors: ["#37a75a", "#ce2750"],
   chart: {
@@ -69,10 +67,8 @@ const radialSeries = ref([0, 0]);
 
 
 watch(props, (newVal, oldVal) => {
-
   radialSeries.value[0] = props.maleCount / props.studentsCount * 100;
   radialSeries.value[1] = props.femaleCount / props.studentsCount * 100;
-  console.log(newVal);
 
 })
 

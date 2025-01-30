@@ -42,20 +42,20 @@ export const useDashboardStore =  defineStore({
 });
 
 
-//
-// export const useHighSchoolsStore =  defineStore({
-//   id: 'root',
-//   state: () => ({
-//     data: {}
-//   }),
-//   actions: {
-//     async get() {
-//       this.data = { loading: true };
-//       fetchWrapper.get(url + "high-schools/")
-//         .then(data => {
-//           this.data = data
-//         })
-//         .catch(error => this.data = { error })
-//     }
-//   }
-// });
+
+export const useHighSchoolsStore =  defineStore({
+  id: 'high-schools',
+  state: () => ({
+    highSchools: []
+  }),
+  actions: {
+    async getAdditional() {
+      this.highSchools = { loading: true };
+      fetchWrapper.get(url + "high-schools-with-additional/")
+        .then(data => {
+          this.highSchools = data
+        })
+        .catch(error => this.highSchools = { error })
+    }
+  }
+});
