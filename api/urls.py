@@ -19,6 +19,11 @@ urlpatterns = [
     path("root-dashboard/", root_dashboard_api_view),
     # High school routes
     path("create-high-school/", create_high_school_api_view),
+    path(
+        "high-schools-with-additional/",
+        get_high_school_with_additional_data_api_view,
+        name="get-high-school-with-additional-data",
+    ),
     path("high-schools/", HighSchoolListAPIView.as_view(), name="high-school-list"),
     path(
         "high-schools/<int:id>/",

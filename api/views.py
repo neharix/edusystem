@@ -309,7 +309,7 @@ def root_dashboard_api_view(request: HttpRequest):
                             active=True,
                         ).count(),
                     }
-                    for year in range(2010, timezone.now().year + 1)
+                    for year in range(2018, timezone.now().year + 1)
                 ],
             }
         )
@@ -378,6 +378,27 @@ def create_high_school_api_view(request: HttpRequest):
         manager=user,
     )
     return Response({"detail": "Success", "id": high_school.id})
+
+
+@api_view(http_method_names=["GET"])
+def get_high_school_with_additional_data_api_view(request: HttpRequest):
+    high_schools = HighSchool.objects.filter(active=True)
+    response = []
+    for high_school in high_schools:
+        male_count = Student.objects.filter(high_school=high_school, gender="M").count()
+        female_count = Student.objects.filter(
+            high_school=high_school, gender="F"
+        ).count()
+        response.append(
+            {
+                "id": high_school.id,
+                "name": high_school.name,
+                "students_count": male_count + female_count,
+                "male_count": male_count,
+                "female_count": female_count,
+            }
+        )
+    return Response(response)
 
 
 class HighSchoolListAPIView(ListAPIView):
