@@ -1,26 +1,44 @@
 <template>
-  <component :is="layout + '-layout'"></component>
+  <component :is="layout"></component>
 </template>
 
-<script>
-import {computed} from "vue";
-import MainLayout from "./layouts/MainLayout.vue";
-import EmptyLayout from "./layouts/EmptyLayout.vue";
-import { useRoute } from "vue-router";
+<script setup>
+import {onMounted, defineAsyncComponent, ref, shallowRef, watch} from "vue";
+import {useRoute} from "vue-router";
+import LoaderLayout from "@/layouts/LoaderLayout.vue";
+import {useAuthStore} from "@/stores/auth.store.js";
+import router from "@/router/index.js";
+import {storeToRefs} from "pinia";
 
 
-export default {
 
-  setup() {
-    const route = useRoute();
-    return { layout: computed(() => route.meta.layout) };
-  },
-  components: {
-    MainLayout,
-    EmptyLayout,
-  },
-};
+const layout = shallowRef(LoaderLayout)
+const layoutName = ref('LoaderLayout');
 
+const route = useRoute();
+watch(route, (newValue, oldValue) => {
+  if (newValue.meta.layout !== layoutName.value) {
+    layoutName.value = newValue.meta.layout ?? 'LoaderLayout';
+
+    layout.value = defineAsyncComponent(
+      () =>
+        import(`@/layouts/${layoutName.value}.vue`)
+    );
+  }
+});
+
+const authStore = useAuthStore();
+
+onMounted(async () => {
+  if (authStore.token) {
+    if (!authStore.user) {
+      await authStore.fetchUser();
+    }
+  } else {
+    router.push("/login");
+  }
+
+});
 
 </script>
 

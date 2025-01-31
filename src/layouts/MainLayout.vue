@@ -1,14 +1,16 @@
 <template>
   <div id="sidebar" :class="{ '-translate-x-full': showSidebar === false }"
-       class="fixed shadow-lg inset-y-0 left-0 z-20 w-64 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
+       class="fixed shadow-md dark:shadow-lg inset-y-0 left-0 z-20 w-64 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
     <div class="flex items-center justify-between py-8 px-4 lg:hidden">
       <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
         <img src="../assets/svgs/favicon.svg" alt="User Avatar"/>
       </div>
       <div>
-        <p class="m-0 text-gray-900 dark:text-gray-100 font-medium" v-if="userData">{{ userData.first_name }}
-          {{ userData.last_name }}</p>
-        <p class="m-0 text-gray-600 dark:text-gray-300 font-medium" v-if="userData">@{{ userData.username }}</p>
+        <p class="m-0 text-gray-900 dark:text-gray-100 font-medium" v-if="user">
+          {{ user.is_superuser ? 'Admin' : user.manager_of }}
+        </p>
+        <p class="m-0 text-gray-600 dark:text-gray-300 font-medium text-[0.8rem]" v-if="user">
+          {{ user.is_superuser ? "Admin" : "ÝOM" }}</p>
       </div>
       <div>
         <button @click="authStore.logout()"
@@ -21,57 +23,9 @@
         </button>
       </div>
     </div>
-    <div class="lg:p-8 lg:pb-4 py-4 px-8 text-2xl font-bold border-gray-200 text-center">Bölümler</div>
+    <component :is="sidebar"></component>
 
 
-    <tab-bar :center="true">
-      <tab-item :is-active="selectedTab === 'hs'" @click="selectedTab = 'hs'">
-        ÝOM
-      </tab-item>
-      <tab-item :is-active="selectedTab === 'ss'" @click="selectedTab = 'ss'">
-        OHM
-      </tab-item>
-
-    </tab-bar>
-
-    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-      <div v-if="selectedTab === 'hs'">
-        <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4">Dolandyryş</h4>
-        <sidebar-link link="/high-schools">
-          <svg class="w-6" viewBox="0 0 32 32" fill="none"
-               xmlns="http://www.w3.org/2000/svg">
-            <g clip-path="url(#clip0_901_948)">
-              <path
-                d="M21 28V2C21 1.447 20.553 1 20 1H2C1.447 1 1 1.447 1 2V31H8V25H14V31H31V8C31 8 31 7 30 7H24M16 6V8M26 12V14M26 18V20M11 6V8M6 6V8M16 12V14M11 12V14M6 12V14M16 18V20M11 18V20M6 18V20"
-                stroke-width="2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-            <defs>
-              <clipPath id="clip0_901_948">
-                <rect width="32" height="32" fill="white"/>
-              </clipPath>
-            </defs>
-          </svg>
-          <span>Ýokary okuw mek...</span>
-        </sidebar-link>
-        <sidebar-link link="/faculties">
-          <svg class="w-6"
-               xmlns="http://www.w3.org/2000/svg"
-               fill="none"
-               viewBox="0 0 24 24"
-               strokeWidth="4"
-               stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLineJoin="round"
-              d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9"
-            />
-          </svg><span>Fakultetler</span></sidebar-link>
-      </div>
-      <div v-if="selectedTab === 'ss'">
-        <sidebar-link link="/secondary-schools">Secondary Schools</sidebar-link>
-      </div>
-    </nav>
   </div>
   <!-- Overlay -->
   <div id="overlay" :class="{ hidden: showSidebar === false }" class="fixed inset-0 z-10 bg-black/50 lg:hidden"
@@ -94,8 +48,7 @@
       <theme-toggler :is-mobile="true" :is-dark="isDark" @toggle-theme="toggleTheme"></theme-toggler>
       <div class="hidden lg:flex items-center space-x-4">
         <theme-toggler :is-mobile="false" :is-dark="isDark" @toggle-theme="toggleTheme"></theme-toggler>
-        <user-dropdown v-if="userData" :username="userData.username" :first-name="userData.first_name"
-                       :last-name="userData.last_name"></user-dropdown>
+        <user-dropdown v-if="user"></user-dropdown>
       </div>
     </div>
     <!-- Page Content -->
@@ -112,33 +65,24 @@
 </template>
 
 <script setup>
-import {ref, onMounted, provide} from "vue";
+import {onBeforeMount, onMounted, ref, shallowRef, watch} from "vue";
 import ThemeToggler from "@/components/ThemeToggler.vue";
-import SidebarLink from "@/components/SidebarLink.vue";
-import TabBar from "@/components/TabBar.vue";
-import TabItem from "@/components/TabItem.vue";
 import {useAuthStore} from '@/stores/auth.store.js';
 import UserDropdown from "@/components/UserDropdown.vue";
-import {useUserStore} from "@/stores/api.store.js";
 import {storeToRefs} from "pinia";
+import RootSidebar from "@/components/Sidebars/RootSidebar.vue";
+import UserSidebar from "@/components/Sidebars/UserSidebar.vue";
+import EmptySidebar from "@/components/Sidebars/EmptySidebar.vue";
 
-
-if (!(document.body.classList.contains("main-layout"))) {
-  document.body.classList.add("main-layout", "font-montserrat", "antialiased", "bg-gray-100", "relative", "w-screen");
-}
 
 const authStore = useAuthStore();
-
-const userStore = useUserStore();
-
-
-const {userData} = storeToRefs(userStore);
-userStore.get()
+authStore.fetchUser()
 
 
+const {user, role} = storeToRefs(authStore);
+const sidebar = shallowRef(EmptySidebar);
 const showSidebar = ref(false);
 const isDark = ref(null)
-const selectedTab = ref("hs");
 const year = ref(new Date().getFullYear())
 
 
@@ -157,7 +101,32 @@ function toggleTheme() {
 
 }
 
+
+if (role.value === "root") {
+  sidebar.value = RootSidebar;
+} else if (role.value === "user") {
+  sidebar.value = UserSidebar;
+} else if (role.value === "empty") {
+  sidebar.value = EmptySidebar;
+}
+
+watch(role, (newValue, oldValue) => {
+  if (newValue === "root") {
+    sidebar.value = RootSidebar;
+  } else if (newValue === "user") {
+    sidebar.value = UserSidebar;
+  } else if (newValue === "empty") {
+    sidebar.value = EmptySidebar;
+  }
+})
+
+
 onMounted(() => {
+  if (!(document.body.classList.contains("main-layout"))) {
+    document.body.className = "";
+    document.body.classList.add("main-layout", "font-montserrat", "antialiased", "bg-gray-100", "relative", "w-screen");
+  }
+
   const theme = localStorage.getItem("theme")
   if (theme !== null) {
     document.querySelector("html").setAttribute("class", theme)
@@ -168,8 +137,8 @@ onMounted(() => {
     document.querySelector("html").setAttribute("class", "light")
     isDark.value = false
   }
-})
 
+})
 </script>
 
 <style scoped></style>

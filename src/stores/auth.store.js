@@ -1,33 +1,50 @@
 import { defineStore } from 'pinia';
-import router from '@/router/index.js'
-import { fetchWrapper } from '@/helpers/fetch-wrapper.js';
-import baseUrl from "@/helpers/base.js";
-const url = baseUrl + "v1/token/";
+import axiosInstance from "@/api/axiosInstance.js"; // импортируем конфигурированный axios
+import router from "@/router/index.js";
 
 
-export const useAuthStore = defineStore({
-  id: 'auth',
+export const useAuthStore = defineStore('auth', {
   state: () => ({
-    // initialize state from local storage to enable user to stay logged in
-    accessToken: localStorage.getItem('access_token'),
-    returnUrl: null
+    user: null,
+    role: 'empty',
+    token: localStorage.getItem('access_token') || null,
+    isLoading: true,
   }),
   actions: {
-    async login(username, password) {
-      const user = await fetchWrapper.post(url, { username, password });
-      console.log("login", user);
-      // update pinia state
-      this.accessToken = user.access;
-      // store user details and jwt in local storage to keep user logged in between page refreshes
-      localStorage.setItem('access_token', user.access);
+    async login(credentials) {
+      try {
+        const response = await axiosInstance.post('/token/', credentials);
+        this.token = response.data.access;
 
-      // redirect to previous url or default to home page
-      router.push(this.returnUrl || '/');
+        localStorage.setItem('access_token', this.token);
+        axiosInstance.defaults.headers['Authorization'] = `BMDU ${this.token}`; // обновляем заголовки для всех запросов
+      } catch (error) {
+        console.error('Login failed', error);
+      }
     },
-    logout() {
-      this.accessToken = null;
+
+    async logout() {
+      this.token = null;
+      this.user = null;
+      this.role = 'empty'
       localStorage.removeItem('access_token');
+      delete axiosInstance.defaults.headers['Authorization']; // убираем токен из заголовков
       router.push('/login');
-    }
-  }
+    },
+
+    async fetchUser() {
+      try {
+        const response = await axiosInstance.get('/user/');
+        this.user = response.data;
+        this.role = this.user.is_superuser ? 'root' : 'user';
+        this.isLoading = false;
+      } catch (error) {
+        if (error.response?.status === 401) {
+          this.user = null; // Сбросить пользователя при 401
+          await this.logout()
+        }
+        console.error('Failed to fetch user', error);
+      }
+    },
+  },
 });

@@ -2,12 +2,6 @@
 import {ref} from "vue";
 import {useAuthStore} from "@/stores/auth.store.js";
 
-defineProps({
-  username: String,
-  firstName: String,
-  lastName: String,
-})
-
 const authStore = useAuthStore()
 
 const isOpen = ref(false);
@@ -41,8 +35,8 @@ window.addEventListener("click", onClickOutside);
       >
         <div class="hidden lg:flex items-center space-x-4">
           <div>
-            <p class="m-0 text-gray-900 dark:text-gray-100 font-medium">{{ firstName }} {{ lastName }}</p>
-            <p class="m-0 text-end text-gray-600 dark:text-gray-300 font-medium">@{{ username }}</p>
+            <p class="m-0 text-gray-900 dark:text-gray-100 font-medium">{{ authStore.user.is_superuser ? 'Admin' : authStore.user.manager_of }}</p>
+            <p class="m-0 text-end text-gray-600 dark:text-gray-300 font-medium text-[0.8rem]">{{ authStore.user.is_superuser ? "Admin" : "ÝOM" }}</p>
           </div>
           <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
             <img src="../assets/svgs/favicon.svg" alt="">

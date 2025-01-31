@@ -1,26 +1,9 @@
-import { defineStore } from 'pinia';
+import {defineStore} from 'pinia';
 import baseUrl from "@/helpers/base.js";
-import { fetchWrapper } from '@/helpers/fetch-wrapper.js';
+import axiosInstance from "@/api/axiosInstance.js";
 
 const url = baseUrl + "v1/";
 
-
-export const useUserStore =  defineStore({
-  id: 'user',
-  state: () => ({
-    userData: {}
-  }),
-  actions: {
-    async get() {
-      this.data = { loading: true };
-      fetchWrapper.get(url + "user/")
-        .then(data => {
-          this.userData = data
-        })
-        .catch(error => this.userData = { error })
-    }
-  }
-});
 
 
 
@@ -31,12 +14,12 @@ export const useDashboardStore =  defineStore({
   }),
   actions: {
     async get() {
-      this.data = { loading: true };
-      fetchWrapper.get(url + "root-dashboard/")
-        .then(data => {
-          this.data = data
-        })
-        .catch(error => this.data = { error })
+      try {
+        const response = await axiosInstance.get('/dashboard/');
+        this.data = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
     }
   }
 });
@@ -50,12 +33,12 @@ export const useHighSchoolsStore =  defineStore({
   }),
   actions: {
     async getAdditional() {
-      this.highSchools = { loading: true };
-      fetchWrapper.get(url + "high-schools-with-additional/")
-        .then(data => {
-          this.highSchools = data
-        })
-        .catch(error => this.highSchools = { error })
+      try {
+        const response = await axiosInstance.get('/high-schools-with-additional/');
+        this.highSchools = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
     }
   }
 });

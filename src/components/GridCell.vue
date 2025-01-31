@@ -1,5 +1,10 @@
 <script setup>
-defineProps({
+
+import {useRouter} from "vue-router";
+
+const router = useRouter();
+
+const props = defineProps({
   label: String,
   dataValue: {
     type: Number,
@@ -7,12 +12,24 @@ defineProps({
     required: false,
   },
   iconBgClass: String,
+  link: {
+    type: String,
+    required: false,
+    default: '',
+  },
 })
+
+function cellClicked() {
+  if (props.link !== '') {
+    router.push(props.link);
+  }
+}
+
 </script>
 
 <template>
   <!-- TODO add router-link like a wrapper for this component -->
-  <div class="bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4">
+  <div class="bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4" @click="cellClicked">
     <div>
       <div class="text-sm my-2">
         {{ label }}

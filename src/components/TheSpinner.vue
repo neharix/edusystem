@@ -4,12 +4,17 @@ defineProps({
     type: String,
     default: "currentColor",
     required: false,
+  },
+  sizeClass: {
+    type: String,
+    default: "w-12",
+    required: false,
   }
 })
 </script>
 
 <template>
-  <svg xmlns='http://www.w3.org/2000/svg' class="w-12" viewBox='0 0 300 150'>
+  <svg xmlns='http://www.w3.org/2000/svg' :class="sizeClass" viewBox='0 0 300 150'>
     <path fill='none' :stroke='color' stroke-width='15' stroke-linecap='round' stroke-dasharray='300 385'
           stroke-dashoffset='0'
           d='M275 75c0 31-27 50-50 50-58 0-92-100-150-100-28 0-50 22-50 50s23 50 50 50c58 0 92-100 150-100 24 0 50 19 50 50Z'>

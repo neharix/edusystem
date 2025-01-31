@@ -1,9 +1,13 @@
 <script setup>
-import {Form, Field} from 'vee-validate';
+import {Field, Form} from 'vee-validate';
 import * as Yup from 'yup';
 import TheSpinner from "@/components/TheSpinner.vue";
 
 import {useAuthStore} from '@/stores/auth.store.js';
+import loginImage from "@/assets/svgs/login.svg";
+import ThemeToggler from "@/components/ThemeToggler.vue";
+import {onMounted, ref} from "vue";
+import router from "@/router/index.js";
 
 const PASSWORD_MIN_LENGTH = 8;
 
@@ -15,16 +19,48 @@ const schema = Yup.object().shape({
 function onSubmit(values, {setErrors}) {
   const authStore = useAuthStore();
   const {username, password} = values;
-  return authStore.login(username, password)
+  return authStore.login({username, password}).then(() => {
+    router.push('/');
+  })
     .catch(error => setErrors({apiError: error}));
 }
 
+const isDark = ref(null)
 
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const prevTheme = html.classList.contains('dark') ? 'dark' : 'light'
+  html.classList.remove(prevTheme)
+  html.classList.add(prevTheme === "dark" ? "light" : "dark")
+
+  localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+  const theme = localStorage.getItem("theme");
+
+  html.classList.add(theme)
+  html.classList.remove(theme === "dark" ? "light" : "dark")
+  isDark.value = theme === "dark";
+
+}
+
+
+onMounted(() => {
+  const theme = localStorage.getItem("theme")
+  isDark.value = theme === "dark"
+})
 
 
 </script>
 
 <template>
+  <div class="hidden lg:flex w-2/3 bg-gray-200 dark:bg-[#1b1829] justify-center items-center">
+    <img :src="loginImage"
+         alt="Left Section Image"
+         class="max-w-[80%] max-h-[80%] object-contain dark:opacity-75"/>
+  </div>
+  <!-- Right Section (Login Form) -->
+  <div class="flex flex-col justify-center px-8 lg:px-16 bg-white dark:bg-[#171131ef] w-full lg:w-1/3">
+    <theme-toggler class="absolute top-5 right-5" :is-dark="isDark" @toggle-theme="toggleTheme"></theme-toggler>
   <h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4 text-center lg:text-left">Hoş geldiňiz! 👋</h2>
   <p class="text-gray-600 dark:text-gray-300 mb-6 text-center lg:text-left">Içeri girmek üçin şahsyňyzy tassyklaň</p>
   <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4">
@@ -55,6 +91,8 @@ function onSubmit(values, {setErrors}) {
     </div>
     <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm">{{ errors.apiError }}</div>
   </Form>
+  </div>
+
 </template>
 
 <style scoped>
