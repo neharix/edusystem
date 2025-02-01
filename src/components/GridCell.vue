@@ -31,10 +31,10 @@ function cellClicked() {
   <!-- TODO add router-link like a wrapper for this component -->
   <div class="bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4" @click="cellClicked">
     <div>
-      <div class="text-sm my-2">
+      <div class="text-sm my-2 select-none">
         {{ label }}
       </div>
-      <div class="font-bold mt-2 text-lg">{{ dataValue }}</div>
+      <div class="font-bold mt-2 text-lg select-none">{{ dataValue }}</div>
     </div>
     <div>
       <div :class="iconBgClass" class="w-12 h-12 rounded-full flex justify-center items-center">

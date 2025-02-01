@@ -1,3 +1,4 @@
+import 'virtual:uno.css'
 import "./assets/css/tailwind.css";
 import "./assets/css/base.css";
 

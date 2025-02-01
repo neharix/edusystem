@@ -1,4 +1,7 @@
 import axios from 'axios';
+import {useAuthStore} from "@/stores/auth.store.js";
+import router from "@/router/index.js";
+
 
 const axiosInstance = axios.create({
   // baseURL: 'https://bmdu.depder.com/api',
@@ -19,6 +22,21 @@ axiosInstance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
+  }
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const authStore = useAuthStore();
+      authStore.logout();
+
+      if (router.currentRoute.value.name !== 'login-page') {
+        router.push('/login');
+      }
+    }
+    return {};
   }
 );
 

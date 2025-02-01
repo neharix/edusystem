@@ -1,10 +1,5 @@
 import {defineStore} from 'pinia';
-import baseUrl from "@/helpers/base.js";
 import axiosInstance from "@/api/axiosInstance.js";
-
-const url = baseUrl + "v1/";
-
-
 
 
 export const useDashboardStore =  defineStore({
@@ -29,13 +24,21 @@ export const useDashboardStore =  defineStore({
 export const useHighSchoolsStore =  defineStore({
   id: 'high-schools',
   state: () => ({
-    highSchools: []
+    highSchools: [],
   }),
   actions: {
     async getAdditional() {
       try {
         const response = await axiosInstance.get('/high-schools-with-additional/');
         this.highSchools = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async createHighSchool(data) {
+      try {
+        const response = await axiosInstance.post('/create-high-school/', data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error', error);
       }

@@ -32,7 +32,7 @@ const router = createRouter({
     {
       path: '/high-schools',
       name: 'high-schools',
-      component: () => import('../views/HighSchoolViews/HighSchoolsListView.vue'),
+      component: () => import('../views/HighSchoolViews/HighSchools.vue'),
       meta: {
         layout: 'MainLayout',
         title: "Ýokary okuw mekdepleri",
@@ -40,14 +40,26 @@ const router = createRouter({
       },
       children: [
         {
-          path: '/add',
+          path: '',
+          name: 'high-schools-list',
+          component: () => import('../views/HighSchoolViews/HighSchoolsListView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Ýokary okuw mekdepleri",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'add',
           name: 'add-high-school',
           component: () => import('../views/HighSchoolViews/AddHighSchoolView.vue'),
           meta: {
             layout: 'MainLayout',
             title: 'Ýokary okuw mekdebi goşmak',
             adminRequired: true,
-          }
+          },
+          beforeEnter: guards.authGuard,
         }
       ],
       beforeEnter: guards.authGuard,

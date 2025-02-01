@@ -9,11 +9,9 @@ import ThemeToggler from "@/components/ThemeToggler.vue";
 import {onMounted, ref} from "vue";
 import router from "@/router/index.js";
 
-const PASSWORD_MIN_LENGTH = 8;
-
 const schema = Yup.object().shape({
   username: Yup.string().trim().required('Ulanyjy ady hökmany şekilde girizilmeli'),
-  password: Yup.string().required('Açar sözi hökmany şekilde girizilmeli').min(PASSWORD_MIN_LENGTH, `Açar sözi ${PASSWORD_MIN_LENGTH} simwoldan az bolmaly däldir`),
+  password: Yup.string().required('Açar sözi hökmany şekilde girizilmeli'),
 });
 
 function onSubmit(values, {setErrors}) {

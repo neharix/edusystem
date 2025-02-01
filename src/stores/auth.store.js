@@ -36,13 +36,11 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await axiosInstance.get('/user/');
         this.user = response.data;
-        this.role = this.user.is_superuser ? 'root' : 'user';
+        if (response.status === 200) {
+          this.role = this.user.is_superuser ? 'root' : 'user';
+        }
         this.isLoading = false;
       } catch (error) {
-        if (error.response?.status === 401) {
-          this.user = null; // Сбросить пользователя при 401
-          await this.logout()
-        }
         console.error('Failed to fetch user', error);
       }
     },

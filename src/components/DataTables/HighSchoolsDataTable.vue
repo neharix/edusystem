@@ -1,5 +1,7 @@
 <script setup>
 import {computed, defineProps, ref, watch} from 'vue';
+import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
+import useConfirmModal from "@/use/useModalWindow.js";
 
 
 const props = defineProps(["data"])
@@ -87,7 +89,6 @@ const sort = (column) => {
   }
 };
 
-
 const isOpen = ref(false);
 
 function toggleMenu() {
@@ -104,11 +105,15 @@ function onClickOutside(event) {
   }
 }
 
+const { isModalOpen, openModal, header, context } = useConfirmModal();
+
 window.addEventListener("click", onClickOutside);
 
 </script>
 
 <template>
+  <confirm-modal :is-open="isModalOpen" @close="isModalOpen = false" :header="header" :context='`\"${context}\" ýok edilmegini tassyklaýarsyňyzmy?`'></confirm-modal>
+
   <div class="w-full rounded-lg shadow-lg">
       <div class="pt-1  rounded-lg dark:bg-[#171131ef] bg-white">
         <div class="flex items-center justify-between space-x-2 py-3 px-4">
@@ -195,7 +200,7 @@ window.addEventListener("click", onClickOutside);
             @click="sort('name')"
           >
             ÝOKARY OKUW MEKDEBI
-            <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+            <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-90' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
@@ -205,7 +210,7 @@ window.addEventListener("click", onClickOutside);
             @click="sort('students_count')"
           >
             JEMI
-            <span :class="sortColumn === 'students_count' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+            <span :class="sortColumn === 'students_count' ? (sortOrder === 'asc' ? 'rotate-90' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
@@ -215,7 +220,7 @@ window.addEventListener("click", onClickOutside);
             @click="sort('male_count')"
           >
             OGLAN
-            <span :class="sortColumn === 'male_count' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+            <span :class="sortColumn === 'male_count' ? (sortOrder === 'asc' ? 'rotate-90' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
@@ -225,7 +230,7 @@ window.addEventListener("click", onClickOutside);
             @click="sort('female_count')"
           >
             GYZ
-            <span :class="sortColumn === 'female_count' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+            <span :class="sortColumn === 'female_count' ? (sortOrder === 'asc' ? 'rotate-90' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
@@ -268,7 +273,7 @@ window.addEventListener("click", onClickOutside);
                         class="px-4 py-2 text-[0.8rem] font-medium bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700">
                   Görmek
                 </button>
-                <button type="button" :key="item.id"
+                <button type="button" :key="item.id" @click="openModal('Ýok etmek', item.name)"
                         class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500">
                   Pozmak
                 </button>
@@ -291,7 +296,6 @@ window.addEventListener("click", onClickOutside);
         </svg>
       </button>
 
-      <!-- Первая страница (если она далеко от текущей) -->
       <button v-if="currentPage > 3" :class="defaultBtnClasses"
               @click="changePage(1)">
         1
@@ -329,7 +333,6 @@ window.addEventListener("click", onClickOutside);
         </svg>
       </button>
     </div>
-
 </template>
 
 <style scoped>

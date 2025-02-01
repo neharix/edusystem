@@ -1,6 +1,6 @@
 <template>
   <div id="sidebar" :class="{ '-translate-x-full': showSidebar === false }"
-       class="fixed shadow-md dark:shadow-lg inset-y-0 left-0 z-20 w-64 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
+       class="fixed shadow-md w-64 inset-y-0 left-0 z-20 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
     <div class="flex items-center justify-between py-8 px-4 lg:hidden">
       <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
         <img src="../assets/svgs/favicon.svg" alt="User Avatar"/>
@@ -55,7 +55,7 @@
     <div class="flex-1 p-6 text-gray-800 dark:text-gray-100 overflow-y-auto lg:w-full w-screen">
       <router-view></router-view>
       <div class="mt-8">
-        <p class="lg:text-end md:text-end text-center text-[0.75rem] text-gray-500 dark:text-gray-400">&copy; {{ year }} "Sanly Çözgüt IT Meýdança" HJ,
+        <p class="select-none lg:text-end md:text-end text-center text-[0.75rem] text-gray-500 dark:text-gray-400">&copy; {{ year }} "Sanly Çözgüt IT Meýdança" HJ,
           Ähli hukuklar
           goralan</p>
       </div>

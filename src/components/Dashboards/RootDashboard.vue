@@ -10,7 +10,7 @@ const {data} = useDashboard();
 
 <template>
   <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
-    <grid-cell label="Ýokary okuw mekdepler" :data-value="data.high_schools_count"
+    <grid-cell link="/high-schools" label="Ýokary okuw mekdepler" :data-value="data.high_schools_count"
                icon-bg-class="bg-green-200 dark:bg-green-500/75">
       <svg class="w-6 stroke-green-500 dark:stroke-green-900" viewBox="0 0 32 32" fill="none"
            xmlns="http://www.w3.org/2000/svg">

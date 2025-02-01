@@ -14,11 +14,9 @@ async function authGuard (to, from, next) {
   const authStore = useAuthStore();
   await authStore.fetchUser();
 
-
   while (authStore.isLoading) {
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
-
 
   if (to.meta.adminRequired && authStore.role !== "root") {
     return next("/403");
