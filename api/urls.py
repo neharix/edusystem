@@ -16,7 +16,7 @@ urlpatterns = [
         get_example,
     ),
     path("import-excel-data/", import_excel_data),
-    path("root-dashboard/", root_dashboard_api_view),
+    path("dashboard/", dashboard_api_view),
     # High school routes
     path("create-high-school/", create_high_school_api_view),
     path(

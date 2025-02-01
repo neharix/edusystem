@@ -7,12 +7,13 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import (
     ListAPIView,
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
 )
+from rest_framework.permissions import IsAdminUser
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
@@ -41,6 +42,8 @@ from .serializers import (
 )
 from .utils import create_example, validate_not_null_field
 
+ADMISSION_START_RANGE = 2018
+
 # Special API views
 
 
@@ -51,16 +54,23 @@ def echo(request: HttpRequest):
 
 @api_view(http_method_names=["GET"])
 def get_user_data(request: HttpRequest):
-    return Response(
-        {
-            "id": request.user.id,
-            "username": request.user.username,
-            "first_name": request.user.first_name,
-            "last_name": request.user.last_name,
-            "email": request.user.email,
-            "is_superuser": request.user.is_superuser,
-        }
-    )
+    if request.user.is_superuser:
+        return Response(
+            {
+                "id": request.user.id,
+                "email": request.user.email,
+                "is_superuser": request.user.is_superuser,
+            }
+        )
+    else:
+        return Response(
+            {
+                "id": request.user.id,
+                "manager_of": HighSchool.objects.get(manager=request.user).abbreviation,
+                "email": request.user.email,
+                "is_superuser": request.user.is_superuser,
+            }
+        )
 
 
 @api_view(http_method_names=["GET"])
@@ -259,7 +269,7 @@ def import_excel_data(request: HttpRequest):
 
 
 @api_view(http_method_names=["GET"])
-def root_dashboard_api_view(request: HttpRequest):
+def dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser or settings.DEV_STATUS:
         male_graduates = 0
         female_graduates = 0
@@ -309,7 +319,7 @@ def root_dashboard_api_view(request: HttpRequest):
                             active=True,
                         ).count(),
                     }
-                    for year in range(2018, timezone.now().year + 1)
+                    for year in range(ADMISSION_START_RANGE, timezone.now().year + 1)
                 ],
             }
         )
@@ -351,7 +361,7 @@ def root_dashboard_api_view(request: HttpRequest):
                             active=True,
                         ).count(),
                     }
-                    for year in range(2010, timezone.now().year + 1)
+                    for year in range(ADMISSION_START_RANGE, timezone.now().year + 1)
                 ],
             }
         )
@@ -362,7 +372,7 @@ def root_dashboard_api_view(request: HttpRequest):
 
 
 @api_view(http_method_names=["POST"])
-@validate_post(keys=["name", "abbreviation", "username", "password"])
+@validate_post(keys=["high_school_name", "abbreviation", "username", "password"])
 def create_high_school_api_view(request: HttpRequest):
     user = User.objects.create_user(
         username=request.data["username"],
@@ -373,32 +383,37 @@ def create_high_school_api_view(request: HttpRequest):
     profile.password = request.data["password"]
     profile.save()
     high_school = HighSchool.objects.create(
-        name=request.data["name"],
+        name=request.data["high_school_name"],
         abbreviation=request.data["abbreviation"],
         manager=user,
+        active=True,
     )
     return Response({"detail": "Success", "id": high_school.id})
 
 
 @api_view(http_method_names=["GET"])
 def get_high_school_with_additional_data_api_view(request: HttpRequest):
-    high_schools = HighSchool.objects.filter(active=True)
-    response = []
-    for high_school in high_schools:
-        male_count = Student.objects.filter(high_school=high_school, gender="M").count()
-        female_count = Student.objects.filter(
-            high_school=high_school, gender="F"
-        ).count()
-        response.append(
-            {
-                "id": high_school.id,
-                "name": high_school.name,
-                "students_count": male_count + female_count,
-                "male_count": male_count,
-                "female_count": female_count,
-            }
-        )
-    return Response(response)
+    if request.user.is_superuser:
+        high_schools = HighSchool.objects.filter(active=True)
+        response = []
+        for high_school in high_schools:
+            male_count = Student.objects.filter(
+                high_school=high_school, gender="M"
+            ).count()
+            female_count = Student.objects.filter(
+                high_school=high_school, gender="F"
+            ).count()
+            response.append(
+                {
+                    "id": high_school.id,
+                    "name": high_school.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+    return Response({"detail": "Permission denied"})
 
 
 class HighSchoolListAPIView(ListAPIView):

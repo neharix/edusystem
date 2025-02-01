@@ -11,6 +11,7 @@ def validate_post(keys: List[str]):
         def args_wrapper(request: HttpRequest, *args, **kwargs):
             validation_list = [request.data.get(key, False) for key in keys]
             if False in validation_list:
+                print("Payload invalid")
                 return Response({"detail": "Payload invalid"})
             else:
                 return view(request, *args, **kwargs)
