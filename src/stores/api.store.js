@@ -25,6 +25,8 @@ export const useHighSchoolsStore =  defineStore({
   id: 'high-schools',
   state: () => ({
     highSchools: [],
+    deleteStatus: null,
+
   }),
   actions: {
     async getAdditional() {
@@ -38,9 +40,15 @@ export const useHighSchoolsStore =  defineStore({
     async createHighSchool(data) {
       try {
         const response = await axiosInstance.post('/create-high-school/', data);
-        console.log(response.data);
       } catch (error) {
-        console.error('Error', error);
+      }
+    },
+    async deleteHighSchool(id) {
+      try {
+        const response = await axiosInstance.delete(`/high-schools/${id}/`);
+        this.deleteStatus = 'success';
+      } catch (error) {
+        this.deleteStatus = 'error';
       }
     }
   }

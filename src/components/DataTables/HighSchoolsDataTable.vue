@@ -2,19 +2,29 @@
 import {computed, defineProps, ref, watch} from 'vue';
 import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
+import TheToast from "@/components/TheToast.vue";
+import useToast from "@/use/useToast.js";
+import {useHighSchoolsStore} from "@/stores/api.store.js";
+import {storeToRefs} from "pinia";
 
 
 const props = defineProps(["data"])
-
+const emit = defineEmits(["update"]);
 
 watch(props, (newVal, oldVal) => {
   data.value = newVal.data;
   filteredData.value = [...data.value];
 })
 
+const {isModalOpen, openModal, header, context} = useConfirmModal();
+const {toasts, addToast} = useToast();
+const highSchoolsStore = useHighSchoolsStore();
+const {deleteStatus} = storeToRefs(highSchoolsStore);
 
 const data = ref([]);
 const filteredData = ref([]);
+const selectedItem = ref(null);
+
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
@@ -105,14 +115,46 @@ function onClickOutside(event) {
   }
 }
 
-const { isModalOpen, openModal, header, context } = useConfirmModal();
+function openModalWrapper(headerText, content, id) {
+  openModal(headerText, content);
+  selectedItem.value = id;
+}
+
+
+function closeModal() {
+  isModalOpen.value = false;
+  selectedItem.value = null;
+  console.log(selectedItem.value);
+}
+
+
+function submitModal() {
+  isModalOpen.value = false;
+  highSchoolsStore.deleteHighSchool(selectedItem.value).then(() => {
+    emit('update');
+  });
+  selectedItem.value = null;
+}
+
+watch(deleteStatus, (newVal, oldVal) => {
+  if (newVal) {
+    if (newVal === 'success') {
+      addToast('Ýokary okuw mekdebi üstünlikli ýok edildi', 'success');
+    } else if (newVal === 'error') {
+      addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+    }
+  }
+  deleteStatus.value = null;
+})
+
 
 window.addEventListener("click", onClickOutside);
 
 </script>
 
 <template>
-  <confirm-modal :is-open="isModalOpen" @close="isModalOpen = false" :header="header" :context='`\"${context}\" ýok edilmegini tassyklaýarsyňyzmy?`'></confirm-modal>
+  <confirm-modal :is-open="isModalOpen" @close="closeModal" @submit="submitModal" :header="header"
+                 :context='`\"${context}\" ýok edilmegini tassyklaýarsyňyzmy?`'></confirm-modal>
 
   <div class="w-full rounded-lg shadow-lg">
       <div class="pt-1  rounded-lg dark:bg-[#171131ef] bg-white">
@@ -273,7 +315,7 @@ window.addEventListener("click", onClickOutside);
                         class="px-4 py-2 text-[0.8rem] font-medium bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700">
                   Görmek
                 </button>
-                <button type="button" :key="item.id" @click="openModal('Ýok etmek', item.name)"
+                <button type="button" :key="item.id" @click="openModalWrapper('Ýok etmek', item.name, item.id)"
                         class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500">
                   Pozmak
                 </button>
@@ -333,6 +375,21 @@ window.addEventListener("click", onClickOutside);
         </svg>
       </button>
     </div>
+  <teleport to="body">
+    <div class="toast-container w-5/6 fixed top-25
+       md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">
+      <TransitionGroup name="toast">
+        <the-toast
+          v-for="toast in toasts"
+          :key="toast.id"
+          :message="toast.message"
+          :type="toast.type"
+          :duration="toast.duration"
+          :onClose="() => (toasts = toasts.filter((t) => t.id !== toast.id))"
+        ></the-toast>
+      </TransitionGroup>
+    </div>
+  </teleport>
 </template>
 
 <style scoped>
@@ -351,5 +408,18 @@ window.addEventListener("click", onClickOutside);
 .fade-scale-leave-from {
   opacity: 1;
   transform: scale(1);
+}
+
+
+.toast-move,
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
 }
 </style>
