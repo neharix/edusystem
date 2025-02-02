@@ -126,39 +126,39 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
 
     faculty_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Fakultetler")}!$A:$A",
+        formula1=f"={quote_sheetname('Fakultetler')}!$A:$A",
     )
     department_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Kafedralar")}!$A:$A",
+        formula1=f"={quote_sheetname('Kafedralar')}!$A:$A",
     )
     specialization_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Hünarler")}!$A:$A",
+        formula1=f"={quote_sheetname('Hünarler')}!$A:$A",
     )
     country_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Ýurtlar")}!$A:$A",
+        formula1=f"={quote_sheetname('Ýurtlar')}!$A:$A",
     )
     nationality_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Milletler")}!$A:$A",
+        formula1=f"={quote_sheetname('Milletler')}!$A:$A",
     )
     region_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Welaýatlar")}!$A:$A",
+        formula1=f"={quote_sheetname('Welaýatlar')}!$A:$A",
     )
     gender_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Jynslar")}!$A:$A",
+        formula1=f"={quote_sheetname('Jynslar')}!$A:$A",
     )
     family_status_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Maşgala ýagdaýlary")}!$A:$A",
+        formula1=f"={quote_sheetname('Maşgala ýagdaýlary')}!$A:$A",
     )
     payment_type_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname("Töleg görnüşleri")}!$A:$A",
+        formula1=f"={quote_sheetname('Töleg görnüşleri')}!$A:$A",
     )
 
     ws.add_data_validation(faculty_data_val)
