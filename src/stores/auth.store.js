@@ -17,7 +17,7 @@ export const useAuthStore = defineStore('auth', {
         this.token = response.data.access;
 
         localStorage.setItem('access_token', this.token);
-        axiosInstance.defaults.headers['Authorization'] = `BMDU ${this.token}`; // обновляем заголовки для всех запросов
+        axiosInstance.defaults.headers['Authorization'] = `BMDU ${this.token}`;
       } catch (error) {
         console.error('Login failed', error);
       }
@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.role = 'empty'
       localStorage.removeItem('access_token');
-      delete axiosInstance.defaults.headers['Authorization']; // убираем токен из заголовков
+      delete axiosInstance.defaults.headers['Authorization'];
       router.push('/login');
     },
 

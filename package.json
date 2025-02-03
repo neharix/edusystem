@@ -24,12 +24,15 @@
     "vee-validate": "^4.15.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
+    "vue-yandex-maps": "^2.1.6",
     "vue3-apexcharts": "^1.8.0",
     "yup": "^1.6.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
+    "@vue-leaflet/vue-leaflet": "^0.10.1",
     "autoprefixer": "^10.4.20",
+    "leaflet": "^1.9.4",
     "postcss": "^8.5.1",
     "tailwindcss": "^4.0.0",
     "unocss": "^65.4.3",

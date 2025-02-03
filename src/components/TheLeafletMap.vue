@@ -1,31 +1,54 @@
+<script setup>
+import 'leaflet/dist/leaflet.css';
+import {watch, onMounted, ref} from "vue";
+import L from "leaflet";
+import {useHighSchoolsStore} from "@/stores/api.store.js";
+import {storeToRefs} from "pinia";
+
+const mapContainer = ref(null);
+const map = ref(null);
+const markers = ref([]); // Храним маркеры
+
+const highSchoolsStore = useHighSchoolsStore();
+
+const { highSchoolsResponse } = storeToRefs(highSchoolsStore);
+
+highSchoolsStore.getAll();
+
+const addMarker = (lat, lng, name) => {
+  if (!map.value) return;
+
+  const marker = L.marker([lat, lng]).addTo(map.value).bindPopup(name);
+  markers.value.push(marker);
+};
+
+watch(highSchoolsResponse, (newValue, oldValue) => {
+  newValue.forEach(({ lat, lng, name }) => {
+    addMarker(lat, lng, name);
+  });
+})
+
+onMounted(() => {
+  map.value = L.map(mapContainer.value).setView([39.13, 59.37], 6);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map.value);
+});
+</script>
+
 <template>
-  <yandex-map
-    v-model="map"
-    :settings="{
-        location: {
-          center: [37.617644, 55.755819],
-          zoom: 9,
-        },
-      }"
-    width="100%"
-    height="500px"
-  >
-    <yandex-map-default-scheme-layer/>
-    <yandex-map-default-features-layer/>
-    <yandex-map-default-marker :settings="{ coordinates: [37.617644, 55.755819] }"/>
-  </yandex-map>
+  <div class="rounded-lg mb-6 shadow-md" ref="mapContainer" style="width: 100%; height: 70vh;"></div>
 </template>
 
-<script setup lang="ts">
-import { shallowRef } from 'vue';
-import type { YMap } from '@yandex/ymaps3-types';
-import {
-  YandexMap,
-  YandexMapDefaultSchemeLayer,
-  YandexMapDefaultFeaturesLayer,
-  YandexMapDefaultMarker,
-} from 'vue-yandex-maps';
 
-//Можно использовать для различных преобразований
-const map = shallowRef<null | YMap>(null);
-</script>
+<style>
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+.leaflet-pane, .leaflet-top, .leaflet-bottom{
+  z-index: 10;
+}
+
+</style>

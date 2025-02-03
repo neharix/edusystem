@@ -78,7 +78,7 @@ watch(props, (newVal, oldVal) => {
 
 <template>
   <div class="w-full bg-white rounded-lg shadow-sm dark:bg-[#171131ef] p-4 md:p-6">
-    <h2 class="text-center">Umumy gyz/oglan koefissenti</h2>
+    <h2 class="text-center select-none">Umumy gyz/oglan koefissenti</h2>
 
     <apexchart id="column-data" :options="radialOptions" :series="radialSeries" type="radialBar"></apexchart>
 

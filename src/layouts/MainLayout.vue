@@ -1,15 +1,15 @@
 <template>
   <div id="sidebar" :class="{ '-translate-x-full': showSidebar === false }"
-       class="fixed shadow-md w-64 inset-y-0 left-0 z-20 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
+       class="fixed z-50 shadow-md w-64 inset-y-0 left-0 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
     <div class="flex items-center justify-between py-8 px-4 lg:hidden">
       <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
         <img src="../assets/svgs/favicon.svg" alt="User Avatar"/>
       </div>
       <div>
-        <p class="m-0 text-gray-900 dark:text-gray-100 font-medium" v-if="user">
+        <p class="m-0 text-gray-900 dark:text-gray-100 font-medium select-none" v-if="user">
           {{ user.is_superuser ? 'Admin' : user.manager_of }}
         </p>
-        <p class="m-0 text-gray-600 dark:text-gray-300 font-medium text-[0.8rem]" v-if="user">
+        <p class="m-0 text-gray-600 dark:text-gray-300 font-medium text-[0.8rem] select-none" v-if="user">
           {{ user.is_superuser ? "Admin" : "ÝOM" }}</p>
       </div>
       <div>

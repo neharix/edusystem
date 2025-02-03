@@ -60,6 +60,17 @@ const router = createRouter({
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'edit/:id',
+          name: 'edit-high-school',
+          component: () => import('../views/HighSchoolViews/EditHighSchoolView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Ýokary okuw mekdebi üýtgetmek',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
         }
       ],
       beforeEnter: guards.authGuard,
@@ -99,49 +110,5 @@ const router = createRouter({
     },
   ],
 });
-
-
-
-// router.beforeEach(async (to, from, next) => {
-//   let title = to.meta.title || "";
-//   document.title = title.length > 0 ? title + " | BMDU" : "BMDU";
-//
-//   const publicPages = ['/login'];
-//   const user = useUserStore();
-//   while (user.isLoading) {
-//     await new Promise((resolve) => setTimeout(resolve, 200));
-//   }
-//
-//
-//   const authStore = useAuthStore();
-//   const userStore = useUserStore();
-//
-//   if (!authStore.accessToken) {
-//     return next("/login");
-//   }
-//
-//   // Обновляем access токен, если он истёк
-//   const refreshed = await authStore.refreshAccessToken();
-//   if (!refreshed) {
-//     return next("/login");
-//   }
-//
-//   // Дожидаемся загрузки данных о пользователе
-//   if (!userStore.user) {
-//     try {
-//       await userStore.fetchUser();
-//     } catch (error) {
-//       console.error("Ошибка загрузки пользователя:", error);
-//       return next("/login");
-//     }
-//   }
-//
-//   // Проверяем права доступа
-//   if (to.meta.requiresAdmin && userStore.user.role !== "admin") {
-//     return next("/403");
-//   }
-//
-//   next();
-// });
 
 export default router;

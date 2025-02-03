@@ -1,7 +1,7 @@
 <script setup>
 
-import RadialBarChart from "@/components/RadialBarChart.vue";
-import DoubleBarChart from "@/components/DoubleBarChart.vue";
+import RadialBarChart from "@/components/Charts/RadialBarChart.vue";
+import DoubleBarChart from "@/components/Charts/DoubleBarChart.vue";
 import GridCell from "@/components/GridCell.vue";
 import useDashboard from "@/use/useDashboard.js";
 

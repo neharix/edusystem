@@ -9,7 +9,7 @@ const highSchoolsStore = useHighSchoolsStore();
 const {highSchools} = storeToRefs(highSchoolsStore);
 
 onMounted(() => {
-  highSchoolsStore.getAdditional()
+  highSchoolsStore.getAllAdditional()
 })
 
 const breadcrumbPaths = [
@@ -22,7 +22,7 @@ const breadcrumbPaths = [
 <template>
   <div class="w-full">
     <the-breadcrumb :paths="breadcrumbPaths"></the-breadcrumb>
-    <high-schools-data-table :data="highSchools" @update="highSchoolsStore.getAdditional()"></high-schools-data-table>
+    <high-schools-data-table :data="highSchools" @update="highSchoolsStore.getAllAdditional()"></high-schools-data-table>
   </div>
 </template>
 

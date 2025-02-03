@@ -1,14 +1,18 @@
 <script setup>
 
-import RadialBarChart from "@/components/RadialBarChart.vue";
-import DoubleBarChart from "@/components/DoubleBarChart.vue";
+import RadialBarChart from "@/components/Charts/RadialBarChart.vue";
+import DoubleBarChart from "@/components/Charts/DoubleBarChart.vue";
 import GridCell from "@/components/GridCell.vue";
 import useDashboard from "@/use/useDashboard.js";
+import TheLeafletMap from "@/components/TheLeafletMap.vue";
 
 const {data} = useDashboard();
 </script>
 
 <template>
+  <div>
+    <the-leaflet-map></the-leaflet-map>
+  </div>
   <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
     <grid-cell link="/high-schools" label="Ýokary okuw mekdepler" :data-value="data.high_schools_count"
                icon-bg-class="bg-green-200 dark:bg-green-500/75">
@@ -129,7 +133,7 @@ const {data} = useDashboard();
     <radial-bar-chart :studentsCount="data.students_count" :femaleCount="data.female_students_count" :maleCount="data.male_students_count"></radial-bar-chart>
   </div>
 
-  <h2 class="my-8 text-2xl">Okuwy tamamlaýanlar</h2>
+  <h2 class="my-8 text-2xl select-none">Okuwy tamamlaýanlar</h2>
   <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
     <grid-cell label="Gyzlar" :data-value="data.female_graduates"
                icon-bg-class="bg-sky-200 dark:bg-sky-500/75">

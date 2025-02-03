@@ -6,6 +6,7 @@ import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
 import {useHighSchoolsStore} from "@/stores/api.store.js";
 import {storeToRefs} from "pinia";
+import router from "@/router/index.js";
 
 
 const props = defineProps(["data"])
@@ -19,7 +20,7 @@ watch(props, (newVal, oldVal) => {
 const {isModalOpen, openModal, header, context} = useConfirmModal();
 const {toasts, addToast} = useToast();
 const highSchoolsStore = useHighSchoolsStore();
-const {deleteStatus} = storeToRefs(highSchoolsStore);
+const {deleteStatus, updateStatus} = storeToRefs(highSchoolsStore);
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -130,7 +131,7 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  highSchoolsStore.deleteHighSchool(selectedItem.value).then(() => {
+  highSchoolsStore.delete(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
@@ -145,6 +146,17 @@ watch(deleteStatus, (newVal, oldVal) => {
     }
   }
   deleteStatus.value = null;
+})
+
+watch(updateStatus, (newVal, oldVal) => {
+  if (newVal) {
+    if (newVal === 'success') {
+      addToast('Ýokary okuw mekdebi üstünlikli üýtgedildi', 'success');
+    } else if (newVal === 'error') {
+      addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+    }
+  }
+  updateStatus.value = null;
 })
 
 
@@ -307,7 +319,7 @@ window.addEventListener("click", onClickOutside);
             <!-- TODO -->
             <div class="w-full flex items-center justify-center">
               <div class="inline-flex rounded-md shadow-xs" role="group">
-                <button type="button" :key="item.id"
+                <button type="button" :key="item.id" @click="router.push(`/high-schools/edit/${item.id}`)"
                         class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700">
                   Üýtgetmek
                 </button>

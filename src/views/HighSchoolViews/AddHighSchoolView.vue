@@ -32,7 +32,7 @@
           </div>
         </div>
         <div>
-          <Field name="password" type="password" id="password"
+          <Field name="password" type="text" id="password"
                  class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
                  :class="{ 'is-invalid': errors.password }"
                  placeholder="Açar sözi"></Field>
@@ -75,7 +75,7 @@ const schema = Yup.object().shape({
 
 function onSubmit(values, {setErrors}) {
   const {high_school_name, abbreviation, username, password} = values;
-  return highSchoolsStore.createHighSchool({high_school_name, abbreviation, username, password}).then(() => {
+  return highSchoolsStore.create({high_school_name, abbreviation, username, password}).then(() => {
     router.push('/high-schools');
   })
     .catch(error => setErrors({apiError: error}));

@@ -5,7 +5,7 @@ import SidebarLink from "@/components/SidebarLink.vue";
 
 <template>
   <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-    <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4">Dolandyryş</h4>
+    <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4 select-none">Dolandyryş</h4>
     <sidebar-link link="/faculties">
       <svg class="w-6"
            xmlns="http://www.w3.org/2000/svg"

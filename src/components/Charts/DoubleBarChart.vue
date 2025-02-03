@@ -114,7 +114,7 @@ watch(props, (newVal, oldVal) => {
 
 <template>
   <div class="w-full bg-white rounded-lg shadow-sm dark:bg-[#171131ef] p-4 md:p-6">
-    <h2 class="text-center">Okuwa tabşyryşyklar</h2>
+    <h2 class="text-center select-none">Okuwa tabşyryşyklar</h2>
 
     <div class="flex h-full items-center">
       <div class="block w-full">

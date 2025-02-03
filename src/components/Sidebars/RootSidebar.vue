@@ -11,7 +11,7 @@ const selectedTab = ref("hs");
 </script>
 
 <template>
-  <div class="lg:p-8 lg:pb-4 py-4 px-8 text-2xl font-bold border-gray-200 text-center">Bölümler</div>
+  <div class="lg:p-8 lg:pb-4 py-4 px-8 text-2xl font-bold border-gray-200 text-center select-none">Bölümler</div>
   <tab-bar :center="true">
     <tab-item :is-active="selectedTab === 'hs'" @click="selectedTab = 'hs'">
       ÝOM
@@ -24,7 +24,7 @@ const selectedTab = ref("hs");
 
   <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
     <div v-if="selectedTab === 'hs'">
-      <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4">Dolandyryş</h4>
+      <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4 select-none">Dolandyryş</h4>
       <sidebar-link link="/high-schools">
         <svg class="w-6" viewBox="0 0 32 32" fill="none"
              xmlns="http://www.w3.org/2000/svg">
