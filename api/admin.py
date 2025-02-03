@@ -4,6 +4,13 @@ from .models import *
 
 
 # Register your models here.
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "id", "password"]
+    readonly_fields = ("id",)
+    search_fields = ["user", "password"]
+
+
 @admin.register(HighSchool)
 class HighSchoolAdmin(admin.ModelAdmin):
     list_display = ["name", "id", "abbreviation", "active"]

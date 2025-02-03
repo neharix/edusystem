@@ -12,6 +12,9 @@ urlpatterns = [
     path("user/", get_user_data, name="user-data"),
     # Special routes
     path(
+        "profiles/<int:id>/", ProfileRetrieveApiView.as_view(), name="profile-retrieve"
+    ),
+    path(
         "get-example/high-school/<int:high_school_id>/row-count/<int:row_count>/",
         get_example,
     ),
@@ -19,6 +22,7 @@ urlpatterns = [
     path("dashboard/", dashboard_api_view),
     # High school routes
     path("create-high-school/", create_high_school_api_view),
+    path("update-high-school/<int:high_school_id>/", put_high_school_api_view),
     path(
         "high-schools-with-additional/",
         get_high_school_with_additional_data_api_view,
@@ -27,8 +31,8 @@ urlpatterns = [
     path("high-schools/", HighSchoolListAPIView.as_view(), name="high-school-list"),
     path(
         "high-schools/<int:id>/",
-        HighSchoolRetrieveUpdateDestroyAPIView.as_view(),
-        name="high-school-retrieve-update-destroy",
+        HighSchoolRetrieveDestroyAPIView.as_view(),
+        name="high-school-update-destroy",
     ),
     # Department routes
     path(

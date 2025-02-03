@@ -12,19 +12,21 @@ class Profile(models.Model):
     password = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return self.user
+        return self.user.username
 
 
 class HighSchool(models.Model):
     name = models.CharField(max_length=500)
     abbreviation = models.CharField(max_length=100)
     manager = models.OneToOneField(
-        User, on_delete=models.SET_NULL, null=True, blank=True
+        Profile, on_delete=models.SET_NULL, null=True, blank=True
     )
     faculties = models.ManyToManyField("Faculty", blank=True)
     departments = models.ManyToManyField("Department", blank=True)
     specializations = models.ManyToManyField("Specialization", blank=True)
     active = models.BooleanField(default=False)
+    lat = models.FloatField(blank=True, default=37.95)
+    lng = models.FloatField(blank=True, default=58.38)
 
     def __str__(self):
         return self.name

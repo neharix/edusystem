@@ -11,13 +11,15 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import (
     ListAPIView,
     ListCreateAPIView,
+    RetrieveAPIView,
+    RetrieveDestroyAPIView,
     RetrieveUpdateDestroyAPIView,
 )
 from rest_framework.permissions import IsAdminUser
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
-from .decorators import validate_files, validate_post
+from .decorators import validate_files, validate_payload
 from .models import (
     Classificator,
     Country,
@@ -37,6 +39,7 @@ from .serializers import (
     DepartmentSerializer,
     HighSchoolSerializer,
     NationalitySerializer,
+    ProfileSerializer,
     SpecializationSerializer,
     StudentSerializer,
 )
@@ -47,7 +50,13 @@ ADMISSION_START_RANGE = 2018
 # Special API views
 
 
-@api_view(http_method_names=["GET", "POST", "PUSH", "PATCH", "DELETE", "PUT"])
+class ProfileRetrieveApiView(RetrieveAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    lookup_field = "id"
+
+
+@api_view(http_method_names=["GET", "POST", "PATCH", "DELETE", "PUT"])
 def echo(request: HttpRequest):
     return Response({"detail": "The API works correctly"})
 
@@ -66,7 +75,9 @@ def get_user_data(request: HttpRequest):
         return Response(
             {
                 "id": request.user.id,
-                "manager_of": HighSchool.objects.get(manager=request.user).abbreviation,
+                "manager_of": HighSchool.objects.get(
+                    manager__user=request.user
+                ).abbreviation,
                 "email": request.user.email,
                 "is_superuser": request.user.is_superuser,
             }
@@ -95,7 +106,7 @@ def get_example(request: HttpRequest, high_school_id: int, row_count: int):
 
 
 @api_view(http_method_names=["POST"])
-@validate_post(keys=["high_school_id"])
+@validate_payload(keys=["high_school_id"])
 @validate_files(keys=["excel"])
 def import_excel_data(request: HttpRequest):
     dataframe = pd.read_excel(request.FILES["excel"])
@@ -324,7 +335,7 @@ def dashboard_api_view(request: HttpRequest):
             }
         )
     elif request.user.is_authenticated:
-        high_school = HighSchool.objects.get(manager=request.user)
+        high_school = HighSchool.objects.get(manager__user=request.user)
         return Response(
             {
                 "faculties_count": high_school.faculties.filter(active=True).count(),
@@ -372,7 +383,7 @@ def dashboard_api_view(request: HttpRequest):
 
 
 @api_view(http_method_names=["POST"])
-@validate_post(keys=["high_school_name", "abbreviation", "username", "password"])
+@validate_payload(keys=["high_school_name", "abbreviation", "username", "password"])
 def create_high_school_api_view(request: HttpRequest):
     user = User.objects.create_user(
         username=request.data["username"],
@@ -385,9 +396,33 @@ def create_high_school_api_view(request: HttpRequest):
     high_school = HighSchool.objects.create(
         name=request.data["high_school_name"],
         abbreviation=request.data["abbreviation"],
-        manager=user,
+        manager=profile,
         active=True,
     )
+    return Response({"detail": "Success", "id": high_school.id})
+
+
+@api_view(http_method_names=["PUT"])
+@validate_payload(keys=["high_school_name", "abbreviation", "username", "password"])
+def put_high_school_api_view(request: HttpRequest, high_school_id: int):
+    if HighSchool.objects.filter(id=high_school_id).exists():
+        high_school = HighSchool.objects.get(id=high_school_id)
+    else:
+        return Response({"detail": "High school doesn't exist"}, status=404)
+
+    high_school.name = request.data["high_school_name"]
+    high_school.abbreviation = request.data["abbreviation"]
+    high_school.save()
+
+    user = high_school.manager.user
+    profile = high_school.manager
+
+    user.username = request.data["username"]
+    user.set_password(request.data["password"])
+    user.save()
+
+    profile.password = request.data["password"]
+    profile.save()
     return Response({"detail": "Success", "id": high_school.id})
 
 
@@ -421,7 +456,7 @@ class HighSchoolListAPIView(ListAPIView):
     serializer_class = HighSchoolSerializer
 
 
-class HighSchoolRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+class HighSchoolRetrieveDestroyAPIView(RetrieveDestroyAPIView):
     queryset = HighSchool.objects.all()
     serializer_class = HighSchoolSerializer
     lookup_field = "id"
