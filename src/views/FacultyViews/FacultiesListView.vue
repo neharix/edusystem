@@ -1,20 +1,20 @@
 <script setup>
-import {useHighSchoolsStore} from "@/stores/api.store.js";
-import HighSchoolsDataTable from "@/components/DataTables/HighSchoolsDataTable.vue";
+import {useFacultiesStore, useHighSchoolsStore} from "@/stores/api.store.js";
+import FacultiesDataTable from "@/components/DataTables/FacultiesDataTable.vue";
 import {storeToRefs} from "pinia";
 import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
 import {onMounted, watch} from "vue";
 
-const highSchoolsStore = useHighSchoolsStore();
-const {highSchools} = storeToRefs(highSchoolsStore);
+const facultiesStore = useFacultiesStore();
+const {facultiesAdditional} = storeToRefs(facultiesStore);
 
 onMounted(() => {
-  highSchoolsStore.getAllAdditional()
+  facultiesStore.getAllAdditional()
 })
 
 const breadcrumbPaths = [
-  {path: "/high-schools", name: "Ýokary okuw mekdepleri"},
-  {path: "/high-schools/add", name: "Goşmak"},
+  {path: "/faculties", name: "Fakultetler"},
+  {path: "/faculties/add", name: "Goşmak"},
 ]
 
 </script>
@@ -22,7 +22,7 @@ const breadcrumbPaths = [
 <template>
   <div class="w-full">
     <the-breadcrumb :paths="breadcrumbPaths"></the-breadcrumb>
-    <high-schools-data-table :data="highSchools" @update="highSchoolsStore.getAllAdditional()"></high-schools-data-table>
+    <faculties-data-table :data="facultiesAdditional" @update="facultiesStore.getAllAdditional()"></faculties-data-table>
   </div>
 </template>
 

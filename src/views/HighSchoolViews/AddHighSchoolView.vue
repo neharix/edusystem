@@ -47,7 +47,7 @@
           <span :class="{ hidden: isSubmitting }">Hasaba al</span>
         </button>
       </div>
-      <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm">{{ errors.apiError }}</div>
+      <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm select-none">{{ errors.apiError }}</div>
     </Form>
   </div>
 

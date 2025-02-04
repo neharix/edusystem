@@ -4,7 +4,7 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import {useHighSchoolsStore} from "@/stores/api.store.js";
+import {useFacultiesStore, useHighSchoolsStore} from "@/stores/api.store.js";
 import {storeToRefs} from "pinia";
 import router from "@/router/index.js";
 
@@ -19,8 +19,8 @@ watch(props, (newVal, oldVal) => {
 
 const {isModalOpen, openModal, header, context} = useConfirmModal();
 const {toasts, addToast} = useToast();
-const highSchoolsStore = useHighSchoolsStore();
-const {deleteStatus, updateStatus} = storeToRefs(highSchoolsStore);
+const facultiesStore = useFacultiesStore();
+const {deleteStatus, updateStatus} = storeToRefs(facultiesStore);
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -130,7 +130,7 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  highSchoolsStore.delete(selectedItem.value).then(() => {
+  facultiesStore.delete(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
@@ -139,7 +139,7 @@ function submitModal() {
 watch(deleteStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Ýokary okuw mekdebi üstünlikli ýok edildi', 'success');
+      addToast('Fakultet üstünlikli ýok edildi', 'success');
     } else if (newVal === 'error') {
       addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -150,7 +150,7 @@ watch(deleteStatus, (newVal, oldVal) => {
 onMounted(() => {
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
-      addToast('Ýokary okuw mekdebi üstünlikli üýtgedildi', 'success');
+      addToast('Fakultet üstünlikli üýtgedildi', 'success');
     } else if (updateStatus.value === 'error') {
       addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -176,7 +176,7 @@ window.addEventListener("click", onClickOutside);
                 <button
                   @click="toggleMenu"
                   type="button"
-                  class="inline-flex transition duration-200 ease-in w-full justify-center rounded-md border border-gray-300 dark:border-gray-800 bg-white dark:bg-[#171131ef] dark:text-gray-200 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-[#32237cef] focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-[#32237cef] focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-[#32237cef]"
+                  class="inline-flex transition duration-200 ease-in w-full justify-center rounded-md border border-gray-300 dark:border-gray-800 bg-white dark:bg-[#171131ef] dark:text-gray-200 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-[#32237cef] focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-[#32237cef] focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-[#32237cef] select-none"
                 >
                   Setir sany: {{ rowsPerPage }}
                 </button>
@@ -194,7 +194,7 @@ window.addEventListener("click", onClickOutside);
                   <div class="py-1">
                     <button v-for="option in rowsPerPageOptions" :key="option" :value="option"
                             @click="changeRowsPerPage(option)"
-                            class="w-full text-start text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#32237cef]"
+                            class="w-full text-start text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#32237cef] select-none"
                     >
                       {{ option }} setir
                     </button>
@@ -252,7 +252,7 @@ window.addEventListener("click", onClickOutside);
             class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
             @click="sort('name')"
           >
-            ÝOKARY OKUW MEKDEBI
+            FAKULTETLER
             <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲
@@ -318,16 +318,17 @@ window.addEventListener("click", onClickOutside);
             <!-- TODO -->
             <div class="w-full flex items-center justify-center">
               <div class="inline-flex rounded-md shadow-xs" role="group">
-                <button type="button" :key="item.id" @click="router.push(`/high-schools/edit/${item.id}`)"
-                        class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700">
+                <button type="button" :key="item.id" @click="router.push(`/faculties/edit/${item.id}`)"
+                        class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
                   Üýtgetmek
                 </button>
-                <button type="button" :key="item.id" @click="router.push(`/high-schools/view/${item.id}`)"
-                        class="px-4 py-2 text-[0.8rem] font-medium bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700">
+                <!-- FIXME -->
+                <button type="button" :key="item.id"
+                        class="px-4 py-2 text-[0.8rem] font-medium bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700 select-none">
                   Görmek
                 </button>
                 <button type="button" :key="item.id" @click="openModalWrapper('Ýok etmek', item.name, item.id)"
-                        class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500">
+                        class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500 select-none">
                   Pozmak
                 </button>
               </div>
@@ -340,7 +341,7 @@ window.addEventListener("click", onClickOutside);
     </div>
 
     <div class="flex justify-center items-center mt-4 space-x-2 overflow-x-auto">
-      <button :class="activeBtnClasses"
+      <button class="select-none" :class="activeBtnClasses"
               v-if="currentPage !== 1" @click="changePage(currentPage - 1)">
         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -349,35 +350,35 @@ window.addEventListener("click", onClickOutside);
         </svg>
       </button>
 
-      <button v-if="currentPage > 3" :class="defaultBtnClasses"
+      <button class="select-none" v-if="currentPage > 3" :class="defaultBtnClasses"
               @click="changePage(1)">
         1
       </button>
 
-      <span v-if="currentPage > 4" class="px-2">...</span>
+      <span v-if="currentPage > 4"  class="px-2 select-none">...</span>
 
-      <button v-for="page in pagesBefore" :key="'before-' + page"
+      <button class="select-none" v-for="page in pagesBefore" :key="'before-' + page"
               :class="defaultBtnClasses" @click="changePage(page)">
         {{ page }}
       </button>
 
-      <button :class="activeBtnClasses" v-if="totalPages !== 0">
+      <button class="select-none" :class="activeBtnClasses" v-if="totalPages !== 0">
         {{ currentPage }}
       </button>
 
-      <button v-for="page in pagesAfter" :key="'after-' + page"
+      <button class="select-none" v-for="page in pagesAfter" :key="'after-' + page"
               :class="defaultBtnClasses" @click="changePage(page)">
         {{ page }}
       </button>
 
-      <span v-if="currentPage < totalPages - 3" class="px-2">...</span>
+      <span v-if="currentPage < totalPages - 3" class="px-2 select-none">...</span>
 
       <button v-if="currentPage < totalPages - 2" :class="defaultBtnClasses"
               @click="changePage(totalPages)">
         {{ totalPages }}
       </button>
 
-      <button :class="activeBtnClasses"
+      <button class="select-none" :class="activeBtnClasses"
               v-if="currentPage !== totalPages && totalPages !== 0" @click="changePage(currentPage + 1)">
         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path

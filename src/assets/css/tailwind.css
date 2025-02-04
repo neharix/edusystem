@@ -9,3 +9,16 @@
 @theme {
     --font-montserrat: Montserrat;
 }
+
+.link-active {
+    @apply border-none dark:border-violet-500/50 border-1 bg-gradient-to-r from-blue-400 to-blue-500 dark:from-violet-600 dark:to-violet-500 text-white shadow-md shadow-blue-300/50 dark:shadow-violet-500/50;
+}
+
+.link-inactive-primary {
+    @apply hover:dark:bg-violet-500 hover:bg-blue-300 hover:text-white transition duration-200 ease-in;
+}
+
+
+.link-inactive-secondary {
+    @apply hover:text-blue-500 dark:hover:text-violet-600 transition ease-in hover:ease-out duration-200;
+}

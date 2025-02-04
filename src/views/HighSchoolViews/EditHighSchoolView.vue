@@ -1,8 +1,7 @@
 <template>
-  <the-breadcrumb :paths="breadcrumbPaths">
-  </the-breadcrumb>
+  <the-breadcrumb :paths="breadcrumbPaths"></the-breadcrumb>
   <div class="w-full rounded-lg shadow-lg p-4 bg-white dark:bg-[#171131ef]">
-    <h3 class="text-xl font-bold mx-2 select-none">Täze ýokary okuw mekdebini hasaba almak</h3>
+    <h3 class="text-xl font-bold mx-2 select-none">Ýokary okuw mekdebini üýtgetmek</h3>
     <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4">
       <div class="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 gap-4">
         <div class="lg:col-span-2 md:col-span-2 lg:col-span-1">
@@ -47,7 +46,7 @@
           <span :class="{ hidden: isSubmitting }">Üýtget</span>
         </button>
       </div>
-      <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm">{{ errors.apiError }}</div>
+      <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm select-none">{{ errors.apiError }}</div>
     </Form>
   </div>
 
@@ -100,7 +99,6 @@ const breadcrumbPaths = [
 
 onMounted(() => {
   highSchoolsStore.get(route.params.id).then(() => {
-    console.log(highSchoolsStore.highSchool);
     highSchoolName.value = highSchoolsStore.highSchool.name;
     highSchoolAbbreviation.value = highSchoolsStore.highSchool.abbreviation;
     usernameF.value = highSchoolsStore.highSchool.manager.user.username;
@@ -109,5 +107,4 @@ onMounted(() => {
 })
 
 
-console.log(route.params.id)
 </script>

@@ -1,6 +1,5 @@
-import {createRouter, createWebHistory, useRoute} from "vue-router";
+import {createRouter, createWebHistory} from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import {useAuthStore} from '@/stores/auth.store.js';
 import guards from "@/router/guards.js";
 
 
@@ -71,9 +70,113 @@ const router = createRouter({
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
-        }
+        },
+        {
+          path: 'view/:id',
+          name: 'about-high-school',
+          component: () => import('../views/HighSchoolViews/AboutHighSchool.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Ýokary okuw mekdebi",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+          children: [
+            {
+              path: '',
+              name: 'high-school',
+              component: () => import('../views/HighSchoolViews/ViewHighSchoolView.vue'),
+              beforeEnter: guards.authGuard,
+              meta: {
+                layout: 'MainLayout',
+                title: "Ýokary okuw mekdebi",
+                adminRequired: true,
+              },
+            },
+            {
+              path: 'faculties',
+              name: 'high-school-faculties',
+              component: () => import('../views/HighSchoolViews/HighSchoolFacultiesView.vue'),
+              beforeEnter: guards.authGuard,
+              meta: {
+                layout: 'MainLayout',
+                title: "Ýokary okuw mekdebiň fakultetleri",
+                adminRequired: true,
+              },
+            },
+            {
+              path: 'specializations',
+              name: 'high-school-specializations',
+              component: () => import('../views/HighSchoolViews/HighSchoolSpecializationsView.vue'),
+              beforeEnter: guards.authGuard,
+              meta: {
+                layout: 'MainLayout',
+                title: "Ýokary okuw mekdebiň hünarleri",
+                adminRequired: true,
+              },
+            },
+            {
+              path: 'departments',
+              name: 'high-school-departments',
+              component: () => import('../views/HighSchoolViews/HighSchoolDepartmentsView.vue'),
+              beforeEnter: guards.authGuard,
+              meta: {
+                layout: 'MainLayout',
+                title: "Ýokary okuw mekdebiň kafedralary",
+                adminRequired: true,
+              },
+            },
+          ],
+
+        },
+
       ],
       beforeEnter: guards.authGuard,
+    },
+    {
+      path: '/faculties',
+      name: 'faculties',
+      component: () => import('../views/FacultyViews/Faculties.vue'),
+      meta: {
+        layout: 'MainLayout',
+        title: "Fakultetler",
+        adminRequired: true,
+      },
+      children: [
+        {
+          path: '',
+          name: 'faculties-list',
+          component: () => import('../views/FacultyViews/FacultiesListView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Fakultetler",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'add',
+          name: 'add-faculty',
+          component: () => import('../views/FacultyViews/AddFacultyView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Fakultet goşmak',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'edit/:id',
+          name: 'edit-faculty',
+          component: () => import('../views/FacultyViews/EditFacultyView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Fakulteti üýtgetmek',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        }
+      ],
     },
     {
       path: '/secondary-schools',
@@ -83,17 +186,6 @@ const router = createRouter({
         layout: "MainLayout",
         title: "Orta hünär mekdepleri",
         adminRequired: true,
-      },
-      beforeEnter: guards.authGuard,
-    },
-    {
-      path: '/faculties',
-      name: 'faculties',
-      component: () => import('../views/FacultiesView.vue'),
-      meta: {
-        layout: 'MainLayout',
-        title: "Fakultetler",
-        adminRequired: false,
       },
       beforeEnter: guards.authGuard,
     },

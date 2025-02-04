@@ -1,6 +1,6 @@
 <template>
   <div id="sidebar" :class="{ '-translate-x-full': showSidebar === false }"
-       class="fixed z-50 shadow-md w-64 inset-y-0 left-0 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
+       class="fixed z-30 shadow-md w-64 inset-y-0 left-0 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
     <div class="flex items-center justify-between py-8 px-4 lg:hidden">
       <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
         <img src="../assets/svgs/favicon.svg" alt="User Avatar"/>
@@ -42,8 +42,8 @@
         </svg>
       </button>
       <router-link to="/">
-        <div class="text-xl font-semibold flex items-center"><img class="w-12 h-12" src="/src/assets/svgs/favicon.svg"
-                                                                  alt=""><span class="px-2">BMDU</span></div>
+        <div class="text-xl font-semibold flex items-center"><img class="w-12 h-12 select-none" src="/src/assets/svgs/favicon.svg"
+                                                                  alt=""><span class="px-2 select-none">BMDU</span></div>
       </router-link>
       <theme-toggler :is-mobile="true" :is-dark="isDark" @toggle-theme="toggleTheme"></theme-toggler>
       <div class="hidden lg:flex items-center space-x-4">

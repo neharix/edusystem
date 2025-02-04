@@ -1,5 +1,5 @@
 <script setup>
-import {defineProps, ref, watch} from "vue";
+import {defineProps, onMounted, ref, watch} from "vue";
 
 const props = defineProps({
   studentsCount: Number,
@@ -72,6 +72,12 @@ watch(props, (newVal, oldVal) => {
 
 })
 
+onMounted(() => {
+  if (props.studentsCount && props.femaleCount && props.maleCount) {
+    radialSeries.value[0] = props.maleCount / props.studentsCount * 100;
+    radialSeries.value[1] = props.femaleCount / props.studentsCount * 100;
+  }
+})
 
 
 </script>
