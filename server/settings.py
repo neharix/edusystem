@@ -30,9 +30,6 @@ LOGGING = {
 }
 
 
-DEV_STATUS = False
-
-
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [

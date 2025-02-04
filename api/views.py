@@ -1,9 +1,7 @@
 import io
 
 import numpy as np
-import openpyxl
 import pandas as pd
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
@@ -285,7 +283,7 @@ def import_excel_data(request: HttpRequest):
 
 @api_view(http_method_names=["GET"])
 def dashboard_api_view(request: HttpRequest):
-    if request.user.is_superuser or settings.DEV_STATUS:
+    if request.user.is_superuser:
         male_graduates = 0
         female_graduates = 0
         for specialization in Specialization.objects.filter(active=True):
