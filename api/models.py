@@ -21,9 +21,6 @@ class HighSchool(models.Model):
     manager = models.OneToOneField(
         Profile, on_delete=models.SET_NULL, null=True, blank=True
     )
-    faculties = models.ManyToManyField("Faculty", blank=True)
-    departments = models.ManyToManyField("Department", blank=True)
-    specializations = models.ManyToManyField("Specialization", blank=True)
     active = models.BooleanField(default=False)
     lat = models.FloatField(blank=True, default=37.95)
     lng = models.FloatField(blank=True, default=58.38)
@@ -41,6 +38,14 @@ class Faculty(models.Model):
         return self.name
 
 
+class HighSchoolFaculty(models.Model):
+    high_school = models.ForeignKey("HighSchool", on_delete=models.CASCADE)
+    faculty = models.ForeignKey("Faculty", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.faculty.name
+
+
 class Department(models.Model):
     name = models.CharField(max_length=500)
     abbreviation = models.CharField(max_length=100)
@@ -48,6 +53,16 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class FacultyDepartment(models.Model):
+    high_school_faculty = models.ForeignKey(
+        "HighSchoolFaculty", on_delete=models.CASCADE
+    )
+    department = models.ForeignKey("Department", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.department.name
 
 
 class Classificator(models.Model):
@@ -83,6 +98,16 @@ class Specialization(models.Model):
         return self.name
 
 
+class DepartmentSpecialization(models.Model):
+    faculty_department = models.ForeignKey(
+        "FacultyDepartment", on_delete=models.CASCADE
+    )
+    specialization = models.ForeignKey("Specialization", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.specialization.name
+
+
 class Student(models.Model):
     class Gender(models.TextChoices):
         MALE = "M", "Oglan"
@@ -113,7 +138,7 @@ class Student(models.Model):
         "Region", on_delete=models.SET_NULL, null=True, blank=True
     )
     specialization = models.ForeignKey(
-        "Specialization", on_delete=models.SET_NULL, null=True, blank=True
+        "DepartmentSpecialization", on_delete=models.SET_NULL, null=True, blank=True
     )
     birth_date = models.DateField(default=datetime.date(1970, 1, 1))
     admission_date = models.DateField()

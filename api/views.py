@@ -25,8 +25,11 @@ from .models import (
     Country,
     Degree,
     Department,
+    DepartmentSpecialization,
     Faculty,
+    FacultyDepartment,
     HighSchool,
+    HighSchoolFaculty,
     Nationality,
     Profile,
     Region,
@@ -37,6 +40,7 @@ from .serializers import (
     ClassificatorSerializer,
     DegreeSerializer,
     DepartmentSerializer,
+    FacultySerializer,
     HighSchoolSerializer,
     NationalitySerializer,
     ProfileSerializer,
@@ -286,13 +290,17 @@ def dashboard_api_view(request: HttpRequest):
         female_graduates = 0
         for specialization in Specialization.objects.filter(active=True):
             male_graduates += Student.objects.filter(
-                specialization=specialization,
+                specialization=DepartmentSpecialization.objects.get(
+                    specialization=specialization
+                ),
                 study_year=specialization.degree.duration,
                 gender="M",
                 active=True,
             ).count()
             female_graduates += Student.objects.filter(
-                specialization=specialization,
+                specialization=DepartmentSpecialization.objects.get(
+                    specialization=specialization
+                ),
                 study_year=specialization.degree.duration,
                 gender="F",
                 active=True,
@@ -338,12 +346,14 @@ def dashboard_api_view(request: HttpRequest):
         high_school = HighSchool.objects.get(manager__user=request.user)
         return Response(
             {
-                "faculties_count": high_school.faculties.filter(active=True).count(),
-                "departments_count": high_school.departments.filter(
-                    active=True
+                "faculties_count": HighSchoolFaculty.objects.filter(
+                    high_school=high_school
                 ).count(),
-                "specializations_count": high_school.specializations.filter(
-                    active=True
+                "departments_count": FacultyDepartment.objects.filter(
+                    high_school_faculty__high_school=high_school
+                ).count(),
+                "specializations_count": DepartmentSpecialization.objects.filter(
+                    faculty_department__high_school_faculty__high_school=high_school
                 ).count(),
                 # FIXME
                 "nationalities_count": Nationality.objects.all().count(),
@@ -448,7 +458,92 @@ def get_high_school_with_additional_data_api_view(request: HttpRequest):
                 }
             )
         return Response(response)
-    return Response({"detail": "Permission denied"})
+    return Response({"detail": "Permission denied"}, status=403)
+
+
+@api_view(http_method_names=["GET"])
+def get_high_school_about_api_view(request: HttpRequest, high_school_id: int):
+    if HighSchool.objects.filter(id=high_school_id).exists():
+        high_school = HighSchool.objects.get(id=high_school_id)
+    else:
+        return Response({"detail": "High school doesn't exist"}, status=404)
+    return Response(
+        {
+            "students_count": Student.objects.filter(
+                active=True, high_school=high_school
+            ).count(),
+            "male_students_count": Student.objects.filter(
+                gender="M", high_school=high_school, active=True
+            ).count(),
+            "female_students_count": Student.objects.filter(
+                gender="F", high_school=high_school, active=True
+            ).count(),
+            "admissions": [
+                {
+                    "year": year,
+                    "male_students_count": Student.objects.filter(
+                        high_school=high_school,
+                        gender="M",
+                        admission_date__year=year,
+                        active=True,
+                    ).count(),
+                    "female_students_count": Student.objects.filter(
+                        high_school=high_school,
+                        gender="F",
+                        admission_date__year=year,
+                        active=True,
+                    ).count(),
+                }
+                for year in range(ADMISSION_START_RANGE, timezone.now().year + 1)
+            ],
+            "students_count_by_regions": [
+                {
+                    "region": region.name,
+                    "students_count": Student.objects.filter(
+                        high_school=high_school,
+                        region=region,
+                        active=True,
+                    ).count(),
+                }
+                for region in Region.objects.all()
+            ],
+        }
+    )
+
+
+@api_view(http_method_names=["GET"])
+def get_high_school_faculties_api_view(request: HttpRequest, high_school_id: int):
+    if HighSchool.objects.filter(id=high_school_id).exists():
+        high_school = HighSchool.objects.get(id=high_school_id)
+    else:
+        return Response({"detail": "High school doesn't exist"}, status=404)
+    high_school_faculty_identificators = [
+        high_school_faculty.faculty.id
+        for high_school_faculty in HighSchoolFaculty.objects.filter(
+            high_school=high_school
+        )
+    ]
+    return Response(
+        FacultySerializer(
+            Faculty.objects.filter(id__in=high_school_faculty_identificators), many=True
+        ).data
+    )
+
+
+@api_view(http_method_names=["GET"])
+def remove_faculty_from_high_school_api_view(
+    request: HttpRequest, high_school_id: int, faculty_id: int
+):
+    if HighSchool.objects.filter(id=high_school_id).exists():
+        high_school = HighSchool.objects.get(id=high_school_id)
+    else:
+        return Response({"detail": "High school doesn't exist"}, status=404)
+    if Faculty.objects.filter(id=faculty_id).exists():
+        faculty = Faculty.objects.get(id=faculty_id)
+    else:
+        return Response({"detail": "Faculty doesn't exist"}, status=404)
+    HighSchoolFaculty.objects.get(high_school=high_school, faculty=faculty).delete()
+    return Response({"detail": "Success"})
 
 
 class HighSchoolListAPIView(ListAPIView):
@@ -459,6 +554,71 @@ class HighSchoolListAPIView(ListAPIView):
 class HighSchoolRetrieveDestroyAPIView(RetrieveDestroyAPIView):
     queryset = HighSchool.objects.all()
     serializer_class = HighSchoolSerializer
+    lookup_field = "id"
+
+    def delete(self, request: HttpRequest, id: int):
+        instance = self.get_object()
+        instance.active = False
+        instance.save()
+        return Response({"detail": "Success"})
+
+
+# Faculty API views
+
+
+@api_view(http_method_names=["GET"])
+def get_faculties_with_additional_data_api_view(request: HttpRequest):
+    if request.user.is_superuser:
+        faculties = Faculty.objects.filter(active=True)
+        response = []
+        for faculty in faculties:
+            male_count, female_count = 0, 0
+            for h_faculty in HighSchoolFaculty.objects.filter(faculty=faculty):
+                male_count += Student.objects.filter(
+                    specialization__faculty_department__high_school_faculty__faculty=faculty,
+                    gender="M",
+                ).count()
+                female_count += Student.objects.filter(
+                    specialization__faculty_department__high_school_faculty__faculty=faculty,
+                    gender="F",
+                ).count()
+            response.append(
+                {
+                    "id": faculty.id,
+                    "name": faculty.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+    return Response({"detail": "Permission denied"}, status=403)
+
+
+@api_view(http_method_names=["PUT"])
+@validate_payload(keys=["faculty_name", "abbreviation"])
+def put_faculty_api_view(request: HttpRequest, faculty_id: int):
+    if Faculty.objects.filter(id=faculty_id).exists():
+        faculty = Faculty.objects.get(id=faculty_id)
+    else:
+        return Response({"detail": "Faculty doesn't exist"}, status=404)
+
+    faculty.name = request.data["faculty_name"]
+    faculty.abbreviation = request.data["abbreviation"]
+    faculty.save()
+
+    return Response({"detail": "Success", "id": faculty.id})
+
+
+class FacultyListCreateAPIView(ListCreateAPIView):
+    queryset = Faculty.objects.all()
+    serializer_class = FacultySerializer
+    lookup_field = "id"
+
+
+class FacultyRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Faculty.objects.all()
+    serializer_class = FacultySerializer
     lookup_field = "id"
 
     def delete(self, request: HttpRequest, id: int):

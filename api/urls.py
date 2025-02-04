@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -11,6 +12,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("user/", get_user_data, name="user-data"),
     # Special routes
+    path("admin/", admin.site.urls),
     path(
         "profiles/<int:id>/", ProfileRetrieveApiView.as_view(), name="profile-retrieve"
     ),
@@ -28,11 +30,43 @@ urlpatterns = [
         get_high_school_with_additional_data_api_view,
         name="get-high-school-with-additional-data",
     ),
+    path(
+        "high-school-about/<int:high_school_id>/",
+        get_high_school_about_api_view,
+        name="get-high-school-about-api-view",
+    ),
+    path(
+        "high-school/<int:high_school_id>/faculty/<int:faculty_id>/remove/",
+        remove_faculty_from_high_school_api_view,
+        name="remove-faculty-from-high-school-api-view",
+    ),
+    path(
+        "high-school-faculties/<int:high_school_id>/",
+        get_high_school_faculties_api_view,
+        name="get-high-school-faculties",
+    ),
     path("high-schools/", HighSchoolListAPIView.as_view(), name="high-school-list"),
     path(
         "high-schools/<int:id>/",
         HighSchoolRetrieveDestroyAPIView.as_view(),
         name="high-school-update-destroy",
+    ),
+    # Faculty routes
+    path(
+        "faculties-with-additional/",
+        get_faculties_with_additional_data_api_view,
+        name="get-faculties-with-additional-data",
+    ),
+    path("update-faculty/<int:faculty_id>/", put_faculty_api_view),
+    path(
+        "faculties/",
+        FacultyListCreateAPIView.as_view(),
+        name="faculty-list-create",
+    ),
+    path(
+        "faculties/<int:id>/",
+        FacultyRetrieveUpdateDestroyAPIView.as_view(),
+        name="faculty-retrieve-update-destroy",
     ),
     # Department routes
     path(

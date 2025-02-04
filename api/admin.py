@@ -18,11 +18,29 @@ class HighSchoolAdmin(admin.ModelAdmin):
     search_fields = ["name", "abbreviation"]
 
 
+@admin.register(HighSchoolFaculty)
+class HighSchoolFacultyAdmin(admin.ModelAdmin):
+    list_display = ["high_school", "faculty", "id"]
+    readonly_fields = ("id",)
+
+
 @admin.register(Faculty)
 class FacultyAdmin(admin.ModelAdmin):
     list_display = ["name", "id", "abbreviation", "active"]
     readonly_fields = ("id",)
     search_fields = ["name", "abbreviation"]
+
+
+@admin.register(FacultyDepartment)
+class FacultyDepartmentAdmin(admin.ModelAdmin):
+    list_display = ["high_school_faculty", "department", "id"]
+    readonly_fields = ("id",)
+
+
+@admin.register(DepartmentSpecialization)
+class DepartmentSpecializationAdmin(admin.ModelAdmin):
+    list_display = ["faculty_department", "specialization", "id"]
+    readonly_fields = ("id",)
 
 
 @admin.register(Department)
@@ -34,7 +52,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Specialization)
 class SpecializationAdmin(admin.ModelAdmin):
-    list_display = ["name", "id", "abbreviation", "degree", "active"]
+    list_display = ["name", "id", "abbreviation", "active"]
     readonly_fields = ("id",)
     search_fields = ["name", "abbreviation"]
 
