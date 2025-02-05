@@ -20,7 +20,7 @@ watch(props, (newVal, oldVal) => {
 const {isModalOpen, openModal, header, context} = useConfirmModal();
 const {toasts, addToast} = useToast();
 const highSchoolsStore = useHighSchoolsStore();
-const {deleteStatus, updateStatus} = storeToRefs(highSchoolsStore);
+const {deleteStatus, updateStatus, createStatus} = storeToRefs(highSchoolsStore);
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -156,6 +156,15 @@ onMounted(() => {
     }
   }
   updateStatus.value = null;
+
+  if (createStatus.value) {
+    if (createStatus.value === 'success') {
+      addToast('Ýokary okuw mekdebi üstünlikli hasaba alyndy', 'success');
+    } else if (createStatus.value === 'error') {
+      addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
+    }
+  }
+  createStatus.value = null;
 })
 
 

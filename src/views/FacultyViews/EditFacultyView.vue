@@ -5,7 +5,7 @@
     <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4">
       <div class="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 gap-4">
         <div class="lg:col-span-2 md:col-span-2 lg:col-span-1">
-          <Field name="faculty_name" type="text" id="faculty_name" v-model="facultyName"
+          <Field name="name" type="text" id="name" v-model="facultyName"
                  class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
                  :class="{ 'is-invalid': errors.name }"
                  placeholder="Fakultetiň ady"></Field>
@@ -55,13 +55,13 @@ const facultyAbbreviation = ref('');
 
 
 const schema = Yup.object().shape({
-  faculty_name: Yup.string().trim().required('Fakultetiň ady hökman girizilmeli'),
+  name: Yup.string().trim().required('Fakultetiň ady hökman girizilmeli'),
   abbreviation: Yup.string().trim().required('Fakultetiň gysgaltmasy hökman girizilmeli'),
 });
 
 function onSubmit(values, {setErrors}) {
-  const {faculty_name, abbreviation} = values;
-  return facultiesStore.put(route.params.id, {faculty_name, abbreviation}).then(() => {
+  const {name, abbreviation} = values;
+  return facultiesStore.put(route.params.id, {name, abbreviation}).then(() => {
     router.go(-1);
   }).catch(error => setErrors({apiError: error}));
 };

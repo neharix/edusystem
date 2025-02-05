@@ -27,22 +27,22 @@ const breadcrumbPaths = [
   </div>
   <div class="flex md:flex-row flex-col mb-4 md:space-x-2 space-x-0">
     <router-link :to="`/high-schools/view/${route.params.id}`" v-slot="{ isExactActive }">
-      <p class="text-[0.8rem] px-4 py-2 my-2 rounded-lg text-center" :class="{'link-active': isExactActive,
+      <p class="text-[0.8rem] px-4 py-2 my-2 rounded-lg text-center select-none" :class="{'link-active': isExactActive,
          'link-inactive-primary': !isExactActive }">
         ÝOM barada</p>
     </router-link>
     <router-link :to="`/high-schools/view/${route.params.id}/faculties`" v-slot="{ isExactActive }">
-      <p class="text-[0.8rem] px-4 py-2 my-2 rounded-lg text-center" :class="{'link-active': isExactActive,
+      <p class="text-[0.8rem] px-4 py-2 my-2 rounded-lg text-center select-none" :class="{'link-active': isExactActive,
          'link-inactive-primary': !isExactActive }">
         Fakultetler</p>
     </router-link>
     <router-link :to="`/high-schools/view/${route.params.id}/departments`" v-slot="{ isExactActive }">
-      <p class="text-[0.8rem] px-4 py-2 my-2 rounded-lg text-center" :class="{'link-active': isExactActive,
+      <p class="text-[0.8rem] px-4 py-2 my-2 rounded-lg text-center select-none" :class="{'link-active': isExactActive,
          'link-inactive-primary': !isExactActive }">
         Kafedralar</p>
     </router-link>
     <router-link :to="`/high-schools/view/${route.params.id}/specializations`" v-slot="{ isExactActive }">
-      <p class="text-[0.8rem] px-4 py-2 my-2 rounded-lg text-center" :class="{'link-active': isExactActive,
+      <p class="text-[0.8rem] px-4 py-2 my-2 rounded-lg text-center select-none" :class="{'link-active': isExactActive,
          'link-inactive-primary': !isExactActive }">
         Hünarler</p>
     </router-link>

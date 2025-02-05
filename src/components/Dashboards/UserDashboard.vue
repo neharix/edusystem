@@ -10,7 +10,7 @@ const {data} = useDashboard();
 
 <template>
   <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
-    <grid-cell label="Fakultetler" :data-value="data.faculties_count"
+    <grid-cell link="/faculties" label="Fakultetler" :data-value="data.faculties_count"
                icon-bg-class="bg-green-200 dark:bg-green-500/75">
       <svg class="w-6 h-8 stroke-green-500 dark:stroke-green-900"
            xmlns="http://www.w3.org/2000/svg"
@@ -26,7 +26,7 @@ const {data} = useDashboard();
         />
       </svg>
     </grid-cell>
-    <grid-cell label="Kafedralar" :data-value="data.departments_count"
+    <grid-cell link="/departments" label="Kafedralar" :data-value="data.departments_count"
                icon-bg-class="bg-yellow-200 dark:bg-yellow-500/75">
       <svg class="w-6 h-8 stroke-yellow-500 dark:stroke-yellow-900"
            xmlns="http://www.w3.org/2000/svg"

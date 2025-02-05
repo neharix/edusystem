@@ -20,7 +20,7 @@ watch(props, (newVal, oldVal) => {
 const {isModalOpen, openModal, header, context} = useConfirmModal();
 const {toasts, addToast} = useToast();
 const facultiesStore = useFacultiesStore();
-const {deleteStatus, updateStatus} = storeToRefs(facultiesStore);
+const {deleteStatus, updateStatus, createStatus} = storeToRefs(facultiesStore);
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -156,6 +156,15 @@ onMounted(() => {
     }
   }
   updateStatus.value = null;
+
+  if (createStatus.value) {
+    if (createStatus.value === 'success') {
+      addToast('Fakultet üstünlikli hasaba alyndy', 'success');
+    } else if (createStatus.value === 'error') {
+      addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
+    }
+  }
+  createStatus.value = null;
 })
 
 
@@ -252,7 +261,7 @@ window.addEventListener("click", onClickOutside);
             class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
             @click="sort('name')"
           >
-            FAKULTETLER
+            FAKULTET
             <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲

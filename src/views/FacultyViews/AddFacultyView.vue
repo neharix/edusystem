@@ -17,14 +17,14 @@
           <Field name="abbreviation" type="text" id="abbreviation"
                  class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
                  :class="{ 'is-invalid': errors.abbreviation }"
-                 placeholder="Ýokary okuw mekdebiniň gysgaltmasy"></Field>
+                 placeholder="Fakultetiň gysgaltmasy"></Field>
           <div class="invalid-feedback select-none text-red-500 my-2 text-sm">{{ errors.abbreviation }}
           </div>
         </div>
       </div>
       <div class="flex flex-wrap justify-center md:justify-end lg:justify-end">
         <button :disabled="isSubmitting"
-                class="flex w-50 px-4 py-2 my-2 justify-center rounded-lg border-none dark:border-violet-500/50 border-1 bg-gradient-to-r from-blue-400 to-blue-500 dark:from-violet-600 dark:to-violet-500 text-white hover:shadow-lg hover:shadow-blue-300/50 hover:ease-in ease-out duration-200 dark:hover:shadow-violet-500/50">
+                class="flex w-50 px-4 py-2 my-2 justify-center rounded-lg border-none dark:border-violet-500/50 border-1 bg-gradient-to-r from-blue-400 to-blue-500 dark:from-violet-600 dark:to-violet-500 text-white hover:shadow-lg hover:shadow-blue-300/50 hover:ease-in ease-out duration-200 dark:hover:shadow-violet-500/50 select-none">
           <the-spinner :class="{ hidden: !isSubmitting }"></the-spinner>
           <span :class="{ hidden: isSubmitting }">Hasaba al</span>
         </button>

@@ -140,7 +140,6 @@ const router = createRouter({
       meta: {
         layout: 'MainLayout',
         title: "Fakultetler",
-        adminRequired: true,
       },
       children: [
         {
@@ -150,9 +149,8 @@ const router = createRouter({
           meta: {
             layout: 'MainLayout',
             title: "Fakultetler",
-            adminRequired: true,
           },
-          beforeEnter: guards.authGuard,
+          beforeEnter: guards.defaultGuard,
         },
         {
           path: 'add',
@@ -178,6 +176,50 @@ const router = createRouter({
         }
       ],
     },
+    {
+      path: '/departments',
+      name: 'departments',
+      component: () => import('../views/DepartmentViews/Departments.vue'),
+      meta: {
+        layout: 'MainLayout',
+        title: "Kafedralar",
+      },
+      children: [
+        {
+          path: '',
+          name: 'departments-list',
+          component: () => import('../views/DepartmentViews/DepartmentsListView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Kafedralar",
+          },
+          beforeEnter: guards.defaultGuard,
+        },
+        {
+          path: 'add',
+          name: 'add-department',
+          component: () => import('../views/DepartmentViews/AddDepartmentView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Kafedra goşmak',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'edit/:id',
+          name: 'edit-department',
+          component: () => import('../views/DepartmentViews/EditDepartmentView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Kafedrany üýtgetmek',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        }
+      ],
+    },
+
     {
       path: '/secondary-schools',
       name: 'secondary-schools',
