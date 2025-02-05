@@ -41,9 +41,14 @@ urlpatterns = [
         name="remove-faculty-from-high-school-api-view",
     ),
     path(
-        "high-school-faculties/<int:high_school_id>/",
+        "high-school-faculties/<int:high_school_id>/<str:mode>/",
         get_high_school_faculties_api_view,
         name="get-high-school-faculties",
+    ),
+    path(
+        "create-high-school-faculties/",
+        create_high_school_faculty_api_view,
+        name="create-high-school-faculties-api-view",
     ),
     path("high-schools/", HighSchoolListAPIView.as_view(), name="high-school-list"),
     path(
@@ -57,7 +62,6 @@ urlpatterns = [
         get_faculties_with_additional_data_api_view,
         name="get-faculties-with-additional-data",
     ),
-    path("update-faculty/<int:faculty_id>/", put_faculty_api_view),
     path(
         "faculties/",
         FacultyListCreateAPIView.as_view(),
@@ -69,6 +73,11 @@ urlpatterns = [
         name="faculty-retrieve-update-destroy",
     ),
     # Department routes
+    path(
+        "departments-with-additional/",
+        get_departments_with_additional_data_api_view,
+        name="get-departments-with-additional-data",
+    ),
     path(
         "departments/",
         DepartmentListCreateAPIView.as_view(),

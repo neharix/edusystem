@@ -32,7 +32,7 @@ class HighSchool(models.Model):
 class Faculty(models.Model):
     name = models.CharField(max_length=500)
     abbreviation = models.CharField(max_length=100)
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -49,7 +49,7 @@ class HighSchoolFaculty(models.Model):
 class Department(models.Model):
     name = models.CharField(max_length=500)
     abbreviation = models.CharField(max_length=100)
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -89,7 +89,7 @@ class Specialization(models.Model):
     classificator = models.ForeignKey(
         "Classificator", on_delete=models.SET_NULL, null=True, blank=True
     )
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
     degree = models.ForeignKey(
         "Degree", on_delete=models.SET_NULL, null=True, blank=True
     )

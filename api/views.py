@@ -510,7 +510,11 @@ def get_high_school_about_api_view(request: HttpRequest, high_school_id: int):
 
 
 @api_view(http_method_names=["GET"])
-def get_high_school_faculties_api_view(request: HttpRequest, high_school_id: int):
+def get_high_school_faculties_api_view(
+    request: HttpRequest, high_school_id: int, mode: str
+):
+    if not mode in ["exc", "inc"]:
+        return Response({"detail": "Invalid mode"}, status=400)
     if HighSchool.objects.filter(id=high_school_id).exists():
         high_school = HighSchool.objects.get(id=high_school_id)
     else:
@@ -521,11 +525,20 @@ def get_high_school_faculties_api_view(request: HttpRequest, high_school_id: int
             high_school=high_school
         )
     ]
-    return Response(
-        FacultySerializer(
-            Faculty.objects.filter(id__in=high_school_faculty_identificators), many=True
-        ).data
-    )
+    if mode == "inc":
+        return Response(
+            FacultySerializer(
+                Faculty.objects.filter(id__in=high_school_faculty_identificators),
+                many=True,
+            ).data
+        )
+    elif mode == "exc":
+        return Response(
+            FacultySerializer(
+                Faculty.objects.exclude(id__in=high_school_faculty_identificators),
+                many=True,
+            ).data
+        )
 
 
 @api_view(http_method_names=["GET"])
@@ -566,18 +579,18 @@ class HighSchoolRetrieveDestroyAPIView(RetrieveDestroyAPIView):
 
 @api_view(http_method_names=["GET"])
 def get_faculties_with_additional_data_api_view(request: HttpRequest):
+    response = []
     if request.user.is_superuser:
         faculties = Faculty.objects.filter(active=True)
-        response = []
         for faculty in faculties:
             male_count, female_count = 0, 0
             for h_faculty in HighSchoolFaculty.objects.filter(faculty=faculty):
                 male_count += Student.objects.filter(
-                    specialization__faculty_department__high_school_faculty__faculty=faculty,
+                    specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="M",
                 ).count()
                 female_count += Student.objects.filter(
-                    specialization__faculty_department__high_school_faculty__faculty=faculty,
+                    specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="F",
                 ).count()
             response.append(
@@ -590,22 +603,55 @@ def get_faculties_with_additional_data_api_view(request: HttpRequest):
                 }
             )
         return Response(response)
-    return Response({"detail": "Permission denied"}, status=403)
-
-
-@api_view(http_method_names=["PUT"])
-@validate_payload(keys=["faculty_name", "abbreviation"])
-def put_faculty_api_view(request: HttpRequest, faculty_id: int):
-    if Faculty.objects.filter(id=faculty_id).exists():
-        faculty = Faculty.objects.get(id=faculty_id)
     else:
-        return Response({"detail": "Faculty doesn't exist"}, status=404)
+        high_school = HighSchool.objects.get(manager__user=request.user)
+        faculties = [
+            faculty.faculty
+            for faculty in HighSchoolFaculty.objects.filter(high_school=high_school)
+        ]
+        for faculty in faculties:
+            male_count, female_count = 0, 0
+            for h_faculty in HighSchoolFaculty.objects.filter(
+                high_school=high_school, faculty=faculty
+            ):
+                male_count += Student.objects.filter(
+                    specialization__faculty_department__high_school_faculty=h_faculty,
+                    gender="M",
+                ).count()
+                female_count += Student.objects.filter(
+                    specialization__faculty_department__high_school_faculty=h_faculty,
+                    gender="F",
+                ).count()
+            response.append(
+                {
+                    "id": faculty.id,
+                    "name": faculty.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
 
-    faculty.name = request.data["faculty_name"]
-    faculty.abbreviation = request.data["abbreviation"]
-    faculty.save()
 
-    return Response({"detail": "Success", "id": faculty.id})
+@api_view(http_method_names=["POST"])
+@validate_payload(keys=["high_school", "faculties"])
+def create_high_school_faculty_api_view(request: HttpRequest):
+    if HighSchool.objects.filter(id=request.data["high_school"]).exists():
+        high_school = HighSchool.objects.get(id=request.data["high_school"])
+    else:
+        return Response({"detail": "High school doesn't exist"}, status=404)
+
+    for faculty_id in request.data["faculties"]:
+        if Faculty.objects.filter(id=faculty_id).exists():
+            faculty = Faculty.objects.get(id=faculty_id)
+            if not HighSchoolFaculty.objects.filter(
+                high_school=high_school, faculty=faculty
+            ).exists():
+                HighSchoolFaculty.objects.create(
+                    high_school=high_school, faculty=faculty
+                )
+    return Response({"detail": "Success"})
 
 
 class FacultyListCreateAPIView(ListCreateAPIView):
@@ -627,6 +673,63 @@ class FacultyRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 
 # Department API views
+
+
+@api_view(http_method_names=["GET"])
+def get_departments_with_additional_data_api_view(request: HttpRequest):
+    response = []
+    if request.user.is_superuser:
+        departments = Department.objects.filter(active=True)
+        for department in departments:
+            male_count, female_count = 0, 0
+            for f_department in FacultyDepartment.objects.filter(department=department):
+                male_count += Student.objects.filter(
+                    specialization__faculty_department=f_department,
+                    gender="M",
+                ).count()
+                female_count += Student.objects.filter(
+                    specialization__faculty_department=f_department,
+                    gender="F",
+                ).count()
+            response.append(
+                {
+                    "id": department.id,
+                    "name": department.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+    else:
+        # high_school = HighSchool.objects.get(manager__user=request.user)
+        # faculties = [
+        #     faculty.faculty
+        #     for faculty in HighSchoolFaculty.objects.filter(high_school=high_school)
+        # ]
+        # for faculty in faculties:
+        #     male_count, female_count = 0, 0
+        #     for h_faculty in HighSchoolFaculty.objects.filter(
+        #         high_school=high_school, faculty=faculty
+        #     ):
+        #         male_count += Student.objects.filter(
+        #             specialization__faculty_department__high_school_faculty=h_faculty,
+        #             gender="M",
+        #         ).count()
+        #         female_count += Student.objects.filter(
+        #             specialization__faculty_department__high_school_faculty=h_faculty,
+        #             gender="F",
+        #         ).count()
+        #     response.append(
+        #         {
+        #             "id": faculty.id,
+        #             "name": faculty.name,
+        #             "students_count": male_count + female_count,
+        #             "male_count": male_count,
+        #             "female_count": female_count,
+        #         }
+        #     )
+        return Response(response)
 
 
 class DepartmentListCreateAPIView(ListCreateAPIView):
