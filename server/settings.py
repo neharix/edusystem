@@ -30,6 +30,36 @@ DEBUG = True
 # }
 
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "INFO",  # Уровень логирования
+            "class": "logging.FileHandler",
+            "filename": "requests.log",  # Файл для логирования
+            "formatter": "verbose",  # Форматирование логов
+        },
+    },
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {message}",
+            "style": "{",
+        },
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": [
+                "file"
+            ],  # Указываем, что будет использоваться хендлер для файла
+            "level": "INFO",  # Уровень логирования
+            "propagate": True,
+        },
+    },
+}
+
+REST_TITLE = "BMDU API"
+
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
@@ -54,6 +84,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "api.middleware.RequestLoggerMiddleware",
+    "api.middleware.DrfTitleMiddleware",
 ]
 
 ROOT_URLCONF = "server.urls"
@@ -149,8 +181,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = "static/"
-# STATIC_URL = "/api/static/"
+# STATIC_URL = "static/"
+STATIC_URL = "/api/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = "/media/"
