@@ -1,3 +1,4 @@
+import "./assets/css/fonts.css";
 import "./assets/css/tailwind.css";
 import "./assets/css/base.css";
 
