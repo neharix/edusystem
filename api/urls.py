@@ -46,9 +46,9 @@ urlpatterns = [
         name="get-high-school-faculties",
     ),
     path(
-        "create-high-school-faculties/",
-        create_high_school_faculty_api_view,
-        name="create-high-school-faculties-api-view",
+        "high-school-departments/<int:high_school_id>/<str:mode>/",
+        get_high_school_departments_api_view,
+        name="get-high-school-departments",
     ),
     path("high-schools/", HighSchoolListAPIView.as_view(), name="high-school-list"),
     path(
@@ -63,6 +63,11 @@ urlpatterns = [
         name="get-faculties-with-additional-data",
     ),
     path(
+        "remove/faculty-department/<int:faculty_department_id>/",
+        remove_department_from_faculty_api_view,
+        name="remove-department-from-faculty-api-view",
+    ),
+    path(
         "faculties/",
         FacultyListCreateAPIView.as_view(),
         name="faculty-list-create",
@@ -71,6 +76,11 @@ urlpatterns = [
         "faculties/<int:id>/",
         FacultyRetrieveUpdateDestroyAPIView.as_view(),
         name="faculty-retrieve-update-destroy",
+    ),
+    path(
+        "create-high-school-faculties/",
+        create_high_school_faculty_api_view,
+        name="create-high-school-faculties-api-view",
     ),
     # Department routes
     path(
@@ -87,6 +97,11 @@ urlpatterns = [
         "departments/<int:id>/",
         DepartmentRetrieveUpdateDestroyAPIView.as_view(),
         name="department-retrieve-update-destroy",
+    ),
+    path(
+        "create-faculty-departments/",
+        create_faculty_departments_api_view,
+        name="create-faculty-departments-api-view",
     ),
     # Degree routes
     path(
@@ -111,6 +126,11 @@ urlpatterns = [
         name="classificator-retrieve-update-destroy",
     ),
     # Specialization routes
+    path(
+        "specializations-with-additional/",
+        get_specializations_with_additional_data_api_view,
+        name="get-specializations-with-additional-data",
+    ),
     path(
         "specializations/",
         SpecializationListCreateAPIView.as_view(),
