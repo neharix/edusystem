@@ -151,7 +151,7 @@ watch(removeStatus, (newVal, oldVal) => {
 onMounted(() => {
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
-      addToast('Ýokary okuw mekdebi üstünlikli üýtgedildi', 'success');
+      addToast('Fakultet üstünlikli üýtgedildi', 'success');
     } else if (updateStatus.value === 'error') {
       addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }

@@ -219,7 +219,49 @@ const router = createRouter({
         }
       ],
     },
-
+    {
+      path: '/specializations',
+      name: "specializations",
+      component: () => import('../views/SpecializationViews/Specializations.vue'),
+      meta: {
+        layout: 'MainLayout',
+        title: "Hünärler",
+      },
+      children: [
+        {
+          path: '',
+          name: 'specializations-list',
+          component: () => import('../views/SpecializationViews/SpecializationsListView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Hünarler",
+          },
+          beforeEnter: guards.defaultGuard,
+        },
+        {
+          path: 'add',
+          name: 'add-specialization',
+          component: () => import('../views/SpecializationViews/AddSpecializationView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Hünär goşmak',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'edit/:id',
+          name: 'edit-specialization',
+          component: () => import('../views/SpecializationViews/EditSpecializationView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Hünäri üýtgetmek',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        }
+      ],
+    },
     {
       path: '/secondary-schools',
       name: 'secondary-schools',
@@ -234,7 +276,7 @@ const router = createRouter({
     {
       path: '/403',
       name: 'page-403',
-      component: () => import('../views/errors/Page403.vue'),
+      component: () => import('@/views/Errors/Page403.vue'),
       meta: {
         layout: 'EmptyLayout',
         title: "403 | Rugsat ýok",
@@ -242,6 +284,10 @@ const router = createRouter({
       },
       beforeEnter: guards.defaultGuard,
     },
+    {
+      path: '/:pathMatch(.*)*',
+      component: () => import('../views/Errors/Page404.vue'),
+    }
   ],
 });
 

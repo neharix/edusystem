@@ -205,7 +205,11 @@ export const useDepartmentsStore =  defineStore({
     departmentsAdditional: [],
     createStatus: null,
     deleteStatus: null,
+    removeStatus: null,
     updateStatus: null,
+    createFacultyDepartmentsStatus: null,
+    highSchoolDepartments: [],
+    highSchoolExcDepartments: [],
   }),
   actions: {
     async get(id) {
@@ -257,5 +261,140 @@ export const useDepartmentsStore =  defineStore({
         this.updateStatus = 'error';
       }
     },
+    async getHighSchoolDepartments(highSchoolId) {
+      try {
+        const response = await axiosInstance.get(`/high-school-departments/${highSchoolId}/inc/`);
+        this.highSchoolDepartments = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getHighSchoolExcDepartments(highSchoolId) {
+      try {
+        const response = await axiosInstance.get(`/high-school-departments/${highSchoolId}/exc/`);
+        this.highSchoolExcDepartments = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async createFacultyDepartment(data) {
+      try {
+        const response = await axiosInstance.post("/create-faculty-departments/", data);
+        this.createFacultyDepartmentsStatus = 'success';
+      } catch (error) {
+        this.createFacultyDepartmentsStatus = 'error';
+      }
+    },
+    async removeDepartment(facultyDepartmentId) {
+      try {
+        const response = await axiosInstance.get(`/remove/faculty-department/${facultyDepartmentId}/`);
+        this.removeStatus = 'success';
+      } catch (error) {
+        console.error('Error', error);
+        this.removeStatus = 'error';
+      }
+    }
+  }
+});
+
+
+
+export const useSpecializationsStore =  defineStore({
+  id: 'specilizations',
+  state: () => ({
+    specialization: {},
+    specializations: [],
+    specializationsAdditional: [],
+    createStatus: null,
+    deleteStatus: null,
+    removeStatus: null,
+    updateStatus: null,
+    // createFacultyDepartmentsStatus: null,
+    // highSchoolDepartments: [],
+    // highSchoolExcDepartments: [],
+  }),
+  actions: {
+  //   async get(id) {
+  //     try {
+  //       const response = await axiosInstance.get(`/departments/${id}/`);
+  //       this.department = response.data;
+  //     } catch (error) {
+  //       console.error('Error', error);
+  //     }
+  //   },
+  //   async getAll() {
+  //     try {
+  //       const response = await axiosInstance.get('/departments/');
+  //       this.departments = response.data;
+  //     } catch (error) {
+  //       console.error('Error', error);
+  //     }
+  //   },
+    async getAllAdditional() {
+      try {
+        const response = await axiosInstance.get('/specializations-with-additional/');
+        this.specializationsAdditional = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+  //   async create(data) {
+  //     try {
+  //       const response = await axiosInstance.post('/departments/', data);
+  //       this.createStatus = 'success';
+  //     } catch (error) {
+  //       this.createStatus = 'error';
+  //     }
+  //   },
+    async delete(id) {
+      try {
+        const response = await axiosInstance.delete(`/specializations/${id}/`);
+        this.deleteStatus = 'success';
+      } catch (error) {
+        this.deleteStatus = 'error';
+      }
+    },
+  //   async put(id, data) {
+  //     try {
+  //       const response = await axiosInstance.put(`/departments/${id}/`, data);
+  //       this.updateStatus = 'success';
+  //     } catch (error) {
+  //       console.error('Error', error);
+  //       this.updateStatus = 'error';
+  //     }
+  //   },
+  //   async getHighSchoolDepartments(highSchoolId) {
+  //     try {
+  //       const response = await axiosInstance.get(`/high-school-departments/${highSchoolId}/inc/`);
+  //       this.highSchoolDepartments = response.data;
+  //     } catch (error) {
+  //       console.error('Error', error);
+  //     }
+  //   },
+  //   async getHighSchoolExcDepartments(highSchoolId) {
+  //     try {
+  //       const response = await axiosInstance.get(`/high-school-departments/${highSchoolId}/exc/`);
+  //       this.highSchoolExcDepartments = response.data;
+  //     } catch (error) {
+  //       console.error('Error', error);
+  //     }
+  //   },
+  //   async createFacultyDepartment(data) {
+  //     try {
+  //       const response = await axiosInstance.post("/create-faculty-departments/", data);
+  //       this.createFacultyDepartmentsStatus = 'success';
+  //     } catch (error) {
+  //       this.createFacultyDepartmentsStatus = 'error';
+  //     }
+  //   },
+  //   async removeDepartment(facultyDepartmentId) {
+  //     try {
+  //       const response = await axiosInstance.get(`/remove/faculty-department/${facultyDepartmentId}/`);
+  //       this.removeStatus = 'success';
+  //     } catch (error) {
+  //       console.error('Error', error);
+  //       this.removeStatus = 'error';
+  //     }
+  //   }
   }
 });

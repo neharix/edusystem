@@ -43,7 +43,7 @@ const {data} = useDashboard();
         />
       </svg>
     </grid-cell>
-    <grid-cell label="Hünärler" :data-value="data.specializations_count"
+    <grid-cell link="/specializations" label="Hünärler" :data-value="data.specializations_count"
                icon-bg-class="bg-yellow-200 dark:bg-yellow-500/75">
       <svg class="w-6 h-8 stroke-yellow-500 dark:stroke-yellow-900"
            xmlns="http://www.w3.org/2000/svg"

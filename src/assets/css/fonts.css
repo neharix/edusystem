@@ -1,8 +1,5 @@
-/*@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');*/
-
-
-/* Local */
- @import url('http://127.0.0.1:8000/api/static/fonts/montserrat/init/default.css');
+/*Google Fonts*/
+@import url('@/assets/fonts/montserrat/init/default.css');
 
 /* Production */
-/* @import url('https://bmdu.depder.com/api/static/fonts/montserrat/default.css'); */
+/* @import url('https://bmdu.depder.com/api/static/fonts/montserrat/init/default.css');*/

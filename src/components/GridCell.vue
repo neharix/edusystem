@@ -29,7 +29,7 @@ function cellClicked() {
 
 <template>
   <!-- TODO add router-link like a wrapper for this component -->
-  <div class="bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4" @click="cellClicked">
+  <div class="bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4" :class="{'cursor-pointer': props.link !== ''}" @click="cellClicked">
     <div>
       <div class="text-sm my-2 select-none">
         {{ label }}

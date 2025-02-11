@@ -7,6 +7,7 @@ import useToast from "@/use/useToast.js";
 import {useFacultiesStore, useHighSchoolsStore} from "@/stores/api.store.js";
 import {storeToRefs} from "pinia";
 import router from "@/router/index.js";
+import {useAuthStore} from "@/stores/auth.store.js";
 
 
 const props = defineProps(["data"])
@@ -21,6 +22,7 @@ const {isModalOpen, openModal, header, context} = useConfirmModal();
 const {toasts, addToast} = useToast();
 const facultiesStore = useFacultiesStore();
 const {deleteStatus, updateStatus, createStatus} = storeToRefs(facultiesStore);
+const authStore = useAuthStore();
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -269,6 +271,17 @@ window.addEventListener("click", onClickOutside);
           </th>
           <th
             class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300 text-left text-[0.8rem]"
+            @click="sort('departments_count')"
+            v-if="!authStore.user.is_superuser"
+          >
+            KAFEDRA
+            <span :class="sortColumn === 'departments_count' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                  class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+          </th>
+          <th
+            class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300 text-left text-[0.8rem]"
             @click="sort('students_count')"
           >
             JEMI
@@ -297,7 +310,8 @@ window.addEventListener("click", onClickOutside);
                 ▲
               </span>
           </th>
-          <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]">
+
+          <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]" v-if="authStore.user.is_superuser">
             GURALLAR
           </th>
         </tr>
@@ -313,6 +327,9 @@ window.addEventListener("click", onClickOutside);
               item.name
             }}
           </td>
+          <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]" v-if="!authStore.user.is_superuser">
+            {{ item.departments_count }}
+          </td>
           <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
             {{ item.students_count }}
           </td>
@@ -323,7 +340,7 @@ window.addEventListener("click", onClickOutside);
           <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
             {{ item.female_count }}
           </td>
-          <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+          <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]" v-if="authStore.user.is_superuser">
             <!-- TODO -->
             <div class="w-full flex items-center justify-center">
               <div class="inline-flex rounded-md shadow-xs" role="group">

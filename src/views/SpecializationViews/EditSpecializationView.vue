@@ -69,8 +69,8 @@ function onSubmit(values, {setErrors}) {
 
 
 const breadcrumbPaths = [
-  {path: "/departments", name: "Kafedralar"},
-  {path: "/departments/edit", name: "Üýtgetmek"},
+  {path: "/specializations", name: "Hünärler"},
+  {path: "/specializations/edit", name: "Üýtgetmek", current: true},
 ]
 
 onMounted(() => {

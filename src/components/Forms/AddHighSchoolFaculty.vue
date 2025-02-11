@@ -79,9 +79,9 @@ const onSubmit = () => {
 watch(createHighSchoolFacultiesStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Ýokary okuw mekdebi üstünlikli ýok edildi', 'success');
+      addToast('Fakultet üstünlikli hasaba alyndy', 'success');
     } else if (newVal === 'error') {
-      addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   createHighSchoolFacultiesStatus.value = null;
@@ -140,7 +140,7 @@ watch(createHighSchoolFacultiesStatus, (newVal, oldVal) => {
               :key="option.id"
               @mousedown.prevent="toggleOption(option)"
               :class="{
-            'px-3 py-2 cursor-pointer select-none': true,
+            'px-3 py-2 cursor-pointer select-none transition ease-in duration-200': true,
             'bg-blue-100 text-blue-700 dark:bg-violet-600/25 dark:text-white': selectedIds.has(option.id),
             'hover:bg-blue-50 dark:hover:bg-[#261c52]': !selectedIds.has(option.id),
           }"
