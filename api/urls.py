@@ -50,6 +50,11 @@ urlpatterns = [
         get_high_school_departments_api_view,
         name="get-high-school-departments",
     ),
+    path(
+        "high-school-specializations/<int:high_school_id>/<str:mode>/",
+        get_high_school_specializations_api_view,
+        name="get-high-school-departments",
+    ),
     path("high-schools/", HighSchoolListAPIView.as_view(), name="high-school-list"),
     path(
         "high-schools/<int:id>/",
@@ -87,6 +92,11 @@ urlpatterns = [
         "departments-with-additional/",
         get_departments_with_additional_data_api_view,
         name="get-departments-with-additional-data",
+    ),
+    path(
+        "remove/department-specialization/<int:department_specialization_id>/",
+        remove_specialization_from_department_api_view,
+        name="remove-specialization-from-department-api-view",
     ),
     path(
         "departments/",
@@ -132,9 +142,19 @@ urlpatterns = [
         name="get-specializations-with-additional-data",
     ),
     path(
+        "create-department-specializations/",
+        create_department_specializations_api_view,
+        name="create-department-specializations-api-view",
+    ),
+    path(
         "specializations/",
         SpecializationListCreateAPIView.as_view(),
         name="specialization-list-create",
+    ),
+    path(
+        "update-specialization/<int:id>/",
+        put_specialization_api_view,
+        name="put-specialization-api-view",
     ),
     path(
         "specializations/<int:id>/",

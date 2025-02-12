@@ -588,6 +588,56 @@ def get_high_school_departments_api_view(
 
 
 @api_view(http_method_names=["GET"])
+def get_high_school_specializations_api_view(
+    request: HttpRequest, high_school_id: int, mode: str
+):
+    if not mode in ["exc", "inc"]:
+        return Response({"detail": "Invalid mode"}, status=400)
+    if HighSchool.objects.filter(id=high_school_id).exists():
+        high_school = HighSchool.objects.get(id=high_school_id)
+    else:
+        return Response({"detail": "High school doesn't exist"}, status=404)
+
+    if mode == "inc":
+        return Response(
+            [
+                {
+                    "instance_id": department_specialization.id,
+                    "id": department_specialization.specialization.id,
+                    "name": department_specialization.specialization.name,
+                    "abbreviation": department_specialization.specialization.abbreviation,
+                    "classificator": (
+                        department_specialization.specialization.classificator.name
+                        if department_specialization.specialization.classificator
+                        else "Ýok"
+                    ),
+                    "active": department_specialization.specialization.active,
+                    "department": department_specialization.faculty_department.department.name,
+                }
+                for department_specialization in DepartmentSpecialization.objects.filter(
+                    faculty_department__high_school_faculty__high_school=high_school
+                )
+            ]
+        )
+
+    elif mode == "exc":
+        high_school_specialization_identificators = [
+            department_specialization.specialization.id
+            for department_specialization in DepartmentSpecialization.objects.filter(
+                faculty_department__high_school_faculty__high_school=high_school
+            )
+        ]
+        return Response(
+            SpecializationSerializer(
+                Specialization.objects.exclude(
+                    id__in=high_school_specialization_identificators
+                ).filter(active=True),
+                many=True,
+            ).data
+        )
+
+
+@api_view(http_method_names=["GET"])
 def remove_faculty_from_high_school_api_view(
     request: HttpRequest, high_school_id: int, faculty_id: int
 ):
@@ -791,6 +841,21 @@ def get_departments_with_additional_data_api_view(request: HttpRequest):
         return Response(response)
 
 
+@api_view(http_method_names=["GET"])
+def remove_specialization_from_department_api_view(
+    request: HttpRequest, department_specialization_id: int
+):
+    if DepartmentSpecialization.objects.filter(
+        id=department_specialization_id
+    ).exists():
+        DepartmentSpecialization.objects.get(id=department_specialization_id).delete()
+    else:
+        return Response(
+            {"detail": "Department specialization doesn't exist"}, status=404
+        )
+    return Response({"detail": "Success"})
+
+
 @api_view(http_method_names=["POST"])
 @validate_payload(keys=["high_school", "faculty", "departments"])
 def create_faculty_departments_api_view(request: HttpRequest):
@@ -931,6 +996,71 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
                 }
             )
         return Response(response)
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(keys=["high_school", "department", "specializations"])
+def create_department_specializations_api_view(request: HttpRequest):
+    if HighSchool.objects.filter(id=request.data["high_school"]).exists():
+        high_school = HighSchool.objects.get(id=request.data["high_school"])
+    else:
+        return Response({"detail": "High school doesn't exist"}, status=404)
+
+    if Department.objects.filter(id=request.data["department"]).exists():
+        department = Department.objects.get(id=request.data["department"])
+    else:
+        return Response({"detail": "Faculty doesn't exist"}, status=404)
+
+    if FacultyDepartment.objects.filter(
+        high_school_faculty__high_school=high_school, department=department
+    ):
+        faculty_department = FacultyDepartment.objects.get(
+            high_school_faculty__high_school=high_school, department=department
+        )
+    else:
+        return Response({"detail": "Faculty department doesn't exist"}, status=404)
+
+    for specialization_id in request.data["specializations"]:
+        if Specialization.objects.filter(id=specialization_id).exists():
+            specialization = Specialization.objects.get(id=specialization_id)
+            if not DepartmentSpecialization.objects.filter(
+                faculty_department=faculty_department, specialization=specialization
+            ).exists():
+                DepartmentSpecialization.objects.create(
+                    faculty_department=faculty_department, specialization=specialization
+                )
+    return Response({"detail": "Success"})
+
+
+@api_view(http_method_names=["PUT"])
+@validate_payload(keys=["name", "abbreviation", "degree"])
+def put_specialization_api_view(request: HttpRequest, id: int):
+
+    if Specialization.objects.filter(id=id).exists():
+        specialization = Specialization.objects.get(id=id)
+    else:
+        return Response({"detail": "Specialization doesn't exist"}, status=404)
+
+    specialization.name = request.data["name"]
+    specialization.abbreviation = request.data["abbreviation"]
+    if request.data.get("classificator", False):
+        if Classificator.objects.filter(id=request.data["classificator"]).exists():
+            specialization.classificator = Classificator.objects.get(
+                id=request.data["classificator"]
+            )
+        else:
+            specialization.save()
+            return Response({"detail": "Classificator doesn't exist"}, status=404)
+    else:
+        specialization.classificator = None
+    if Degree.objects.filter(id=request.data["degree"]).exists():
+        specialization.degree = Degree.objects.get(id=request.data["degree"])
+    else:
+        specialization.save()
+        return Response({"detail": "Degree doesn't exist"}, status=404)
+    specialization.save()
+
+    return Response({"detail": "Success", "id": specialization.id})
 
 
 class SpecializationListCreateAPIView(ListCreateAPIView):
