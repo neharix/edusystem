@@ -309,19 +309,19 @@ export const useSpecializationsStore =  defineStore({
     deleteStatus: null,
     removeStatus: null,
     updateStatus: null,
-    // createFacultyDepartmentsStatus: null,
-    // highSchoolDepartments: [],
-    // highSchoolExcDepartments: [],
+    createDepartmentSpecializationsStatus: null,
+    highSchoolSpecializations: [],
+    highSchoolExcSpecializations: [],
   }),
   actions: {
-  //   async get(id) {
-  //     try {
-  //       const response = await axiosInstance.get(`/departments/${id}/`);
-  //       this.department = response.data;
-  //     } catch (error) {
-  //       console.error('Error', error);
-  //     }
-  //   },
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/specializations/${id}/`);
+        this.specialization = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
   //   async getAll() {
   //     try {
   //       const response = await axiosInstance.get('/departments/');
@@ -338,14 +338,21 @@ export const useSpecializationsStore =  defineStore({
         console.error('Error', error);
       }
     },
-  //   async create(data) {
-  //     try {
-  //       const response = await axiosInstance.post('/departments/', data);
-  //       this.createStatus = 'success';
-  //     } catch (error) {
-  //       this.createStatus = 'error';
-  //     }
-  //   },
+    async create(data) {
+      let formData = {};
+      if (data.classificator === 0) {
+        formData = {name: data.name, abbreviation: data.abbreviation, classificator: null, degree: data.degree};
+      } else {
+        formData = {name: data.name, abbreviation: data.abbreviation, classificator: data.classificator, degree: data.degree};
+      }
+      try {
+        const response = await axiosInstance.post('/specializations/', formData);
+        this.createStatus = 'success';
+      } catch (error) {
+        this.createStatus = 'error';
+        console.error('Error', error);
+      }
+    },
     async delete(id) {
       try {
         const response = await axiosInstance.delete(`/specializations/${id}/`);
@@ -354,47 +361,111 @@ export const useSpecializationsStore =  defineStore({
         this.deleteStatus = 'error';
       }
     },
-  //   async put(id, data) {
-  //     try {
-  //       const response = await axiosInstance.put(`/departments/${id}/`, data);
-  //       this.updateStatus = 'success';
-  //     } catch (error) {
-  //       console.error('Error', error);
-  //       this.updateStatus = 'error';
-  //     }
-  //   },
-  //   async getHighSchoolDepartments(highSchoolId) {
-  //     try {
-  //       const response = await axiosInstance.get(`/high-school-departments/${highSchoolId}/inc/`);
-  //       this.highSchoolDepartments = response.data;
-  //     } catch (error) {
-  //       console.error('Error', error);
-  //     }
-  //   },
-  //   async getHighSchoolExcDepartments(highSchoolId) {
-  //     try {
-  //       const response = await axiosInstance.get(`/high-school-departments/${highSchoolId}/exc/`);
-  //       this.highSchoolExcDepartments = response.data;
-  //     } catch (error) {
-  //       console.error('Error', error);
-  //     }
-  //   },
-  //   async createFacultyDepartment(data) {
-  //     try {
-  //       const response = await axiosInstance.post("/create-faculty-departments/", data);
-  //       this.createFacultyDepartmentsStatus = 'success';
-  //     } catch (error) {
-  //       this.createFacultyDepartmentsStatus = 'error';
-  //     }
-  //   },
-  //   async removeDepartment(facultyDepartmentId) {
-  //     try {
-  //       const response = await axiosInstance.get(`/remove/faculty-department/${facultyDepartmentId}/`);
-  //       this.removeStatus = 'success';
-  //     } catch (error) {
-  //       console.error('Error', error);
-  //       this.removeStatus = 'error';
-  //     }
-  //   }
+    async put(id, data) {
+      let formData = {};
+      if (data.classificator === 0) {
+        formData = {name: data.name, abbreviation: data.abbreviation, degree: data.degree};
+      } else {
+        formData = {name: data.name, abbreviation: data.abbreviation, classificator: data.classificator, degree: data.degree};
+      }
+
+      try {
+        const response = await axiosInstance.put(`/update-specialization/${id}/`, formData);
+        this.updateStatus = 'success';
+      } catch (error) {
+        console.error('Error', error);
+        this.updateStatus = 'error';
+      }
+    },
+    async getHighSchoolSpecializations(highSchoolId) {
+      try {
+        const response = await axiosInstance.get(`/high-school-specializations/${highSchoolId}/inc/`);
+        this.highSchoolSpecializations = response.data;
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getHighSchoolExcSpecializations(highSchoolId) {
+      try {
+        const response = await axiosInstance.get(`/high-school-specializations/${highSchoolId}/exc/`);
+        this.highSchoolExcSpecializations = response.data;
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async createDepartmentSpecialization(data) {
+      try {
+        const response = await axiosInstance.post("/create-department-specializations/", data);
+        this.createDepartmentSpecializationsStatus = 'success';
+      } catch (error) {
+        this.createDepartmentSpecializationsStatus = 'error';
+      }
+    },
+    async removeSpecialization(departmentSpecializationId) {
+      try {
+        const response = await axiosInstance.get(`/remove/department-specialization/${departmentSpecializationId}/`);
+        this.removeStatus = 'success';
+      } catch (error) {
+        console.error('Error', error);
+        this.removeStatus = 'error';
+      }
+    }
+  }
+});
+
+
+export const useClassificatorsStore =  defineStore({
+  id: 'classificators',
+  state: () => ({
+    classificators: [],
+    classificator: {},
+  }),
+  actions: {
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/classificators/${id}/`);
+        this.classificator = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getAll() {
+      try {
+        const response = await axiosInstance.get(`/classificators/`);
+        this.classificators = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+  }
+});
+
+
+
+export const useDegreesStore =  defineStore({
+  id: 'degrees',
+  state: () => ({
+    degrees: [],
+    degree: {},
+  }),
+  actions: {
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/degrees/${id}/`);
+        this.degree = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getAll() {
+      try {
+        const response = await axiosInstance.get(`/degrees/`);
+        this.degrees = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
   }
 });

@@ -4,7 +4,7 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import {useDepartmentsStore, useFacultiesStore, useHighSchoolsStore} from "@/stores/api.store.js";
+import {useSpecializationsStore} from "@/stores/api.store.js";
 import {storeToRefs} from "pinia";
 import router from "@/router/index.js";
 import {useRoute} from "vue-router";
@@ -20,8 +20,8 @@ watch(props, (newVal, oldVal) => {
 
 const {isModalOpen, openModal, header, context} = useConfirmModal();
 const {toasts, addToast} = useToast();
-const departmentsStore = useDepartmentsStore();
-const {removeStatus, updateStatus} = storeToRefs(departmentsStore);
+const specializationsStore = useSpecializationsStore();
+const {removeStatus, updateStatus} = storeToRefs(specializationsStore);
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -132,7 +132,7 @@ function closeModal() {
 function submitModal() {
   isModalOpen.value = false;
 
-  departmentsStore.removeDepartment(selectedItem.value).then(() => {
+  specializationsStore.removeSpecialization(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
@@ -141,7 +141,7 @@ function submitModal() {
 watch(removeStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Kafedra ÝOM-dan üstünlikli ýok edildi', 'success');
+      addToast('Hünar ÝOM-dan üstünlikli ýok edildi', 'success');
     } else if (newVal === 'error') {
       addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -152,7 +152,7 @@ watch(removeStatus, (newVal, oldVal) => {
 onMounted(() => {
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
-      addToast('Kafedra üstünlikli üýtgedildi', 'success');
+      addToast('Hünär üstünlikli üýtgedildi', 'success');
     } else if (updateStatus.value === 'error') {
       addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -254,7 +254,7 @@ window.addEventListener("click", onClickOutside);
             class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
             @click="sort('name')"
           >
-            KAFEDRA
+            HÜNÄR
             <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲
@@ -262,10 +262,20 @@ window.addEventListener("click", onClickOutside);
           </th>
           <th
             class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-            @click="sort('faculty')"
+            @click="sort('department')"
           >
-            FAKULTETI
-            <span :class="sortColumn === 'faculty' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+            KAFEDRASY
+            <span :class="sortColumn === 'department' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                  class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+          </th>
+          <th
+            class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+            @click="sort('classificator')"
+          >
+            KLASSIFIKATORY
+            <span :class="sortColumn === 'classificator' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
@@ -287,14 +297,20 @@ window.addEventListener("click", onClickOutside);
             }}
           </td>
           <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.faculty
+              item.department
             }}
+          </td>
+          <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+            <span class="py-2 px-3 transition duration-200 ease-out select-none rounded-lg"
+                  :class="{'hover:bg-red-500 dark:hover:bg-pink-900 hover:text-white': item.classificator === 'Ýok', 'hover:bg-emerald-500 dark:hover:bg-emerald-700 hover:text-white': item.classificator !== 'Ýok'}">{{
+                item.classificator
+              }}</span>
           </td>
           <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
             <!-- TODO -->
             <div class="w-full flex items-center justify-center">
               <div class="inline-flex rounded-md shadow-xs" role="group">
-                <button type="button" :key="item.id" @click="router.push(`/departments/edit/${item.id}`)"
+                <button type="button" :key="item.id" @click="router.push(`/specializations/edit/${item.id}`)"
                         class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
                   Üýtgetmek
                 </button>

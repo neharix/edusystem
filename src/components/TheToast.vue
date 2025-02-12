@@ -48,10 +48,10 @@ const toastHeaders = {
 
   <div v-if="visible"
        :class="`toast my-2 p-4 bg-white dark:bg-[#171131] w-full dark:text-white rounded-lg shadow-lg transition-all ${toastStyles[type]}`">
-    <h3 class="hidden md:block mb-3 text-base font-semibold">{{ toastHeaders[type] }}</h3>
-    <button class="absolute top-3 right-5 font-bold dark:text-white" @click.stop="closeToast">✖</button>
+    <h3 class="hidden md:block mb-3 text-base font-semibold select-none">{{ toastHeaders[type] }}</h3>
+    <button class="absolute top-3 right-5 font-bold dark:text-white select-none" @click.stop="closeToast">✖</button>
     <div class="flex justify-between text-sm items-center mt-4 md:mt-0">
-      <div>{{ message }}</div>
+      <div class="select-none">{{ message }}</div>
     </div>
   </div>
 </template>

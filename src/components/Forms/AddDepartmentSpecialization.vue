@@ -1,6 +1,6 @@
 <script setup>
 
-import {useDepartmentsStore, useFacultiesStore} from "@/stores/api.store.js";
+import {useDepartmentsStore, useFacultiesStore, useSpecializationsStore} from "@/stores/api.store.js";
 import {useRoute} from "vue-router";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
 import {storeToRefs} from "pinia";
@@ -13,16 +13,16 @@ const emit = defineEmits(['update']);
 
 const {toasts, addToast} = useToast();
 const route = useRoute();
-const facultiesStore = useFacultiesStore();
 const departmentsStore = useDepartmentsStore();
-const selectedFacultyId = ref(null);
+const specializationsStore = useSpecializationsStore();
+const selectedDepartmentId = ref(null);
 
-facultiesStore.getHighSchoolFaculties(route.params.id)
-departmentsStore.getHighSchoolExcDepartments(route.params.id);
+departmentsStore.getHighSchoolDepartments(route.params.id)
+specializationsStore.getHighSchoolExcSpecializations(route.params.id);
 
 const isSubmitting = ref(false);
-const {highSchoolFaculties} = storeToRefs(facultiesStore);
-const {highSchoolExcDepartments, createFacultyDepartmentsStatus} = storeToRefs(departmentsStore);
+const {highSchoolDepartments} = storeToRefs(departmentsStore);
+const {highSchoolExcSpecializations, createDepartmentSpecializationsStatus} = storeToRefs(specializationsStore);
 
 
 const searchQuery = ref('');
@@ -31,7 +31,7 @@ const isDropdownOpen = ref(false);
 
 const filteredOptions = computed(() => {
   const query = searchQuery.value.toLowerCase();
-  return highSchoolExcDepartments.value.filter(option => option.name.toLowerCase().includes(query));
+  return highSchoolExcSpecializations.value.filter(option => option.name.toLowerCase().includes(query));
 });
 
 const toggleOption = async (option) => {
@@ -47,7 +47,7 @@ const toggleOption = async (option) => {
 };
 
 const selectedOptions = computed(() => {
-  return highSchoolExcDepartments.value.filter(option => selectedIds.value.has(option.id));
+  return highSchoolExcSpecializations.value.filter(option => selectedIds.value.has(option.id));
 });
 
 const handleClickOutside = (event) => {
@@ -58,9 +58,9 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
 
-  if (highSchoolFaculties.value.length > 0)
+  if (highSchoolDepartments.value.length > 0)
   {
-    selectedFacultyId.value = highSchoolFaculties.value[0].id;
+    selectedDepartmentId.value = highSchoolDepartments.value[0].id;
   }
 
 
@@ -80,7 +80,7 @@ const onSubmit = () => {
   if (data.length !== 0) {
     console.log(data);
     isSubmitting.value = true;
-    departmentsStore.createFacultyDepartment({high_school: parseInt(route.params.id), faculty: selectedFacultyId.value, departments: data}).then(() => {
+    specializationsStore.createDepartmentSpecialization({high_school: parseInt(route.params.id), department: selectedDepartmentId.value, specializations: data}).then(() => {
         emit("update");
         selectedIds.value.clear();
         isSubmitting.value = false;
@@ -89,21 +89,21 @@ const onSubmit = () => {
 }
 
 
-watch(createFacultyDepartmentsStatus, (newVal, oldVal) => {
+watch(createDepartmentSpecializationsStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Kafedra üstünlikli hasaba alyndy', 'success');
+      addToast('Hünärler üstünlikli hasaba alyndy', 'success');
     } else if (newVal === 'error') {
       addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
-  createFacultyDepartmentsStatus.value = null;
+  createDepartmentSpecializationsStatus.value = null;
 })
 
-watch(highSchoolFaculties, (newVal, oldVal) => {
+watch(highSchoolDepartments, (newVal, oldVal) => {
   if (newVal.length > 0)
   {
-    selectedFacultyId.value = newVal[0].id;
+    selectedDepartmentId.value = newVal[0].id;
   }
 })
 
@@ -126,10 +126,10 @@ watch(highSchoolFaculties, (newVal, oldVal) => {
     </div>
   </teleport>
   <div class="tile mb-6">
-    <h3 class="text-xl font-bold mx-2 select-none my-3">Täze kafedra goşmak</h3>
+    <h3 class="text-xl font-bold mx-2 select-none my-3">Täze hünär goşmak</h3>
     <div class="my-3">
-      <select class="w-full border border-gray-300 rounded-md p-2 focus:outline-none" v-model="selectedFacultyId">
-        <option v-for="faculty in highSchoolFaculties" class="text-gray-600 dark:bg-[#171131ef] dark:text-white" :key="faculty.id" :value="faculty.id">{{ faculty.name }} fakulteti</option>
+      <select class="w-full border border-gray-300 rounded-md p-2 focus:outline-none" v-model="selectedDepartmentId">
+        <option v-for="department in highSchoolDepartments" class="text-gray-600 dark:bg-[#171131ef] dark:text-white" :key="department.id" :value="department.id">{{ department.name }} kafedrasy</option>
       </select>
     </div>
     <div>
