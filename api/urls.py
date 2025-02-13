@@ -174,6 +174,11 @@ urlpatterns = [
     ),
     # Nationality routes
     path(
+        "nationalizations-with-additional/",
+        get_nationalizations_with_additional_data_api_view,
+        name="get-nationalizations-with-additional-data",
+    ),
+    path(
         "nationalities/",
         NationalityListCreateAPIView.as_view(),
         name="nationality-list-create",
@@ -183,9 +188,20 @@ urlpatterns = [
         NationalityRetrieveUpdateDestroyAPIView.as_view(),
         name="nationality-retrieve-update-destroy",
     ),
-    path("student-count-by-nationality/", get_students_count_by_nationality_all),
+    # Country routes
     path(
-        "student-count-by-nationality/<int:nationality_id>/",
-        get_students_count_by_nationality,
+        "countries-with-additional/",
+        get_countries_with_additional_data_api_view,
+        name="get-countries-with-additional-data",
+    ),
+    path(
+        "countries/",
+        CountryListCreateAPIView.as_view(),
+        name="country-list-create",
+    ),
+    path(
+        "countries/<int:id>/",
+        CountryRetrieveUpdateDestroyAPIView.as_view(),
+        name="country-retrieve-update-destroy",
     ),
 ]

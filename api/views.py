@@ -36,6 +36,7 @@ from .models import (
 )
 from .serializers import (
     ClassificatorSerializer,
+    CountrySerializer,
     DegreeSerializer,
     DepartmentSerializer,
     FacultySerializer,
@@ -1118,40 +1119,110 @@ class NationalityRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 
 @api_view(http_method_names=["GET"])
-def get_students_count_by_nationality_all(request: HttpRequest):
-    nationalities = Nationality.objects.all().order_by("id")
-    data = []
-    for nationality in nationalities:
-        data.append(
-            {
-                "id": nationality.id,
-                "name": nationality.name,
-                "male_count": Student.objects.filter(
-                    nationality=nationality, gender="M"
-                ).count(),
-                "female_count": Student.objects.filter(
-                    nationality=nationality, gender="F"
-                ).count(),
-            }
-        )
-    return Response(data)
+def get_nationalizations_with_additional_data_api_view(request: HttpRequest):
+    response = []
+    nationalities = Nationality.objects.all()
+    if request.user.is_superuser:
+
+        for nationality in nationalities:
+            male_count = Student.objects.filter(
+                nationality=nationality, gender="M"
+            ).count()
+            female_count = Student.objects.filter(
+                nationality=nationality, gender="F"
+            ).count()
+
+            response.append(
+                {
+                    "id": nationality.id,
+                    "name": nationality.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+    else:
+        high_school = HighSchool.objects.get(manager__user=request.user)
+        for nationality in nationalities:
+            male_count = Student.objects.filter(
+                nationality=nationality,
+                gender="M",
+                high_school=high_school,
+            ).count()
+            female_count = Student.objects.filter(
+                nationality=nationality,
+                gender="F",
+                high_school=high_school,
+            ).count()
+
+            response.append(
+                {
+                    "id": nationality.id,
+                    "name": nationality.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+
+
+# Country API views
+
+
+class CountryListCreateAPIView(ListCreateAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+    lookup_field = "id"
+
+
+class CountryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+    lookup_field = "id"
 
 
 @api_view(http_method_names=["GET"])
-def get_students_count_by_nationality(request: HttpRequest, nationality_id):
-    if Nationality.objects.filter(id=nationality_id).exists():
-        nationality = Nationality.objects.get(id=nationality_id)
+def get_countries_with_additional_data_api_view(request: HttpRequest):
+    response = []
+    countries = Country.objects.all()
+    if request.user.is_superuser:
+        for country in countries:
+            male_count = Student.objects.filter(country=country, gender="M").count()
+            female_count = Student.objects.filter(country=country, gender="F").count()
+
+            response.append(
+                {
+                    "id": country.id,
+                    "name": country.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
     else:
-        return Response({"detail": "Nationality doesn't exist"})
-    return Response(
-        {
-            "id": nationality.id,
-            "name": nationality.name,
-            "male_count": Student.objects.filter(
-                nationality=nationality, gender="M"
-            ).count(),
-            "female_count": Student.objects.filter(
-                nationality=nationality, gender="F"
-            ).count(),
-        }
-    )
+        high_school = HighSchool.objects.get(manager__user=request.user)
+        for country in countries:
+            male_count = Student.objects.filter(
+                country=country,
+                gender="M",
+                high_school=high_school,
+            ).count()
+            female_count = Student.objects.filter(
+                country=country,
+                gender="F",
+                high_school=high_school,
+            ).count()
+
+            response.append(
+                {
+                    "id": country.id,
+                    "name": country.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
