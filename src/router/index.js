@@ -263,6 +263,92 @@ const router = createRouter({
       ],
     },
     {
+      path: '/nationalizations',
+      name: "nationalizations",
+      component: () => import('../views/NationalizationViews/Nationalizations.vue'),
+      meta: {
+        layout: 'MainLayout',
+        title: "Milletler",
+      },
+      children: [
+        {
+          path: '',
+          name: 'nationalizations-list',
+          component: () => import('../views/NationalizationViews/NationalizationsListView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Milletler",
+          },
+          beforeEnter: guards.defaultGuard,
+        },
+        {
+          path: 'add',
+          name: 'add-nationalization',
+          component: () => import('../views/NationalizationViews/AddNationalizationView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Millet goşmak',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'edit/:id',
+          name: 'edit-nationalization',
+          component: () => import('../views/NationalizationViews/EditNationalizationView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Milleti üýtgetmek',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        }
+      ],
+    },
+    {
+      path: '/countries',
+      name: "countries",
+      component: () => import('../views/CountryViews/Countries.vue'),
+      meta: {
+        layout: 'MainLayout',
+        title: "Ýurtlar",
+      },
+      children: [
+        {
+          path: '',
+          name: 'countries-list',
+          component: () => import('../views/CountryViews/CountriesListView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Ýurtlar",
+          },
+          beforeEnter: guards.defaultGuard,
+        },
+        {
+          path: 'add',
+          name: 'add-country',
+          component: () => import('../views/CountryViews/AddCountryView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Ýurt goşmak',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'edit/:id',
+          name: 'edit-country',
+          component: () => import('../views/CountryViews/EditCountryView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Ýurdy üýtgetmek',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        }
+      ],
+    },
+    {
       path: '/secondary-schools',
       name: 'secondary-schools',
       component: () => import('../views/SecondarySchoolsView.vue'),

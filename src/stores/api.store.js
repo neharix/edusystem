@@ -300,10 +300,9 @@ export const useDepartmentsStore =  defineStore({
 
 
 export const useSpecializationsStore =  defineStore({
-  id: 'specilizations',
+  id: 'specializations',
   state: () => ({
     specialization: {},
-    specializations: [],
     specializationsAdditional: [],
     createStatus: null,
     deleteStatus: null,
@@ -322,14 +321,6 @@ export const useSpecializationsStore =  defineStore({
         console.error('Error', error);
       }
     },
-  //   async getAll() {
-  //     try {
-  //       const response = await axiosInstance.get('/departments/');
-  //       this.departments = response.data;
-  //     } catch (error) {
-  //       console.error('Error', error);
-  //     }
-  //   },
     async getAllAdditional() {
       try {
         const response = await axiosInstance.get('/specializations-with-additional/');
@@ -465,6 +456,118 @@ export const useDegreesStore =  defineStore({
         this.degrees = response.data;
       } catch (error) {
         console.error('Error', error);
+      }
+    },
+  }
+});
+
+
+export const useNationalizationsStore =  defineStore({
+  id: 'nationalizations',
+  state: () => ({
+    nationalization: {},
+    nationalizationsAdditional: [],
+    createStatus: null,
+    deleteStatus: null,
+    updateStatus: null,
+  }),
+  actions: {
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/nationalities/${id}/`);
+        this.nationalization = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getAllAdditional() {
+      try {
+        const response = await axiosInstance.get('/nationalizations-with-additional/');
+        this.nationalizationsAdditional = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async create(data) {
+      try {
+        const response = await axiosInstance.post('/nationalities/', data);
+        this.createStatus = 'success';
+      } catch (error) {
+        this.createStatus = 'error';
+        console.error('Error', error);
+      }
+    },
+    async delete(id) {
+      try {
+        const response = await axiosInstance.delete(`/nationalities/${id}/`);
+        this.deleteStatus = 'success';
+      } catch (error) {
+        this.deleteStatus = 'error';
+      }
+    },
+    async put(id, data) {
+      try {
+        const response = await axiosInstance.put(`/nationalities/${id}/`, data);
+        this.updateStatus = 'success';
+      } catch (error) {
+        console.error('Error', error);
+        this.updateStatus = 'error';
+      }
+    },
+  }
+});
+
+
+export const useCountriesStore =  defineStore({
+  id: 'countries',
+  state: () => ({
+    country: {},
+    countriesAdditional: [],
+    createStatus: null,
+    deleteStatus: null,
+    updateStatus: null,
+  }),
+  actions: {
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/countries/${id}/`);
+        this.country = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getAllAdditional() {
+      try {
+        const response = await axiosInstance.get('/countries-with-additional/');
+        this.countriesAdditional = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async create(data) {
+      try {
+        const response = await axiosInstance.post('/countries/', data);
+        this.createStatus = 'success';
+      } catch (error) {
+        this.createStatus = 'error';
+        console.error('Error', error);
+      }
+    },
+    async delete(id) {
+      try {
+        const response = await axiosInstance.delete(`/countries/${id}/`);
+        this.deleteStatus = 'success';
+      } catch (error) {
+        this.deleteStatus = 'error';
+      }
+    },
+    async put(id, data) {
+      try {
+        const response = await axiosInstance.put(`/countries/${id}/`, data);
+        this.updateStatus = 'success';
+      } catch (error) {
+        console.error('Error', error);
+        this.updateStatus = 'error';
       }
     },
   }

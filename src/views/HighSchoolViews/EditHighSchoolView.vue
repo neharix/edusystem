@@ -94,7 +94,7 @@ function onSubmit(values, {setErrors}) {
 
 const breadcrumbPaths = [
   {path: "/high-schools", name: "Ýokary okuw mekdepleri"},
-  {path: "/high-schools/edit/", name: "Üýtgetmek", current: true},
+  {path: "/high-schools/edit", name: "Üýtgetmek", current: true},
 ]
 
 onMounted(() => {

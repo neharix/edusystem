@@ -2,13 +2,13 @@
   <the-breadcrumb :paths="breadcrumbPaths">
   </the-breadcrumb>
   <div class="w-full rounded-lg shadow-lg p-4 bg-white dark:bg-[#171131ef]">
-    <h3 class="text-xl font-bold mx-2 select-none">Täze milleti hasaba almak</h3>
+    <h3 class="text-xl font-bold mx-2 select-none">Täze ýurdy hasaba almak</h3>
     <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4">
       <div class="w-full">
         <Field name="name" type="text" id="name"
                class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
                :class="{ 'is-invalid': errors.name }"
-               placeholder="Milletiň ady"></Field>
+               placeholder="Ýurdyň ady"></Field>
         <div class="invalid-feedback select-none text-red-500 my-2 text-sm">{{ errors.name }}
         </div>
       </div>
@@ -34,28 +34,28 @@ import TheSpinner from "@/components/TheSpinner.vue";
 import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
 import {Field, Form} from "vee-validate";
 import * as Yup from 'yup';
-import {useNationalizationsStore} from "@/stores/api.store.js";
+import {useCountriesStore} from "@/stores/api.store.js";
 import router from "@/router/index.js";
 
-const nationalizationsStore = useNationalizationsStore()
+const countriesStore = useCountriesStore()
 
 
 const schema = Yup.object().shape({
-  name: Yup.string().trim().required('Milletiň ady hökman girizilmeli'),
+  name: Yup.string().trim().required('Ýurdyň ady hökman girizilmeli'),
 });
 
 function onSubmit(values, {setErrors}) {
   const {name} = values;
-  return nationalizationsStore.create({name}).then(() => {
-    router.push('/nationalizations');
+  return countriesStore.create({name}).then(() => {
+    router.push('/countries');
   })
     .catch(error => setErrors({apiError: error}));
 }
 
 
 const breadcrumbPaths = [
-  {path: "/nationalizations", name: "Milletler"},
-  {path: "/nationalizations/add", name: "Goşmak"},
+  {path: "/countries", name: "Ýurtlar"},
+  {path: "/countries/add", name: "Goşmak"},
 ]
 
 </script>

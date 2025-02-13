@@ -173,7 +173,7 @@ watch(highSchoolDepartments, (newVal, oldVal) => {
               {{ option.name }}
             </li>
             <li v-if="filteredOptions.length === 0" class="px-3 py-2 text-gray-500 select-none">
-              Maglumat gorunda kafedra tapylmady
+              Maglumat gorunda hünär tapylmady
             </li>
           </ul>
         </transition>

@@ -60,7 +60,7 @@ const {data} = useDashboard();
         />
       </svg>
     </grid-cell>
-    <grid-cell label="Milletler" :data-value="data.nationalities_count"
+    <grid-cell link="/nationalizations" label="Milletler" :data-value="data.nationalities_count"
                icon-bg-class="bg-red-200 dark:bg-red-500/75">
       <svg class="w-6 h-8 stroke-red-500 dark:stroke-red-900"
            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"

@@ -1,30 +1,31 @@
 <script setup>
-import {useDepartmentsStore, useSpecializationsStore} from "@/stores/api.store.js";
+import {useNationalizationsStore} from "@/stores/api.store.js";
 import {storeToRefs} from "pinia";
 import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
 import {onMounted} from "vue";
 import {useAuthStore} from "@/stores/auth.store.js";
-import SpecializationsDataTable from "@/components/DataTables/SpecializationsDataTable.vue";
+import NationalizationsDataTable from "@/components/DataTables/NationalizationsDataTable.vue";
 
 const authStore = useAuthStore()
-const specializationsStore = useSpecializationsStore();
-const {specializationsAdditional} = storeToRefs(specializationsStore);
+const nationalizationsStore = useNationalizationsStore()
+const {nationalizationsAdditional} = storeToRefs(nationalizationsStore);
 const {user} = storeToRefs(authStore);
 
 onMounted(() => {
-  specializationsStore.getAllAdditional()
+  nationalizationsStore.getAllAdditional()
 })
 
 const breadcrumbPaths = [
-  {path: "/specializations", name: "Hünärler"},
-  {path: "/specializations/add", name: "Goşmak"},
+  {path: "/nationalizations", name: "Milletler"},
+  {path: "/nationalizations/add", name: "Goşmak"},
 ]
+
 </script>
 
 <template>
   <div class="w-full">
     <the-breadcrumb :paths="breadcrumbPaths" v-if="user.is_superuser"></the-breadcrumb>
-    <specializations-data-table :data="specializationsAdditional" @update="specializationsStore.getAllAdditional()"></specializations-data-table>
+    <nationalizations-data-table :data="nationalizationsAdditional" @update="nationalizationsStore.getAllAdditional()"></nationalizations-data-table>
   </div>
 </template>
 

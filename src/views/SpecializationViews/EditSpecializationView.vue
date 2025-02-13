@@ -128,6 +128,6 @@ onMounted(() => {
 
 const breadcrumbPaths = [
   {path: "/specializations", name: "Hünärler"},
-  {path: "/specializations/add", name: "Üýtgetmek", current: true},
+  {path: "/specializations/edit", name: "Üýtgetmek", current: true},
 ]
 </script>
