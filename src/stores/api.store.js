@@ -407,61 +407,6 @@ export const useSpecializationsStore =  defineStore({
 });
 
 
-export const useClassificatorsStore =  defineStore({
-  id: 'classificators',
-  state: () => ({
-    classificators: [],
-    classificator: {},
-  }),
-  actions: {
-    async get(id) {
-      try {
-        const response = await axiosInstance.get(`/classificators/${id}/`);
-        this.classificator = response.data;
-      } catch (error) {
-        console.error('Error', error);
-      }
-    },
-    async getAll() {
-      try {
-        const response = await axiosInstance.get(`/classificators/`);
-        this.classificators = response.data;
-      } catch (error) {
-        console.error('Error', error);
-      }
-    },
-  }
-});
-
-
-
-export const useDegreesStore =  defineStore({
-  id: 'degrees',
-  state: () => ({
-    degrees: [],
-    degree: {},
-  }),
-  actions: {
-    async get(id) {
-      try {
-        const response = await axiosInstance.get(`/degrees/${id}/`);
-        this.degree = response.data;
-      } catch (error) {
-        console.error('Error', error);
-      }
-    },
-    async getAll() {
-      try {
-        const response = await axiosInstance.get(`/degrees/`);
-        this.degrees = response.data;
-      } catch (error) {
-        console.error('Error', error);
-      }
-    },
-  }
-});
-
-
 export const useNationalizationsStore =  defineStore({
   id: 'nationalizations',
   state: () => ({
@@ -564,6 +509,135 @@ export const useCountriesStore =  defineStore({
     async put(id, data) {
       try {
         const response = await axiosInstance.put(`/countries/${id}/`, data);
+        this.updateStatus = 'success';
+      } catch (error) {
+        console.error('Error', error);
+        this.updateStatus = 'error';
+      }
+    },
+  }
+});
+
+
+export const useClassificatorsStore = defineStore({
+  id: 'classificators',
+  state: () => ({
+    classificators: [],
+    classificator: {},
+    classificatorsAdditional: [],
+    createStatus: null,
+    deleteStatus: null,
+    updateStatus: null,
+  }),
+  actions: {
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/classificators/${id}/`);
+        this.classificator = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getAll() {
+      try {
+        const response = await axiosInstance.get(`/classificators/`);
+        this.classificators = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getAllAdditional() {
+      try {
+        const response = await axiosInstance.get('/classificators-with-additional/');
+        this.classificatorsAdditional = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async create(data) {
+      try {
+        const response = await axiosInstance.post('/classificators/', data);
+        this.createStatus = 'success';
+      } catch (error) {
+        this.createStatus = 'error';
+        console.error('Error', error);
+      }
+    },
+    async delete(id) {
+      try {
+        const response = await axiosInstance.delete(`/classificators/${id}/`);
+        this.deleteStatus = 'success';
+      } catch (error) {
+        this.deleteStatus = 'error';
+      }
+    },
+    async put(id, data) {
+      try {
+        const response = await axiosInstance.put(`/classificators/${id}/`, data);
+        this.updateStatus = 'success';
+      } catch (error) {
+        console.error('Error', error);
+        this.updateStatus = 'error';
+      }
+    },
+  }
+});
+
+export const useDegreesStore =  defineStore({
+  id: 'degrees',
+  state: () => ({
+    degrees: [],
+    degreesAdditional: [],
+    degree: {},
+    createStatus: null,
+    deleteStatus: null,
+    updateStatus: null,
+  }),
+  actions: {
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/degrees/${id}/`);
+        this.degree = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getAll() {
+      try {
+        const response = await axiosInstance.get(`/degrees/`);
+        this.degrees = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async getAllAdditional() {
+      try {
+        const response = await axiosInstance.get('/degrees-with-additional/');
+        this.degreesAdditional = response.data;
+      } catch (error) {
+        console.error('Error', error);
+      }
+    },
+    async create(data) {
+      try {
+        const response = await axiosInstance.post('/degrees/', data);
+        this.createStatus = 'success';
+      } catch (error) {
+        this.createStatus = 'error';
+        console.error('Error', error);
+      }
+    },
+    async delete(id) {
+      try {
+        const response = await axiosInstance.delete(`/degrees/${id}/`);
+        this.deleteStatus = 'success';
+      } catch (error) {
+        this.deleteStatus = 'error';
+      }
+    },
+    async put(id, data) {
+      try {
+        const response = await axiosInstance.put(`/degrees/${id}/`, data);
         this.updateStatus = 'success';
       } catch (error) {
         console.error('Error', error);

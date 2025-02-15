@@ -4,7 +4,6 @@ import RadialBarChart from "@/components/Charts/RadialBarChart.vue";
 import DoubleBarChart from "@/components/Charts/DoubleBarChart.vue";
 import GridCell from "@/components/GridCell.vue";
 import useDashboard from "@/use/useDashboard.js";
-import TheLeafletMap from "@/components/TheLeafletMap.vue";
 
 const {data} = useDashboard();
 </script>

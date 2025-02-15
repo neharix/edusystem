@@ -349,6 +349,98 @@ const router = createRouter({
       ],
     },
     {
+      path: '/classificators',
+      name: "classificators",
+      component: () => import('../views/ClassificatorViews/Classificators.vue'),
+      meta: {
+        layout: 'MainLayout',
+        title: "Klassifikatorlar",
+        adminRequired: true,
+      },
+      beforeEnter: guards.authGuard,
+      children: [
+        {
+          path: '',
+          name: 'classificators-list',
+          component: () => import('../views/ClassificatorViews/ClassificatorsListView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Klassifikatorlar",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'add',
+          name: 'add-classificator',
+          component: () => import('../views/ClassificatorViews/AddClassificatorView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Klassifikator goşmak',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'edit/:id',
+          name: 'edit-classificator',
+          component: () => import('../views/ClassificatorViews/EditClassificatorView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Klassifikatory üýtgetmek',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        }
+      ],
+    },
+    {
+      path: '/degrees',
+      name: "degrees",
+      component: () => import('../views/DegreeViews/Degrees.vue'),
+      meta: {
+        layout: 'MainLayout',
+        title: "Hünär derejeleri",
+        adminRequired: true,
+      },
+      beforeEnter: guards.authGuard,
+      children: [
+        {
+          path: '',
+          name: 'degrees-list',
+          component: () => import('../views/DegreeViews/DegreesListView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: "Hünär derejeleri",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'add',
+          name: 'add-degree',
+          component: () => import('../views/DegreeViews/AddDegreeView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Hünär derejesi goşmak',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: 'edit/:id',
+          name: 'edit-degree',
+          component: () => import('../views/DegreeViews/EditDegreeView.vue'),
+          meta: {
+            layout: 'MainLayout',
+            title: 'Hünär derejesini üýtgetmek',
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        }
+      ],
+    },
+    {
       path: '/secondary-schools',
       name: 'secondary-schools',
       component: () => import('../views/SecondarySchoolsView.vue'),

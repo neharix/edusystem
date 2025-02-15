@@ -1,6 +1,7 @@
 <template>
-  <div id="sidebar" :class="{ '-translate-x-full': showSidebar === false }"
-       class="fixed z-30 shadow-md w-64 inset-y-0 left-0 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0">
+  <div id="sidebar" @mouseover="uxStore.mouseOverSidebar()" @mouseleave="uxStore.mouseLeaveSidebar()"
+       :class="{ '-translate-x-full': showSidebar === false, 'w-64': sidebarExpanded || sidebarHover, 'w-25': !sidebarExpanded}"
+       class="fixed z-30 shadow-md inset-y-0 left-0 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0 transition-width">
     <div class="flex items-center justify-between py-8 px-4 lg:hidden">
       <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
         <img src="../assets/svgs/favicon.svg" alt="User Avatar"/>
@@ -23,6 +24,18 @@
         </button>
       </div>
     </div>
+    <button @click="uxStore.toggleSidebar" class="hidden lg:flex lg:justify-center mt-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           v-if="!sidebarExpanded">
+        <circle cx="12" cy="12" r="10"></circle>
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5" viewBox="0 0 24 24" fill="none" v-else
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </button>
     <component :is="sidebar"></component>
 
 
@@ -31,7 +44,8 @@
   <div id="overlay" :class="{ hidden: showSidebar === false }" class="fixed inset-0 z-10 bg-black/50 lg:hidden"
        @click="showSidebar = !showSidebar"></div>
   <!-- Main Content -->
-  <div class="flex-1 flex flex-col lg:pl-64 dark:bg-[#1b1829] bg-gray-100">
+  <div class="flex-1 flex flex-col dark:bg-[#1b1829] bg-gray-100 transition-padding"
+       :class="{'lg:pl-64': sidebarExpanded, 'lg:pl-24': !sidebarExpanded}">
     <!-- Navbar -->
     <div :class="showSidebar ? 'bg-white/25 dark:bg-[#1711313b]' : 'bg-white/90 dark:bg-[#171131ef]'"
          class=" lg:bg-white text-gray-800 dark:text-white lg:dark:bg-[#171131] shadow-md dark:shadow-lg rounded-2xl sticky top-0 z-10 flex justify-between items-center p-4 lg:m-4 lg:mt-4 m-4 lg:mb-0 mb-0">
@@ -65,7 +79,7 @@
 </template>
 
 <script setup>
-import {onBeforeMount, onMounted, ref, shallowRef, watch} from "vue";
+import {onMounted, ref, shallowRef, watch} from "vue";
 import ThemeToggler from "@/components/ThemeToggler.vue";
 import {useAuthStore} from '@/stores/auth.store.js';
 import UserDropdown from "@/components/UserDropdown.vue";
@@ -73,7 +87,10 @@ import {storeToRefs} from "pinia";
 import RootSidebar from "@/components/Sidebars/RootSidebar.vue";
 import UserSidebar from "@/components/Sidebars/UserSidebar.vue";
 import EmptySidebar from "@/components/Sidebars/EmptySidebar.vue";
+import {useUxStore} from "@/stores/ux.store.js";
 
+const uxStore = useUxStore();
+const {sidebarExpanded, sidebarHover} = storeToRefs(uxStore);
 
 const authStore = useAuthStore();
 authStore.fetchUser()
@@ -141,4 +158,12 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.transition-width {
+  transition: width 0.3s ease-out;
+}
+
+.transition-padding {
+  transition: padding 0.3s ease-out;
+}
+</style>

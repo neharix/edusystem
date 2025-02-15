@@ -4,7 +4,7 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import {useCountriesStore} from "@/stores/api.store.js";
+import {useClassificatorsStore} from "@/stores/api.store.js";
 import {storeToRefs} from "pinia";
 import router from "@/router/index.js";
 import {useAuthStore} from "@/stores/auth.store.js";
@@ -20,8 +20,8 @@ watch(props, (newVal, oldVal) => {
 
 const {isModalOpen, openModal, header, context} = useConfirmModal();
 const {toasts, addToast} = useToast();
-const countriesStore = useCountriesStore();
-const {deleteStatus, updateStatus, createStatus} = storeToRefs(countriesStore);
+const classificatorsStore = useClassificatorsStore();
+const {deleteStatus, updateStatus, createStatus} = storeToRefs(classificatorsStore);
 const authStore = useAuthStore();
 
 const data = ref([]);
@@ -132,7 +132,7 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  countriesStore.delete(selectedItem.value).then(() => {
+  classificatorsStore.delete(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
@@ -141,7 +141,7 @@ function submitModal() {
 watch(deleteStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Ýurt üstünlikli ýok edildi', 'success');
+      addToast('Klassifikator üstünlikli ýok edildi', 'success');
     } else if (newVal === 'error') {
       addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -152,7 +152,7 @@ watch(deleteStatus, (newVal, oldVal) => {
 onMounted(() => {
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
-      addToast('Ýurt üstünlikli üýtgedildi', 'success');
+      addToast('Klassifikator üstünlikli üýtgedildi', 'success');
     } else if (updateStatus.value === 'error') {
       addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -161,7 +161,7 @@ onMounted(() => {
 
   if (createStatus.value) {
     if (createStatus.value === 'success') {
-      addToast('Ýurt üstünlikli hasaba alyndy', 'success');
+      addToast('Klassifikator üstünlikli hasaba alyndy', 'success');
     } else if (createStatus.value === 'error') {
       addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -263,7 +263,7 @@ window.addEventListener("click", onClickOutside);
             class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
             @click="sort('name')"
           >
-            ÝURT
+            KLASSIFIKATOR
             <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                   class="ml-2 transition-transform duration-200 inline-block">
                 ▲
@@ -330,7 +330,7 @@ window.addEventListener("click", onClickOutside);
             <!-- TODO -->
             <div class="w-full flex items-center justify-center">
               <div class="inline-flex rounded-md shadow-xs" role="group">
-                <button type="button" :key="item.id" @click="router.push(`/countries/edit/${item.id}`)"
+                <button type="button" :key="item.id" @click="router.push(`/classificators/edit/${item.id}`)"
                         class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
                   Üýtgetmek
                 </button>

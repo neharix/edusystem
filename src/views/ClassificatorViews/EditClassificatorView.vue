@@ -1,13 +1,13 @@
 <template>
   <the-breadcrumb :paths="breadcrumbPaths"></the-breadcrumb>
   <div class="w-full rounded-lg shadow-lg p-4 bg-white dark:bg-[#171131ef]">
-    <h3 class="text-xl font-bold mx-2 select-none">Ýurdy üýtgetmek</h3>
+    <h3 class="text-xl font-bold mx-2 select-none">Klassifikatory üýtgetmek</h3>
     <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4">
       <div class="w-full">
-        <Field name="name" type="text" id="name" v-model="countryName"
+        <Field name="name" type="text" id="name" v-model="classificatorName"
                class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
                :class="{ 'is-invalid': errors.name }"
-               placeholder="Ýurduň ady"></Field>
+               placeholder="Klassifikatoryň ady"></Field>
         <div class="invalid-feedback select-none text-red-500 my-2 text-sm">{{ errors.name }}
         </div>
       </div>
@@ -33,37 +33,38 @@ import TheSpinner from "@/components/TheSpinner.vue";
 import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
 import {Field, Form} from "vee-validate";
 import * as Yup from 'yup';
-import {useCountriesStore} from "@/stores/api.store.js";
+import {useClassificatorsStore} from "@/stores/api.store.js";
 import {useRoute} from "vue-router";
 import router from "@/router/index.js";
 import {onMounted, ref} from "vue";
 
 const route = useRoute();
-const countriesStore = useCountriesStore();
+const classificatorsStore = useClassificatorsStore();
 
-const countryName = ref('');
+const classificatorName = ref('');
 
 
 const schema = Yup.object().shape({
-  name: Yup.string().trim().required('Ýurduň ady hökman girizilmeli'),
+  name: Yup.string().trim().required('Klassifikatoryň ady hökman girizilmeli'),
 });
 
 function onSubmit(values, {setErrors}) {
   const {name} = values;
-  return countriesStore.put(route.params.id, {name}).then(() => {
+  return classificatorsStore.put(route.params.id, {name}).then(() => {
     router.go(-1);
   }).catch(error => setErrors({apiError: error}));
 }
 
 onMounted(() => {
-  countriesStore.get(route.params.id).then(() => {
-    countryName.value = countriesStore.country.name;
+  classificatorsStore.get(route.params.id).then(() => {
+    classificatorName.value = classificatorsStore.classificator.name;
   })
 })
 
 
 const breadcrumbPaths = [
-  {path: "/countries", name: "Ýurtlar"},
-  {path: "/countries/edit", name: "Üýtgetmek", current: true},
+  {path: "/classificators", name: "Klassifikatorlar"},
+  {path: "/classificators/edit", name: "Üýtgetmek", current: true},
 ]
+
 </script>

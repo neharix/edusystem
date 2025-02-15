@@ -2,14 +2,29 @@
   <the-breadcrumb :paths="breadcrumbPaths">
   </the-breadcrumb>
   <div class="w-full rounded-lg shadow-lg p-4 bg-white dark:bg-[#171131ef]">
-    <h3 class="text-xl font-bold mx-2 select-none">Täze klassifikatory hasaba almak</h3>
-    <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4">
+    <h3 class="text-xl font-bold mx-2 select-none">Täze hünär derejesini hasaba almak</h3>
+    <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4" :initial-values="{ duration: 1 }">
       <div class="w-full">
         <Field name="name" type="text" id="name"
                class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
                :class="{ 'is-invalid': errors.name }"
-               placeholder="Klassifikatoryň ady"></Field>
+               placeholder="Hünär derejesiniň ady"></Field>
         <div class="invalid-feedback select-none text-red-500 my-2 text-sm">{{ errors.name }}
+        </div>
+      </div>
+      <div class="w-full">
+        <label for="duration" class="block mb-1">Okuw dowamlylygy</label>
+        <Field
+          as="select"
+          name="duration"
+          id="duration"
+          class="w-full border border-gray-300 dark:border-gray-700 rounded-md p-2 focus:outline-none"
+        >
+          <option class="text-gray-600 dark:bg-[#171131ef] dark:text-white" v-for="i in 7"
+                  :value="i">{{ i }} ýyl
+          </option>
+        </Field>
+        <div class="invalid-feedback select-none text-red-500 my-2 text-sm">{{ errors.duration }}
         </div>
       </div>
       <div class="flex flex-wrap justify-center md:justify-end lg:justify-end">
@@ -34,29 +49,31 @@ import TheSpinner from "@/components/TheSpinner.vue";
 import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
 import {Field, Form} from "vee-validate";
 import * as Yup from 'yup';
-import {useClassificatorsStore} from "@/stores/api.store.js";
+import {useClassificatorsStore, useDegreesStore} from "@/stores/api.store.js";
 import router from "@/router/index.js";
 
-const classificatorsStore = useClassificatorsStore()
+const degreesStore = useDegreesStore()
 
 
 const schema = Yup.object().shape({
-  name: Yup.string().trim().required('Klassifikatoryň ady hökman girizilmeli'),
+  name: Yup.string().trim().required('Hünär derejesiniň ady hökman girizilmeli'),
+  duration: Yup.number().required('Okuw dowamlylygyny saýlaň')
 });
 
 function onSubmit(values, {setErrors}) {
-  const {name} = values;
-  return classificatorsStore.create({name}).then(() => {
-    router.push('/classificators');
+  const {name, duration} = values;
+  return degreesStore.create({name, duration}).then(() => {
+    router.push('/degrees');
   })
     .catch(error => setErrors({apiError: error}));
 }
 
 
 const breadcrumbPaths = [
-  {path: "/classificators", name: "Klassifikatorlar"},
-  {path: "/classificators/add", name: "Goşmak"},
+  {path: "/degrees", name: "Hünär derejeleri"},
+  {path: "/degrees/add", name: "Goşmak"},
 ]
+
 
 
 </script>

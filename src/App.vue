@@ -3,13 +3,11 @@
 </template>
 
 <script setup>
-import {onMounted, defineAsyncComponent, ref, shallowRef, watch} from "vue";
+import {defineAsyncComponent, onBeforeMount, onMounted, ref, shallowRef, watch} from "vue";
 import {useRoute} from "vue-router";
 import LoaderLayout from "@/layouts/LoaderLayout.vue";
 import {useAuthStore} from "@/stores/auth.store.js";
 import router from "@/router/index.js";
-import {storeToRefs} from "pinia";
-
 
 
 const layout = shallowRef(LoaderLayout)
@@ -28,6 +26,12 @@ watch(route, (newValue, oldValue) => {
 });
 
 const authStore = useAuthStore();
+
+onBeforeMount(() => {
+  if (!localStorage.getItem("sidebarExpanded")) {
+    localStorage.setItem("sidebarExpanded", "1");
+  }
+})
 
 onMounted(async () => {
   if (authStore.token) {

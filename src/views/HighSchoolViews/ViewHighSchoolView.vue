@@ -1,4 +1,7 @@
 <template>
+<!--    <div class="tile mb-8">-->
+<!--      <the-high-school-tree></the-high-school-tree>-->
+<!--    </div>-->
   <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
     <grid-cell label="Talyp sany" :data-value="highSchoolAbout.students_count"
                icon-bg-class="bg-sky-200 dark:bg-sky-500/75">
@@ -71,6 +74,7 @@
 import RadialBarChart from "@/components/Charts/RadialBarChart.vue";
 import DoubleBarChart from "@/components/Charts/DoubleBarChart.vue";
 import GridCell from "@/components/GridCell.vue";
+// import TheHighSchoolTree from "@/components/TheHighSchoolTree.vue";
 import {useHighSchoolsStore} from "@/stores/api.store.js";
 import {useRoute} from "vue-router";
 import {storeToRefs} from "pinia";
