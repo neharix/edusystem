@@ -115,6 +115,11 @@ urlpatterns = [
     ),
     # Degree routes
     path(
+        "degrees-with-additional/",
+        get_degrees_with_additional_data_api_view,
+        name="get-degrees-with-additional-data",
+    ),
+    path(
         "degrees/",
         DegreeListCreateAPIView.as_view(),
         name="degree-list-create",
@@ -125,6 +130,11 @@ urlpatterns = [
         name="degree-retrieve-update-destroy",
     ),
     # Classificator routes
+    path(
+        "classificators-with-additional/",
+        get_classificators_with_additional_data_api_view,
+        name="get-classificators-with-additional-data",
+    ),
     path(
         "classificators/",
         ClassificatorListCreateAPIView.as_view(),

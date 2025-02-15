@@ -910,6 +910,36 @@ class DepartmentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 # Degree API views
 
 
+@api_view(http_method_names=["GET"])
+def get_degrees_with_additional_data_api_view(request: HttpRequest):
+    response = []
+    degrees = Degree.objects.all()
+    if request.user.is_superuser:
+
+        for degree in degrees:
+            male_count = Student.objects.filter(
+                specialization__specialization__degree=degree, gender="M"
+            ).count()
+            female_count = Student.objects.filter(
+                specialization__specialization__degree=degree, gender="F"
+            ).count()
+
+            response.append(
+                {
+                    "id": degree.id,
+                    "name": degree.name,
+                    "duration": degree.duration,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+    else:
+        # FIXME
+        return Response(response)
+
+
 class DegreeListCreateAPIView(ListCreateAPIView):
     queryset = Degree.objects.all()
     serializer_class = DegreeSerializer
@@ -923,6 +953,35 @@ class DegreeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 
 # Classificator API views
+
+
+@api_view(http_method_names=["GET"])
+def get_classificators_with_additional_data_api_view(request: HttpRequest):
+    response = []
+    classificators = Classificator.objects.all()
+    if request.user.is_superuser:
+
+        for classificator in classificators:
+            male_count = Student.objects.filter(
+                specialization__specialization__classificator=classificator, gender="M"
+            ).count()
+            female_count = Student.objects.filter(
+                specialization__specialization__classificator=classificator, gender="F"
+            ).count()
+
+            response.append(
+                {
+                    "id": classificator.id,
+                    "name": classificator.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+    else:
+        # FIXME
+        return Response(response)
 
 
 class ClassificatorListCreateAPIView(ListCreateAPIView):
