@@ -1,34 +1,37 @@
 <script setup>
-import {useClassificatorsStore} from "@/stores/api.store.js";
-import {storeToRefs} from "pinia";
+import { useStudentsStore } from "@/stores/api.store.js";
+import { storeToRefs } from "pinia";
 import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
-import {onMounted} from "vue";
-import {useAuthStore} from "@/stores/auth.store.js";
-import ClassificatorsDataTable from "@/components/DataTables/ClassificatorsDataTable.vue";
+import { onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth.store.js";
+import StudentsDataTable from "@/components/DataTables/StudentsDataTable.vue";
 
 const authStore = useAuthStore()
-const classificatorsStore = useClassificatorsStore()
-const {classificatorsAdditional} = storeToRefs(classificatorsStore);
-const {user} = storeToRefs(authStore);
+const studentsStore = useStudentsStore()
+const { studentsAdditional } = storeToRefs(studentsStore);
+const { user } = storeToRefs(authStore);
 
 onMounted(() => {
-  classificatorsStore.getAllAdditional()
+  studentsStore.getAllAdditional()
 })
 
-const breadcrumbPaths = [
-  {path: "/classificators", name: "Klassifikatorlar"},
-  {path: "/classificators/add", name: "Goşmak"},
+const breadcrumbPathsForAdmin = [
+  { path: "/students", name: "Talyplar" },
+  { path: "/students/add", name: "Goşmak" },
 ]
+const breadcrumbPaths = [
+  { path: "/students", name: "Talyplar" },
+]
+
 
 </script>
 
 <template>
   <div class="w-full">
-    <the-breadcrumb :paths="breadcrumbPaths" v-if="user.is_superuser"></the-breadcrumb>
-    <classificators-data-table :data="classificatorsAdditional" @update="classificatorsStore.getAllAdditional()"></classificators-data-table>
+    <the-breadcrumb :paths="breadcrumbPathsForAdmin" v-if="user.is_superuser"></the-breadcrumb>
+    <the-breadcrumb :paths="breadcrumbPaths" v-else></the-breadcrumb>
+    <students-data-table :data="studentsAdditional" @update="studentsStore.getAllAdditional()"></students-data-table>
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

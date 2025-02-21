@@ -10,7 +10,8 @@ const {sidebarExpanded, sidebarHover} = storeToRefs(uxStore);
 </script>
 
 <template>
-  <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+  <div class="overflow-y-auto">
+  <nav class="flex-1 p-4 space-y-2 overflow-x-hidden">
     <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4 select-none"
         :class="{'text-center font-extrabold': !sidebarExpanded && !sidebarHover}">
       {{ sidebarExpanded || sidebarHover ? "Dolandyryş" : "..." }}</h4>
@@ -93,6 +94,7 @@ const {sidebarExpanded, sidebarHover} = storeToRefs(uxStore);
       </div>
       <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Ýurtlar</span></sidebar-link>
   </nav>
+  </div>
 </template>
 
 <style scoped>

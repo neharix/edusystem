@@ -5,7 +5,7 @@
     <h3 class="text-xl font-bold mx-2 select-none">Täze kafedrany hasaba almak</h3>
     <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4">
       <div class="grid lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-1 gap-4">
-        <div class="lg:col-span-2 md:col-span-2 lg:col-span-1">
+        <div class="lg:col-span-2 md:col-span-2">
           <Field name="name" type="text" id="name"
                  class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
                  :class="{ 'is-invalid': errors.name }"

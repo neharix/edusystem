@@ -1,7 +1,6 @@
-import {createRouter, createWebHistory} from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import guards from "@/router/guards.js";
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,9 +8,9 @@ const router = createRouter({
     {
       path: "/login",
       name: "login-page",
-      component: () => import('../views/LoginView.vue'),
+      component: () => import("../views/LoginView.vue"),
       meta: {
-        layout: 'EmptyLayout',
+        layout: "EmptyLayout",
         title: "Giriş",
         adminRequired: false,
       },
@@ -22,428 +21,511 @@ const router = createRouter({
       name: "home",
       component: HomeView,
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Baş sahypa",
         adminRequired: false,
       },
       beforeEnter: guards.authGuard,
     },
     {
-      path: '/high-schools',
-      name: 'high-schools',
-      component: () => import('../views/HighSchoolViews/HighSchools.vue'),
+      path: "/high-schools",
+      name: "high-schools",
+      component: () => import("../views/HighSchoolViews/HighSchools.vue"),
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Ýokary okuw mekdepleri",
         adminRequired: true,
       },
       children: [
         {
-          path: '',
-          name: 'high-schools-list',
-          component: () => import('../views/HighSchoolViews/HighSchoolsListView.vue'),
+          path: "",
+          name: "high-schools-list",
+          component: () =>
+            import("../views/HighSchoolViews/HighSchoolsListView.vue"),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Ýokary okuw mekdepleri",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'add',
-          name: 'add-high-school',
-          component: () => import('../views/HighSchoolViews/AddHighSchoolView.vue'),
+          path: "add",
+          name: "add-high-school",
+          component: () =>
+            import("../views/HighSchoolViews/AddHighSchoolView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Ýokary okuw mekdebi goşmak',
+            layout: "MainLayout",
+            title: "Ýokary okuw mekdebi goşmak",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'edit/:id',
-          name: 'edit-high-school',
-          component: () => import('../views/HighSchoolViews/EditHighSchoolView.vue'),
+          path: "edit/:id",
+          name: "edit-high-school",
+          component: () =>
+            import("../views/HighSchoolViews/EditHighSchoolView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Ýokary okuw mekdebi üýtgetmek',
+            layout: "MainLayout",
+            title: "Ýokary okuw mekdebi üýtgetmek",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'view/:id',
-          name: 'about-high-school',
-          component: () => import('../views/HighSchoolViews/AboutHighSchool.vue'),
+          path: "view/:id",
+          name: "about-high-school",
+          component: () =>
+            import("../views/HighSchoolViews/AboutHighSchool.vue"),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Ýokary okuw mekdebi",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
           children: [
             {
-              path: '',
-              name: 'high-school',
-              component: () => import('../views/HighSchoolViews/ViewHighSchoolView.vue'),
+              path: "",
+              name: "high-school",
+              component: () =>
+                import("../views/HighSchoolViews/ViewHighSchoolView.vue"),
               beforeEnter: guards.authGuard,
               meta: {
-                layout: 'MainLayout',
+                layout: "MainLayout",
                 title: "Ýokary okuw mekdebi",
                 adminRequired: true,
               },
             },
             {
-              path: 'faculties',
-              name: 'high-school-faculties',
-              component: () => import('../views/HighSchoolViews/HighSchoolFacultiesView.vue'),
+              path: "faculties",
+              name: "high-school-faculties",
+              component: () =>
+                import("../views/HighSchoolViews/HighSchoolFacultiesView.vue"),
               beforeEnter: guards.authGuard,
               meta: {
-                layout: 'MainLayout',
+                layout: "MainLayout",
                 title: "Ýokary okuw mekdebiň fakultetleri",
                 adminRequired: true,
               },
             },
             {
-              path: 'specializations',
-              name: 'high-school-specializations',
-              component: () => import('../views/HighSchoolViews/HighSchoolSpecializationsView.vue'),
+              path: "specializations",
+              name: "high-school-specializations",
+              component: () =>
+                import(
+                  "../views/HighSchoolViews/HighSchoolSpecializationsView.vue"
+                ),
               beforeEnter: guards.authGuard,
               meta: {
-                layout: 'MainLayout',
+                layout: "MainLayout",
                 title: "Ýokary okuw mekdebiň hünarleri",
                 adminRequired: true,
               },
             },
             {
-              path: 'departments',
-              name: 'high-school-departments',
-              component: () => import('../views/HighSchoolViews/HighSchoolDepartmentsView.vue'),
+              path: "departments",
+              name: "high-school-departments",
+              component: () =>
+                import(
+                  "../views/HighSchoolViews/HighSchoolDepartmentsView.vue"
+                ),
               beforeEnter: guards.authGuard,
               meta: {
-                layout: 'MainLayout',
+                layout: "MainLayout",
                 title: "Ýokary okuw mekdebiň kafedralary",
                 adminRequired: true,
               },
             },
           ],
-
         },
-
       ],
       beforeEnter: guards.authGuard,
     },
     {
-      path: '/faculties',
-      name: 'faculties',
-      component: () => import('../views/FacultyViews/Faculties.vue'),
+      path: "/faculties",
+      name: "faculties",
+      component: () => import("../views/FacultyViews/Faculties.vue"),
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Fakultetler",
       },
       children: [
         {
-          path: '',
-          name: 'faculties-list',
-          component: () => import('../views/FacultyViews/FacultiesListView.vue'),
+          path: "",
+          name: "faculties-list",
+          component: () =>
+            import("../views/FacultyViews/FacultiesListView.vue"),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Fakultetler",
           },
           beforeEnter: guards.defaultGuard,
         },
         {
-          path: 'add',
-          name: 'add-faculty',
-          component: () => import('../views/FacultyViews/AddFacultyView.vue'),
+          path: "add",
+          name: "add-faculty",
+          component: () => import("../views/FacultyViews/AddFacultyView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Fakultet goşmak',
+            layout: "MainLayout",
+            title: "Fakultet goşmak",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'edit/:id',
-          name: 'edit-faculty',
-          component: () => import('../views/FacultyViews/EditFacultyView.vue'),
+          path: "edit/:id",
+          name: "edit-faculty",
+          component: () => import("../views/FacultyViews/EditFacultyView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Fakulteti üýtgetmek',
+            layout: "MainLayout",
+            title: "Fakulteti üýtgetmek",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
-        }
+        },
       ],
     },
     {
-      path: '/departments',
-      name: 'departments',
-      component: () => import('../views/DepartmentViews/Departments.vue'),
+      path: "/departments",
+      name: "departments",
+      component: () => import("../views/DepartmentViews/Departments.vue"),
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Kafedralar",
       },
       children: [
         {
-          path: '',
-          name: 'departments-list',
-          component: () => import('../views/DepartmentViews/DepartmentsListView.vue'),
+          path: "",
+          name: "departments-list",
+          component: () =>
+            import("../views/DepartmentViews/DepartmentsListView.vue"),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Kafedralar",
           },
           beforeEnter: guards.defaultGuard,
         },
         {
-          path: 'add',
-          name: 'add-department',
-          component: () => import('../views/DepartmentViews/AddDepartmentView.vue'),
+          path: "add",
+          name: "add-department",
+          component: () =>
+            import("../views/DepartmentViews/AddDepartmentView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Kafedra goşmak',
+            layout: "MainLayout",
+            title: "Kafedra goşmak",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'edit/:id',
-          name: 'edit-department',
-          component: () => import('../views/DepartmentViews/EditDepartmentView.vue'),
+          path: "edit/:id",
+          name: "edit-department",
+          component: () =>
+            import("../views/DepartmentViews/EditDepartmentView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Kafedrany üýtgetmek',
+            layout: "MainLayout",
+            title: "Kafedrany üýtgetmek",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
-        }
+        },
       ],
     },
     {
-      path: '/specializations',
+      path: "/specializations",
       name: "specializations",
-      component: () => import('../views/SpecializationViews/Specializations.vue'),
+      component: () =>
+        import("../views/SpecializationViews/Specializations.vue"),
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Hünärler",
       },
       children: [
         {
-          path: '',
-          name: 'specializations-list',
-          component: () => import('../views/SpecializationViews/SpecializationsListView.vue'),
+          path: "",
+          name: "specializations-list",
+          component: () =>
+            import("../views/SpecializationViews/SpecializationsListView.vue"),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Hünarler",
           },
           beforeEnter: guards.defaultGuard,
         },
         {
-          path: 'add',
-          name: 'add-specialization',
-          component: () => import('../views/SpecializationViews/AddSpecializationView.vue'),
+          path: "add",
+          name: "add-specialization",
+          component: () =>
+            import("../views/SpecializationViews/AddSpecializationView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Hünär goşmak',
+            layout: "MainLayout",
+            title: "Hünär goşmak",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'edit/:id',
-          name: 'edit-specialization',
-          component: () => import('../views/SpecializationViews/EditSpecializationView.vue'),
+          path: "edit/:id",
+          name: "edit-specialization",
+          component: () =>
+            import("../views/SpecializationViews/EditSpecializationView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Hünäri üýtgetmek',
+            layout: "MainLayout",
+            title: "Hünäri üýtgetmek",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
-        }
+        },
       ],
     },
     {
-      path: '/nationalizations',
+      path: "/nationalizations",
       name: "nationalizations",
-      component: () => import('../views/NationalizationViews/Nationalizations.vue'),
+      component: () =>
+        import("../views/NationalizationViews/Nationalizations.vue"),
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Milletler",
       },
       children: [
         {
-          path: '',
-          name: 'nationalizations-list',
-          component: () => import('../views/NationalizationViews/NationalizationsListView.vue'),
+          path: "",
+          name: "nationalizations-list",
+          component: () =>
+            import(
+              "../views/NationalizationViews/NationalizationsListView.vue"
+            ),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Milletler",
           },
           beforeEnter: guards.defaultGuard,
         },
         {
-          path: 'add',
-          name: 'add-nationalization',
-          component: () => import('../views/NationalizationViews/AddNationalizationView.vue'),
+          path: "add",
+          name: "add-nationalization",
+          component: () =>
+            import("../views/NationalizationViews/AddNationalizationView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Millet goşmak',
+            layout: "MainLayout",
+            title: "Millet goşmak",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'edit/:id',
-          name: 'edit-nationalization',
-          component: () => import('../views/NationalizationViews/EditNationalizationView.vue'),
+          path: "edit/:id",
+          name: "edit-nationalization",
+          component: () =>
+            import("../views/NationalizationViews/EditNationalizationView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Milleti üýtgetmek',
+            layout: "MainLayout",
+            title: "Milleti üýtgetmek",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
-        }
+        },
       ],
     },
     {
-      path: '/countries',
+      path: "/countries",
       name: "countries",
-      component: () => import('../views/CountryViews/Countries.vue'),
+      component: () => import("../views/CountryViews/Countries.vue"),
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Ýurtlar",
       },
       children: [
         {
-          path: '',
-          name: 'countries-list',
-          component: () => import('../views/CountryViews/CountriesListView.vue'),
+          path: "",
+          name: "countries-list",
+          component: () =>
+            import("../views/CountryViews/CountriesListView.vue"),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Ýurtlar",
           },
           beforeEnter: guards.defaultGuard,
         },
         {
-          path: 'add',
-          name: 'add-country',
-          component: () => import('../views/CountryViews/AddCountryView.vue'),
+          path: "add",
+          name: "add-country",
+          component: () => import("../views/CountryViews/AddCountryView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Ýurt goşmak',
+            layout: "MainLayout",
+            title: "Ýurt goşmak",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'edit/:id',
-          name: 'edit-country',
-          component: () => import('../views/CountryViews/EditCountryView.vue'),
+          path: "edit/:id",
+          name: "edit-country",
+          component: () => import("../views/CountryViews/EditCountryView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Ýurdy üýtgetmek',
+            layout: "MainLayout",
+            title: "Ýurdy üýtgetmek",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
-        }
+        },
       ],
     },
     {
-      path: '/classificators',
+      path: "/classificators",
       name: "classificators",
-      component: () => import('../views/ClassificatorViews/Classificators.vue'),
+      component: () => import("../views/ClassificatorViews/Classificators.vue"),
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Klassifikatorlar",
         adminRequired: true,
       },
       beforeEnter: guards.authGuard,
       children: [
         {
-          path: '',
-          name: 'classificators-list',
-          component: () => import('../views/ClassificatorViews/ClassificatorsListView.vue'),
+          path: "",
+          name: "classificators-list",
+          component: () =>
+            import("../views/ClassificatorViews/ClassificatorsListView.vue"),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Klassifikatorlar",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'add',
-          name: 'add-classificator',
-          component: () => import('../views/ClassificatorViews/AddClassificatorView.vue'),
+          path: "add",
+          name: "add-classificator",
+          component: () =>
+            import("../views/ClassificatorViews/AddClassificatorView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Klassifikator goşmak',
+            layout: "MainLayout",
+            title: "Klassifikator goşmak",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'edit/:id',
-          name: 'edit-classificator',
-          component: () => import('../views/ClassificatorViews/EditClassificatorView.vue'),
+          path: "edit/:id",
+          name: "edit-classificator",
+          component: () =>
+            import("../views/ClassificatorViews/EditClassificatorView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Klassifikatory üýtgetmek',
+            layout: "MainLayout",
+            title: "Klassifikatory üýtgetmek",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
-        }
+        },
       ],
     },
     {
-      path: '/degrees',
+      path: "/degrees",
       name: "degrees",
-      component: () => import('../views/DegreeViews/Degrees.vue'),
+      component: () => import("../views/DegreeViews/Degrees.vue"),
       meta: {
-        layout: 'MainLayout',
+        layout: "MainLayout",
         title: "Hünär derejeleri",
         adminRequired: true,
       },
       beforeEnter: guards.authGuard,
       children: [
         {
-          path: '',
-          name: 'degrees-list',
-          component: () => import('../views/DegreeViews/DegreesListView.vue'),
+          path: "",
+          name: "degrees-list",
+          component: () => import("../views/DegreeViews/DegreesListView.vue"),
           meta: {
-            layout: 'MainLayout',
+            layout: "MainLayout",
             title: "Hünär derejeleri",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'add',
-          name: 'add-degree',
-          component: () => import('../views/DegreeViews/AddDegreeView.vue'),
+          path: "add",
+          name: "add-degree",
+          component: () => import("../views/DegreeViews/AddDegreeView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Hünär derejesi goşmak',
+            layout: "MainLayout",
+            title: "Hünär derejesi goşmak",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
         {
-          path: 'edit/:id',
-          name: 'edit-degree',
-          component: () => import('../views/DegreeViews/EditDegreeView.vue'),
+          path: "edit/:id",
+          name: "edit-degree",
+          component: () => import("../views/DegreeViews/EditDegreeView.vue"),
           meta: {
-            layout: 'MainLayout',
-            title: 'Hünär derejesini üýtgetmek',
+            layout: "MainLayout",
+            title: "Hünär derejesini üýtgetmek",
             adminRequired: true,
           },
           beforeEnter: guards.authGuard,
-        }
+        },
       ],
     },
     {
-      path: '/secondary-schools',
-      name: 'secondary-schools',
-      component: () => import('../views/SecondarySchoolsView.vue'),
+      path: "/students",
+      name: "students",
+      component: () => import("../views/StudentViews/Students.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Talyplar",
+      },
+      beforeEnter: guards.defaultGuard,
+      children: [
+        {
+          path: "",
+          name: "students-list",
+          component: () => import("../views/StudentViews/StudentsListView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Talyplar",
+          },
+          beforeEnter: guards.defaultGuard,
+        },
+        {
+          path: "add",
+          name: "add-student",
+          component: () => import("../views/StudentViews/AddStudentView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Talyp goşmak",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        // FIXME
+        {
+          path: "edit/:id",
+          name: "edit-student",
+          component: () => import("../views/StudentViews/EditStudentView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Talyp maglumatyny üýtgetmek",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: "view/:id",
+          name: "view-student",
+          component: () => import("../views/StudentViews/StudentInfoView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Talyp barada maglumat",
+          },
+          beforeEnter: guards.defaultGuard,
+        },
+      ],
+    },
+    {
+      path: "/secondary-schools",
+      name: "secondary-schools",
+      component: () => import("../views/SecondarySchoolsView.vue"),
       meta: {
         layout: "MainLayout",
         title: "Orta hünär mekdepleri",
@@ -452,20 +534,20 @@ const router = createRouter({
       beforeEnter: guards.authGuard,
     },
     {
-      path: '/403',
-      name: 'page-403',
-      component: () => import('@/views/Errors/Page403.vue'),
+      path: "/403",
+      name: "page-403",
+      component: () => import("@/views/Errors/Page403.vue"),
       meta: {
-        layout: 'EmptyLayout',
+        layout: "EmptyLayout",
         title: "403 | Rugsat ýok",
         adminRequired: false,
       },
       beforeEnter: guards.defaultGuard,
     },
     {
-      path: '/:pathMatch(.*)*',
-      component: () => import('../views/Errors/Page404.vue'),
-    }
+      path: "/:pathMatch(.*)*",
+      component: () => import("../views/Errors/Page404.vue"),
+    },
   ],
 });
 

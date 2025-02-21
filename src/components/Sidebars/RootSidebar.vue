@@ -31,8 +31,8 @@ const {sidebarExpanded, sidebarHover} = storeToRefs(uxStore);
     <!--    </tab-item>-->
 
   </tab-bar>
-  <div class="flex justify-center">
-    <nav class="p-4 space-y-2 overflow-y-auto overflow-x-hidden"
+  <div class="flex justify-center overflow-y-auto">
+    <nav class="p-4 space-y-2 overflow-x-hidden"
          :class="{'flex-1': sidebarExpanded || sidebarHover, 'flex': !sidebarExpanded && !sidebarHover }">
     <div v-if="selectedTab === 'hs'">
       <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4 select-none text-nowrap"
@@ -158,6 +158,19 @@ const {sidebarExpanded, sidebarHover} = storeToRefs(uxStore);
       <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4 select-none text-nowrap"
           :class="{'text-center font-extrabold': !sidebarExpanded && !sidebarHover}">
         {{ sidebarExpanded || sidebarHover ? "Okuw işleri" : "..." }}</h4>
+      <sidebar-link link="/students">
+        <div class="flex justify-center" :class="{'w-full': !sidebarExpanded && !sidebarHover}">
+          <svg class="w-5"
+               xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Talyplar</span></sidebar-link>
 
     </div>
     <div v-if="selectedTab === 'ss'">
