@@ -20,7 +20,6 @@ urlpatterns = [
         "get-example/high-school/<int:high_school_id>/row-count/<int:row_count>/",
         get_example,
     ),
-    path("import-excel-data/", import_excel_data),
     path("dashboard/", dashboard_api_view),
     # High school routes
     path("create-high-school/", create_high_school_api_view),
@@ -172,10 +171,21 @@ urlpatterns = [
         name="specialization-retrieve-update-destroy",
     ),
     # Student routes
+    path("import-students/", import_students_from_excel_api_view),
     path(
         "students/",
         StudentListAPIView.as_view(),
-        name="student-list-create",
+        name="student-list",
+    ),
+    path(
+        "students-info/<int:id>/",
+        StudentInfoAPIView.as_view(),
+        name="student-info",
+    ),
+    path(
+        "students-with-additional/",
+        get_students_with_additional_data_api_view,
+        name="get-students-with-additional-data",
     ),
     path(
         "students/<int:id>/",

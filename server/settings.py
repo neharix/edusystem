@@ -35,10 +35,10 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "file": {
-            "level": "INFO",  # Уровень логирования
+            "level": "INFO",
             "class": "logging.FileHandler",
-            "filename": "requests.log",  # Файл для логирования
-            "formatter": "verbose",  # Форматирование логов
+            "filename": "requests.log",
+            "formatter": "verbose",
         },
     },
     "formatters": {
@@ -49,10 +49,8 @@ LOGGING = {
     },
     "loggers": {
         "django.request": {
-            "handlers": [
-                "file"
-            ],  # Указываем, что будет использоваться хендлер для файла
-            "level": "INFO",  # Уровень логирования
+            "handlers": ["file"],
+            "level": "INFO",
             "propagate": True,
         },
     },

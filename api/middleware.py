@@ -15,8 +15,8 @@ class RequestLoggerMiddleware:
         logger.info(
             f"Method: {request.method} | Path: {request.path} | IP: {self.get_client_ip(request)} | Headers: {dict(request.headers)}"
         )
-        if request.method == "POST":
-            logger.info(f"Request Body: {request.body.decode('utf-8')}")
+        # if request.method == "POST":
+        #     logger.info(f"Request Body: {request.body.decode('utf-8')}")
         response = self.get_response(request)
 
         logger.info(f"Response Status: {response.status_code} | Path: {request.path}")

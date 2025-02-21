@@ -1,7 +1,7 @@
 from string import ascii_uppercase
 from typing import List
 
-from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Side
+from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.utils import quote_sheetname
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -37,8 +37,6 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
         "Welaýaty",
         "Milleti",
         "Ýurdy",
-        "Fakulteti",
-        "Kafedrasy",
         "Hünari",
         "Kursy",
         "Töleg görnüşi",
@@ -52,7 +50,7 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
     ]
     column_index = 0
 
-    for column_id in ascii_uppercase[:19]:
+    for column_id in ascii_uppercase[:17]:
         ws[f"{column_id}1"].value = column_headers[column_index]
         column_index += 1
         ws.column_dimensions[column_id].width = 20
@@ -65,24 +63,17 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
     ws.column_dimensions["A"].width = 5
     ws.column_dimensions["B"].width = 20
 
-    # Faculty validation values
-    index = 1
-    faculty_ws: Worksheet = wb.create_sheet("Fakultetler")
-    for faculty in high_school.faculties.all():
-        faculty_ws[f"A{index}"].value = faculty.name
-        index += 1
-
-    # Department validation values
-    index = 1
-    department_ws: Worksheet = wb.create_sheet("Kafedralar")
-    for department in high_school.departments.all():
-        department_ws[f"A{index}"].value = department.name
-        index += 1
-
     # Specialization validation values
     index = 1
     specialization_ws: Worksheet = wb.create_sheet("Hünarler")
-    for specialization in high_school.specializations.all():
+    for specialization in Specialization.objects.filter(
+        id__in=[
+            department_specialization.specialization.id
+            for department_specialization in DepartmentSpecialization.objects.filter(
+                faculty_department__high_school_faculty__high_school=high_school
+            )
+        ]
+    ):
         specialization_ws[f"A{index}"].value = specialization.name
         index += 1
 
@@ -124,14 +115,6 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
     payment_type_ws["A1"].value = "Tölegli"
     payment_type_ws["A2"].value = "Býudjet"
 
-    faculty_data_val = DataValidation(
-        type="list",
-        formula1=f"={quote_sheetname('Fakultetler')}!$A:$A",
-    )
-    department_data_val = DataValidation(
-        type="list",
-        formula1=f"={quote_sheetname('Kafedralar')}!$A:$A",
-    )
     specialization_data_val = DataValidation(
         type="list",
         formula1=f"={quote_sheetname('Hünarler')}!$A:$A",
@@ -161,8 +144,6 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
         formula1=f"={quote_sheetname('Töleg görnüşleri')}!$A:$A",
     )
 
-    ws.add_data_validation(faculty_data_val)
-    ws.add_data_validation(department_data_val)
     ws.add_data_validation(specialization_data_val)
     ws.add_data_validation(country_data_val)
     ws.add_data_validation(nationality_data_val)
@@ -172,15 +153,13 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
     ws.add_data_validation(payment_type_data_val)
     for row_index in range(2, row_count + 2):
         ws[f"A{row_index}"].value = row_index - 1
-        faculty_data_val.add(ws[f"H{row_index}"])
-        department_data_val.add(ws[f"I{row_index}"])
-        specialization_data_val.add(ws[f"J{row_index}"])
+        specialization_data_val.add(ws[f"H{row_index}"])
         country_data_val.add(ws[f"G{row_index}"])
         region_data_val.add(ws[f"E{row_index}"])
         gender_data_val.add(ws[f"D{row_index}"])
-        family_status_data_val.add(ws[f"M{row_index}"])
+        family_status_data_val.add(ws[f"K{row_index}"])
         nationality_data_val.add(ws[f"F{row_index}"])
-        payment_type_data_val.add(ws[f"L{row_index}"])
+        payment_type_data_val.add(ws[f"J{row_index}"])
 
     return wb
 

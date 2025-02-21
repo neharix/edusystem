@@ -6,10 +6,14 @@ from .models import (
     Country,
     Degree,
     Department,
+    DepartmentSpecialization,
     Faculty,
+    FacultyDepartment,
     HighSchool,
+    HighSchoolFaculty,
     Nationality,
     Profile,
+    Region,
     Specialization,
     Student,
 )
@@ -76,6 +80,14 @@ class StudentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class StudentAdditionalSerializer(serializers.ModelSerializer):
+    high_school = HighSchoolSerializer()
+
+    class Meta:
+        model = Student
+        fields = ["id", "full_name", "high_school", "study_year"]
+
+
 class NationalitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Nationality
@@ -85,4 +97,65 @@ class NationalitySerializer(serializers.ModelSerializer):
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
+        fields = "__all__"
+
+
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = "__all__"
+
+
+# Student Info Serializers
+
+
+class HighSchoolInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HighSchool
+        fields = ["name"]
+
+
+class SpecializationInfoSerializer(serializers.ModelSerializer):
+    degree = DegreeSerializer()
+
+    class Meta:
+        model = Specialization
+        fields = "__all__"
+
+
+class HighSchoolFacultyInfoSerializer(serializers.ModelSerializer):
+    faculty = FacultySerializer()
+
+    class Meta:
+        model = HighSchoolFaculty
+        fields = "__all__"
+
+
+class FacultyDepartmentInfoSerializer(serializers.ModelSerializer):
+    high_school_faculty = HighSchoolFacultyInfoSerializer()
+    department = DepartmentSerializer()
+
+    class Meta:
+        model = FacultyDepartment
+        fields = "__all__"
+
+
+class DepartmentSpecializationInfoSerializer(serializers.ModelSerializer):
+    faculty_department = FacultyDepartmentInfoSerializer()
+    specialization = SpecializationInfoSerializer()
+
+    class Meta:
+        model = DepartmentSpecialization
+        fields = "__all__"
+
+
+class StudentInfoSerializer(serializers.ModelSerializer):
+    high_school = HighSchoolInfoSerializer()
+    nationality = NationalitySerializer()
+    country = CountrySerializer()
+    region = RegionSerializer()
+    specialization = DepartmentSpecializationInfoSerializer()
+
+    class Meta:
+        model = Student
         fields = "__all__"
