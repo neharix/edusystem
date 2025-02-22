@@ -25,6 +25,7 @@ from .models import (
     Degree,
     Department,
     DepartmentSpecialization,
+    ExpulsionReason,
     Faculty,
     FacultyDepartment,
     HighSchool,
@@ -40,10 +41,12 @@ from .serializers import (
     CountrySerializer,
     DegreeSerializer,
     DepartmentSerializer,
+    ExpulsionReasonSerializer,
     FacultySerializer,
     HighSchoolSerializer,
     NationalitySerializer,
     ProfileSerializer,
+    RegionSerializer,
     SpecializationSerializer,
     StudentAdditionalSerializer,
     StudentInfoSerializer,
@@ -1157,7 +1160,18 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
         students = Student.objects.filter(
             high_school=HighSchool.objects.get(manager__user=request.user), active=True
         )
-        return Response(StudentAdditionalSerializer(students, many=True).data)
+
+        return Response(
+            [
+                {
+                    "id": student.id,
+                    "full_name": student.full_name,
+                    "faculty": student.specialization.faculty_department.high_school_faculty.faculty.name,
+                    "study_year": student.study_year,
+                }
+                for student in students
+            ]
+        )
 
 
 class StudentListAPIView(ListAPIView):
@@ -1307,3 +1321,78 @@ def get_countries_with_additional_data_api_view(request: HttpRequest):
                 }
             )
         return Response(response)
+
+
+# Region API views
+
+
+class RegionListCreateAPIView(ListCreateAPIView):
+    queryset = Region.objects.all()
+    serializer_class = RegionSerializer
+    lookup_field = "id"
+
+
+class RegionRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Region.objects.all()
+    serializer_class = RegionSerializer
+    lookup_field = "id"
+
+
+@api_view(http_method_names=["GET"])
+def get_regions_with_additional_data_api_view(request: HttpRequest):
+    response = []
+    regions = Region.objects.all()
+    if request.user.is_superuser:
+        for region in regions:
+            male_count = Student.objects.filter(region=region, gender="M").count()
+            female_count = Student.objects.filter(region=region, gender="F").count()
+
+            response.append(
+                {
+                    "id": region.id,
+                    "name": region.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+    else:
+        high_school = HighSchool.objects.get(manager__user=request.user)
+        for region in regions:
+            male_count = Student.objects.filter(
+                region=region,
+                gender="M",
+                high_school=high_school,
+            ).count()
+            female_count = Student.objects.filter(
+                region=region,
+                gender="F",
+                high_school=high_school,
+            ).count()
+
+            response.append(
+                {
+                    "id": region.id,
+                    "name": region.name,
+                    "students_count": male_count + female_count,
+                    "male_count": male_count,
+                    "female_count": female_count,
+                }
+            )
+        return Response(response)
+
+
+# Expulsion reason API views
+
+
+class ExpulsionReasonListCreateAPIView(ListCreateAPIView):
+    queryset = ExpulsionReason.objects.all()
+    serializer_class = ExpulsionReasonSerializer
+    lookup_field = "id"
+
+
+class ExpulsionReasonRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = ExpulsionReason.objects.all()
+    serializer_class = ExpulsionReasonSerializer
+    lookup_field = "id"

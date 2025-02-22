@@ -224,4 +224,31 @@ urlpatterns = [
         CountryRetrieveUpdateDestroyAPIView.as_view(),
         name="country-retrieve-update-destroy",
     ),
+    # Region routes
+    path(
+        "regions-with-additional/",
+        get_regions_with_additional_data_api_view,
+        name="get-regions-with-additional-data",
+    ),
+    path(
+        "regions/",
+        RegionListCreateAPIView.as_view(),
+        name="region-list-create",
+    ),
+    path(
+        "regions/<int:id>/",
+        RegionRetrieveUpdateDestroyAPIView.as_view(),
+        name="region-retrieve-update-destroy",
+    ),
+    # Expulsion reason routes
+    path(
+        "expulsion-reasons/",
+        ExpulsionReasonListCreateAPIView.as_view(),
+        name="expulsion-reason-list-create",
+    ),
+    path(
+        "expulsion-reasons/<int:id>/",
+        ExpulsionReasonRetrieveUpdateDestroyAPIView.as_view(),
+        name="expulsion-reason-retrieve-update-destroy",
+    ),
 ]

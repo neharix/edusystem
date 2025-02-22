@@ -7,6 +7,7 @@ from .models import (
     Degree,
     Department,
     DepartmentSpecialization,
+    ExpulsionReason,
     Faculty,
     FacultyDepartment,
     HighSchool,
@@ -103,6 +104,12 @@ class CountrySerializer(serializers.ModelSerializer):
 class RegionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Region
+        fields = "__all__"
+
+
+class ExpulsionReasonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExpulsionReason
         fields = "__all__"
 
 

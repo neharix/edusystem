@@ -184,6 +184,16 @@ class Region(models.Model):
         ordering = ["name"]
 
 
+class ExpulsionReason(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["name"]
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
