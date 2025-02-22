@@ -463,6 +463,7 @@ export const useNationalizationsStore = defineStore({
   id: "nationalizations",
   state: () => ({
     nationalization: {},
+    nationalizations: [],
     nationalizationsAdditional: [],
     createStatus: null,
     deleteStatus: null,
@@ -473,6 +474,14 @@ export const useNationalizationsStore = defineStore({
       try {
         const response = await axiosInstance.get(`/nationalities/${id}/`);
         this.nationalization = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getAll() {
+      try {
+        const response = await axiosInstance.get(`/nationalities/`);
+        this.nationalizations = response.data;
       } catch (error) {
         console.error("Error", error);
       }
@@ -520,6 +529,7 @@ export const useCountriesStore = defineStore({
   id: "countries",
   state: () => ({
     country: {},
+    countries: [],
     countriesAdditional: [],
     createStatus: null,
     deleteStatus: null,
@@ -530,6 +540,14 @@ export const useCountriesStore = defineStore({
       try {
         const response = await axiosInstance.get(`/countries/${id}/`);
         this.country = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getAll(id) {
+      try {
+        const response = await axiosInstance.get(`/countries/`);
+        this.countries = response.data;
       } catch (error) {
         console.error("Error", error);
       }
@@ -562,6 +580,70 @@ export const useCountriesStore = defineStore({
     async put(id, data) {
       try {
         const response = await axiosInstance.put(`/countries/${id}/`, data);
+        this.updateStatus = "success";
+      } catch (error) {
+        console.error("Error", error);
+        this.updateStatus = "error";
+      }
+    },
+  },
+});
+
+export const useRegionsStore = defineStore({
+  id: "regions",
+  state: () => ({
+    region: {},
+    regions: [],
+    regionsAdditional: [],
+    createStatus: null,
+    deleteStatus: null,
+    updateStatus: null,
+  }),
+  actions: {
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/regions/${id}/`);
+        this.region = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getAll(id) {
+      try {
+        const response = await axiosInstance.get(`/regions/`);
+        this.regions = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getAllAdditional() {
+      try {
+        const response = await axiosInstance.get("/regions-with-additional/");
+        this.regionsAdditional = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async create(data) {
+      try {
+        const response = await axiosInstance.post("/regions/", data);
+        this.createStatus = "success";
+      } catch (error) {
+        this.createStatus = "error";
+        console.error("Error", error);
+      }
+    },
+    async delete(id) {
+      try {
+        const response = await axiosInstance.delete(`/regions/${id}/`);
+        this.deleteStatus = "success";
+      } catch (error) {
+        this.deleteStatus = "error";
+      }
+    },
+    async put(id, data) {
+      try {
+        const response = await axiosInstance.put(`/regions/${id}/`, data);
         this.updateStatus = "success";
       } catch (error) {
         console.error("Error", error);
@@ -790,6 +872,66 @@ export const useStudentsStore = defineStore({
     async put(id, data) {
       try {
         const response = await axiosInstance.put(`/students/${id}/`, data);
+        this.updateStatus = "success";
+      } catch (error) {
+        console.error("Error", error);
+        this.updateStatus = "error";
+      }
+    },
+  },
+});
+
+export const useExpulsionReasonsStore = defineStore({
+  id: "expulsion-reasons",
+  state: () => ({
+    expulsionReason: {},
+    expulsionReasons: [],
+    createStatus: null,
+    deleteStatus: null,
+    updateStatus: null,
+  }),
+  actions: {
+    async get(id) {
+      try {
+        const response = await axiosInstance.get(`/expulsion-reasons/${id}/`);
+        this.expulsionReason = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getAll(id) {
+      try {
+        const response = await axiosInstance.get(`/expulsion-reasons/`);
+        this.expulsionReasons = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async create(data) {
+      try {
+        const response = await axiosInstance.post("/expulsion-reasons/", data);
+        this.createStatus = "success";
+      } catch (error) {
+        this.createStatus = "error";
+        console.error("Error", error);
+      }
+    },
+    async delete(id) {
+      try {
+        const response = await axiosInstance.delete(
+          `/expulsion-reasons/${id}/`
+        );
+        this.deleteStatus = "success";
+      } catch (error) {
+        this.deleteStatus = "error";
+      }
+    },
+    async put(id, data) {
+      try {
+        const response = await axiosInstance.put(
+          `/expulsion-reasons/${id}/`,
+          data
+        );
         this.updateStatus = "success";
       } catch (error) {
         console.error("Error", error);

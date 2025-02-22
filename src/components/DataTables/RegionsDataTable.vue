@@ -4,7 +4,7 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import { useStudentsStore } from "@/stores/api.store.js";
+import { useRegionsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
@@ -20,8 +20,8 @@ watch(props, (newVal, oldVal) => {
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
 const { toasts, addToast } = useToast();
-const studentsStore = useStudentsStore();
-const { deleteStatus, updateStatus, createStatus } = storeToRefs(studentsStore);
+const regionsStore = useRegionsStore();
+const { deleteStatus, updateStatus, createStatus } = storeToRefs(regionsStore);
 const authStore = useAuthStore();
 
 const data = ref([]);
@@ -132,7 +132,7 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  studentsStore.delete(selectedItem.value).then(() => {
+  regionsStore.delete(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
@@ -141,7 +141,7 @@ function submitModal() {
 watch(deleteStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Talyp üstünlikli ýok edildi', 'success');
+      addToast('Welaýat üstünlikli ýok edildi', 'success');
     } else if (newVal === 'error') {
       addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -152,7 +152,7 @@ watch(deleteStatus, (newVal, oldVal) => {
 onMounted(() => {
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
-      addToast('Talyp üstünlikli üýtgedildi', 'success');
+      addToast('Welaýat üstünlikli üýtgedildi', 'success');
     } else if (updateStatus.value === 'error') {
       addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -161,7 +161,7 @@ onMounted(() => {
 
   if (createStatus.value) {
     if (createStatus.value === 'success') {
-      addToast('Hasaba alma prosesi üstünlikli tamamlandy', 'success');
+      addToast('Welaýat üstünlikli hasaba alyndy', 'success');
     } else if (createStatus.value === 'error') {
       addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -245,42 +245,43 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('full_name')">
-              TALYP
-              <span :class="sortColumn === 'full_name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              @click="sort('name')">
+              WELAÝAT
+              <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
             </th>
             <th
-              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('high_school.name')" v-if="authStore.user.is_superuser">
-              ÝOM
-              <span
-                :class="sortColumn === 'high_school.name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300 text-left text-[0.8rem]"
+              @click="sort('students_count')">
+              JEMI
+              <span :class="sortColumn === 'students_count' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
             </th>
             <th
-              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('faculty')" v-else>
-              FAKULTETI
-              <span :class="sortColumn === 'faculty' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300 text-left text-[0.8rem]"
+              @click="sort('male_count')">
+              OGLAN
+              <span :class="sortColumn === 'male_count' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
             </th>
             <th
-              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('study_year')">
-              KURSY
-              <span :class="sortColumn === 'study_year' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300 text-left text-[0.8rem]"
+              @click="sort('female_count')">
+              GYZ
+              <span :class="sortColumn === 'female_count' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
             </th>
-            <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]">
+
+            <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]"
+              v-if="authStore.user.is_superuser">
               GURALLAR
             </th>
           </tr>
@@ -290,40 +291,39 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.full_name
-              }}
-            </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
-              v-if="authStore.user.is_superuser">{{
-                item.high_school.name
-              }}
-            </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]" v-else>{{
-              item.faculty
-              }}
-            </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.study_year
-              }}
+              item.name
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+              {{ item.students_count }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
+              item.male_count
+            }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+              {{ item.female_count }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
+              v-if="authStore.user.is_superuser">
+              <!-- TODO -->
               <div class="w-full flex items-center justify-center">
                 <div class="inline-flex rounded-md shadow-xs" role="group">
-                  <button type="button" :key="item.id" @click="router.push(`/students/view/${item.id}`)"
-                    class="px-4 py-2 text-[0.8rem] font-medium rounded-l-lg bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700 select-none">
+                  <button type="button" :key="item.id" @click="router.push(`/regions/edit/${item.id}`)"
+                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
+                    Üýtgetmek
+                  </button>
+                  <!-- FIXME -->
+                  <button type="button" :key="item.id"
+                    class="px-4 py-2 text-[0.8rem] font-medium bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700 select-none">
                     Görmek
                   </button>
-                  <button v-if="authStore.user.is_superuser" type="button"
-                    @click="openModalWrapper('Ýok etmek', item.full_name, item.id)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700 dark:focus:ring-pink-500 select-none">
+                  <button type="button" :key="item.id" @click="openModalWrapper('Ýok etmek', item.name, item.id)"
+                    class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500 select-none">
                     Pozmak
-                  </button>
-                  <button v-else type="button" @click="router.push(`/students/edit/${item.id}`)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
-                    Üýtgetmek
                   </button>
                 </div>
               </div>

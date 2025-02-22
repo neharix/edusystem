@@ -373,6 +373,49 @@ const router = createRouter({
       ],
     },
     {
+      path: "/regions",
+      name: "regions",
+      component: () => import("../views/RegionViews/Regions.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Welaýatlar",
+      },
+      children: [
+        {
+          path: "",
+          name: "regions-list",
+          component: () => import("../views/RegionViews/RegionsListView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Welaýatlar",
+          },
+          beforeEnter: guards.defaultGuard,
+        },
+        {
+          path: "add",
+          name: "add-region",
+          component: () => import("../views/RegionViews/AddRegionView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Welaýat goşmak",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: "edit/:id",
+          name: "edit-region",
+          component: () => import("../views/RegionViews/EditRegionView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Welaýaty üýtgetmek",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+      ],
+    },
+    {
       path: "/classificators",
       name: "classificators",
       component: () => import("../views/ClassificatorViews/Classificators.vue"),
@@ -506,7 +549,7 @@ const router = createRouter({
           meta: {
             layout: "MainLayout",
             title: "Talyp maglumatyny üýtgetmek",
-            adminRequired: true,
+            staffRequired: true,
           },
           beforeEnter: guards.authGuard,
         },
@@ -519,6 +562,56 @@ const router = createRouter({
             title: "Talyp barada maglumat",
           },
           beforeEnter: guards.defaultGuard,
+        },
+      ],
+    },
+    {
+      path: "/expulsion-reasons",
+      name: "expulsion-reasons",
+      component: () =>
+        import("../views/ExpulsionReasonViews/ExpulsionReasons.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Okuwdan çykarma sebäpleri",
+      },
+      children: [
+        {
+          path: "",
+          name: "expulsion-reasons-list",
+          component: () =>
+            import(
+              "../views/ExpulsionReasonViews/ExpulsionReasonsListView.vue"
+            ),
+          meta: {
+            layout: "MainLayout",
+            title: "Okuwdan çykarma sebäpleri",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: "add",
+          name: "add-expulsion-reason",
+          component: () =>
+            import("../views/ExpulsionReasonViews/AddExpulsionReasonView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Okuwdan çykarma sebäbini goşmak",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: "edit/:id",
+          name: "edit-expulsion-reason",
+          component: () =>
+            import("../views/ExpulsionReasonViews/EditExpulsionReasonView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Okuwdan çykarma sebäbini üýtgetmek",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
         },
       ],
     },

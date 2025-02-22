@@ -1,13 +1,12 @@
-import {useAuthStore} from "@/stores/auth.store.js";
+import { useAuthStore } from "@/stores/auth.store.js";
 
-
-function defaultGuard (to, from, next) {
+function defaultGuard(to, from, next) {
   let title = to.meta.title || "";
   document.title = title.length > 0 ? title + " | BMDU" : "BMDU";
   return next();
 }
 
-async function authGuard (to, from, next) {
+async function authGuard(to, from, next) {
   let title = to.meta.title || "";
   document.title = title.length > 0 ? title + " | BMDU" : "BMDU";
 
@@ -22,7 +21,11 @@ async function authGuard (to, from, next) {
     return next("/403");
   }
 
+  if (to.meta.staffRequired && authStore.role === "root") {
+    return next("/403");
+  }
+
   return next();
 }
 
-export default {authGuard, defaultGuard};
+export default { authGuard, defaultGuard };
