@@ -1,13 +1,11 @@
 <script setup>
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
-import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import { useExpulsionReasonsStore } from "@/stores/api.store.js";
+import { useDiplomasStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
-import { useAuthStore } from "@/stores/auth.store.js";
 
 
 const props = defineProps(["data"])
@@ -20,9 +18,7 @@ watch(props, (newVal, oldVal) => {
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
 const { toasts, addToast } = useToast();
-const expulsionReasonsStore = useExpulsionReasonsStore();
-const { deleteStatus, updateStatus, createStatus } = storeToRefs(expulsionReasonsStore);
-const authStore = useAuthStore();
+const diplomasStore = useDiplomasStore();
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -31,28 +27,12 @@ const selectedItem = ref(null);
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
-const sortColumn = ref("name");
+const sortColumn = ref("verdict_date");
 const sortOrder = ref('asc');
 const currentPage = ref(1);
 const rowsPerPage = ref(10);
 const rowsPerPageOptions = [10, 20, 50, 100];
-const searchQuery = ref('');
-const isSearching = ref(false);
 
-const applySearch = () => {
-  filteredData.value = data.value.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-  currentPage.value = 1;
-  isSearching.value = true;
-};
-
-const resetTable = () => {
-  searchQuery.value = '';
-  filteredData.value = [...data.value];
-  currentPage.value = 1;
-  isSearching.value = false;
-};
 
 const sortedData = computed(() => {
   if (!sortColumn.value) return data.value;
@@ -118,66 +98,9 @@ function onClickOutside(event) {
   }
 }
 
-function openModalWrapper(headerText, content, id) {
-  openModal(headerText, content);
-  selectedItem.value = id;
-}
-
-
-function closeModal() {
-  isModalOpen.value = false;
-  selectedItem.value = null;
-}
-
-
-function submitModal() {
-  isModalOpen.value = false;
-  expulsionReasonsStore.delete(selectedItem.value).then(() => {
-    emit('update');
-  });
-  selectedItem.value = null;
-}
-
-watch(deleteStatus, (newVal, oldVal) => {
-  if (newVal) {
-    if (newVal === 'success') {
-      addToast('Sebäp üstünlikli ýok edildi', 'success');
-    } else if (newVal === 'error') {
-      addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
-    }
-  }
-  deleteStatus.value = null;
-})
-
-onMounted(() => {
-  if (updateStatus.value) {
-    if (updateStatus.value === 'success') {
-      addToast('Sebäp üstünlikli üýtgedildi', 'success');
-    } else if (updateStatus.value === 'error') {
-      addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
-    }
-  }
-  updateStatus.value = null;
-
-  if (createStatus.value) {
-    if (createStatus.value === 'success') {
-      addToast('Sebäp üstünlikli hasaba alyndy', 'success');
-    } else if (createStatus.value === 'error') {
-      addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
-    }
-  }
-  createStatus.value = null;
-})
-
-
-window.addEventListener("click", onClickOutside);
-
 </script>
 
 <template>
-  <confirm-modal :is-open="isModalOpen" @close="closeModal" @submit="submitModal" :header="header"
-    :context='`\"${context}\" ýok edilmegini tassyklaýarsyňyzmy?`'></confirm-modal>
-
   <div class="w-full rounded-lg shadow-lg">
     <div class="pt-1  rounded-t-lg dark:bg-[#171131ef] bg-white">
       <div class="flex items-center justify-between space-x-2 py-3 px-4">
@@ -206,33 +129,8 @@ window.addEventListener("click", onClickOutside);
             </transition>
           </div>
         </div>
-        <div class="lg:w-1/3 md:w-1/3 w-2/3 flex items-center space-x-2">
-          <button @click="resetTable" :class="{ 'opacity-0': !isSearching }" :disabled="!isSearching"
-            class="p-2 text-sm rounded-xl shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="w-6 h-6"
-              viewBox="0 0 24 24" version="1.1">
-              <title>Reload</title>
-              <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                <g id="Reload">
-                  <rect id="Rectangle" fill-rule="nonzero" x="0" y="0" width="24" height="24">
-
-                  </rect>
-                  <path
-                    d="M4,13 C4,17.4183 7.58172,21 12,21 C16.4183,21 20,17.4183 20,13 C20,8.58172 16.4183,5 12,5 C10.4407,5 8.98566,5.44609 7.75543,6.21762"
-                    id="Path" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-
-                  </path>
-                  <path
-                    d="M9.2384,1.89795 L7.49856,5.83917 C7.27552,6.34441 7.50429,6.9348 8.00954,7.15784 L11.9508,8.89768"
-                    id="Path" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-
-                  </path>
-                </g>
-              </g>
-            </svg>
-          </button>
-          <input v-model="searchQuery" type="text" @keyup.enter="applySearch" placeholder="Gözleg"
-            class="w-full dark:text-gray-300 transition duration-200 ease-in bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none" />
+        <div>
+          <h3 class="select-none font-bold">HEREKETLER</h3>
         </div>
       </div>
     </div>
@@ -245,16 +143,30 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('name')">
-              SEBÄP
-              <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              @click="sort('sender')">
+              UGRADYJY
+              <span :class="sortColumn === 'sender' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
             </th>
-            <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]"
-              v-if="authStore.user.is_superuser">
-              GURALLAR
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('count')">
+              HEREKET
+              <span :class="sortColumn === 'count' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('verdict_date')">
+              WAGTY
+              <span :class="sortColumn === 'verdict_date' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
             </th>
           </tr>
         </thead>
@@ -263,27 +175,23 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.name
-              }}
+              item.sender
+            }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
-              v-if="authStore.user.is_superuser">
-              <!-- TODO -->
-              <div class="w-full flex items-center justify-center">
-                <div class="inline-flex rounded-md shadow-xs" role="group">
-                  <button type="button" :key="item.id" @click="router.push(`/expulsion-reasons/edit/${item.id}`)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
-                    Üýtgetmek
-                  </button>
-                  <button type="button" :key="item.id" @click="openModalWrapper('Ýok etmek', item.name, item.id)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500 select-none">
-                    Pozmak
-                  </button>
-                </div>
-              </div>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem] text-center">
+              <span class="py-2 px-3 select-none rounded-lg"
+                :class="{ 'bg-red-500 dark:bg-pink-900 text-white': item.type === 'down', 'bg-emerald-500 dark:bg-emerald-700 text-white': item.type === 'up' }">
+                {{
+                  item.type === "up" ? `+${item.count}` : `-${item.count}`
+                }}
+              </span>
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
+              item.verdict_date
+            }}
             </td>
           </tr>
         </tbody>

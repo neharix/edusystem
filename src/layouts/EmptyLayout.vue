@@ -1,7 +1,7 @@
 <script setup>
 import loginImage from '../assets/svgs/login.svg';
-import {onMounted, ref} from "vue";
-import ThemeToggler from "@/components/ThemeToggler.vue";
+import { onMounted, ref } from "vue";
+import ThemeToggler from "@/components/SiteTools.vue";
 
 const isDark = ref(null)
 
@@ -28,9 +28,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <router-view></router-view>
+  <router-view></router-view>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

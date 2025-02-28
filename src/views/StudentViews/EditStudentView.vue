@@ -175,7 +175,7 @@ import * as Yup from 'yup';
 import { useStudentsStore, useNationalizationsStore, useCountriesStore, useRegionsStore, useSpecializationsStore } from "@/stores/api.store.js";
 import { useRoute } from "vue-router";
 import router from "@/router/index.js";
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, watch, ref } from "vue";
 import { storeToRefs } from 'pinia';
 
 
@@ -234,6 +234,12 @@ function onSubmit(values, { setErrors }) {
     router.go(-1);
   }).catch(error => setErrors({ apiError: error }));
 }
+
+watch(gender, (newVal) => {
+  if (newVal === "F") {
+    militaryService.value = '';
+  }
+})
 
 onBeforeMount(() => {
   nationalizationsStore.getAll();

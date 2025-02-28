@@ -77,8 +77,8 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
         </sidebar-link>
         <sidebar-link link="/departments">
           <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
-            <svg class="w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
-              stroke="currentColor" className="size-6">
+            <svg class="w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.3"
+              stroke="currentColor">
               <path strokeLinecap="round" strokeLineJoin="round"
                 d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
             </svg>
@@ -176,6 +176,36 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
           </div>
           <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Okuwdan çykarmak</span>
         </sidebar-link>
+        <sidebar-link link="/statements">
+          <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+              </path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
+          <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Arzalar</span>
+        </sidebar-link>
+        <sidebar-link link="/diplomas">
+          <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+              </path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
+          <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Diplomlar</span>
+        </sidebar-link>
+        <div class="h-16"></div>
+
 
       </div>
       <div v-if="selectedTab === 'ss'">

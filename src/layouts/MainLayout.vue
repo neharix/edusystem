@@ -1,7 +1,7 @@
 <template>
   <div id="sidebar" @mouseover="uxStore.mouseOverSidebar()" @mouseleave="uxStore.mouseLeaveSidebar()"
     :class="{ '-translate-x-full': showSidebar === false, 'w-64': sidebarExpanded || sidebarHover, 'w-25': !sidebarExpanded }"
-    class="fixed z-30 shadow-md inset-y-0 left-0 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform transition-transform duration-300 lg:translate-x-0 transition-width">
+    class="fixed z-30 shadow-md inset-y-0 left-0 bg-white/90 lg:bg-white text-gray-800 dark:text-white dark:bg-[#171131ef] lg:dark:bg-[#171131] flex flex-col transform duration-200 ease-out lg:translate-x-0 transition-all">
     <div class="flex items-center justify-between py-8 px-4 lg:hidden">
       <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
         <img src="../assets/svgs/favicon.svg" alt="User Avatar" />
@@ -40,10 +40,11 @@
 
   </div>
   <!-- Overlay -->
-  <div id="overlay" :class="{ hidden: showSidebar === false }" class="fixed inset-0 z-10 bg-black/50 lg:hidden"
+  <div id="overlay" :class="{ hidden: showSidebar === false }"
+    class="fixed inset-0 z-10 bg-black/50 lg:hidden transition-colors duration-200 ease-out"
     @click="showSidebar = !showSidebar"></div>
   <!-- Main Content -->
-  <div class="flex-1 flex flex-col dark:bg-[#1b1829] bg-gray-100 transition-padding"
+  <div class="flex-1 flex flex-col dark:bg-[#1b1829] bg-gray-100 transition-all duration-200 ease-out"
     :class="{ 'lg:pl-64': sidebarExpanded, 'lg:pl-24': !sidebarExpanded }">
     <!-- Navbar -->
     <div :class="showSidebar ? 'bg-white/25 dark:bg-[#1711313b]' : 'bg-white/90 dark:bg-[#171131ef]'"
@@ -58,9 +59,12 @@
         <div class="text-xl font-semibold flex items-center"><img class="w-12 h-12 select-none"
             src="/src/assets/svgs/favicon.svg" alt=""><span class="px-2 select-none">BMDU</span></div>
       </router-link>
-      <theme-toggler :is-mobile="true" :is-dark="isDark" @toggle-theme="toggleTheme"></theme-toggler>
+
+      <site-tools :is-mobile="true" :is-dark="isDark"
+        :notifications="user.is_superuser && user.notifications.length > 0" @toggle-theme="toggleTheme"></site-tools>
       <div class="hidden lg:flex items-center space-x-4">
-        <theme-toggler :is-mobile="false" :is-dark="isDark" @toggle-theme="toggleTheme"></theme-toggler>
+        <site-tools :is-mobile="false" :is-dark="isDark"
+          :notifications="user.is_superuser && user.notifications.length > 0" @toggle-theme="toggleTheme"></site-tools>
         <user-dropdown v-if="user"></user-dropdown>
       </div>
     </div>
@@ -79,8 +83,8 @@
 </template>
 
 <script setup>
-import { onMounted, ref, shallowRef, watch } from "vue";
-import ThemeToggler from "@/components/ThemeToggler.vue";
+import { onBeforeMount, onMounted, ref, shallowRef, watch } from "vue";
+import SiteTools from "@/components/SiteTools.vue";
 import { useAuthStore } from '@/stores/auth.store.js';
 import UserDropdown from "@/components/UserDropdown.vue";
 import { storeToRefs } from "pinia";
@@ -93,7 +97,6 @@ const uxStore = useUxStore();
 const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
 
 const authStore = useAuthStore();
-authStore.fetchUser()
 
 
 const { user, role } = storeToRefs(authStore);
@@ -156,14 +159,9 @@ onMounted(() => {
   }
 
 })
+onBeforeMount(() => {
+  authStore.fetchUser()
+})
 </script>
 
-<style scoped>
-.transition-width {
-  transition: width 0.3s ease-out;
-}
-
-.transition-padding {
-  transition: padding 0.3s ease-out;
-}
-</style>
+<style scoped></style>

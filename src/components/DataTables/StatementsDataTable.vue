@@ -31,8 +31,8 @@ const selectedItem = ref(null);
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
-const sortColumn = ref("name");
-const sortOrder = ref('asc');
+const sortColumn = ref("request_date");
+const sortOrder = ref('desc');
 const currentPage = ref(1);
 const rowsPerPage = ref(10);
 const rowsPerPageOptions = [10, 20, 50, 100];
@@ -41,7 +41,7 @@ const isSearching = ref(false);
 
 const applySearch = () => {
   filteredData.value = data.value.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    item.sender.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
   currentPage.value = 1;
   isSearching.value = true;
@@ -136,6 +136,14 @@ function submitModal() {
     emit('update');
   });
   selectedItem.value = null;
+}
+
+function goTo(type, id) {
+  if (type === "Okuwdan boşatmak") {
+    router.push(`/statements/${id}/expulsion`)
+  } else if (type === "Okuwy dikeltmek") {
+    router.push(`/statements/${id}/reinstate`)
+  }
 }
 
 watch(deleteStatus, (newVal, oldVal) => {
@@ -245,9 +253,36 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('name')">
-              SEBÄP
-              <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              @click="sort('sender')">
+              ÝOKARY OKUW MEKDEBI
+              <span :class="sortColumn === 'sender' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('type')">
+              GÖRNÜŞI
+              <span :class="sortColumn === 'type' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('status')">
+              STATUS
+              <span :class="sortColumn === 'status' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('request_date')">
+              UGRADYLAN WAGTY
+              <span :class="sortColumn === 'request_date' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
@@ -259,28 +294,36 @@ window.addEventListener("click", onClickOutside);
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in paginatedData" :key="item.id"
+          <tr v-for="(item, index) in paginatedData" :key="index"
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.name
-              }}
+              item.sender
+            }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
-              v-if="authStore.user.is_superuser">
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
+              item.type
+            }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
+              item.status
+            }}
+            </td>
+
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
+              item.request_date
+            }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <!-- TODO -->
               <div class="w-full flex items-center justify-center">
                 <div class="inline-flex rounded-md shadow-xs" role="group">
-                  <button type="button" :key="item.id" @click="router.push(`/expulsion-reasons/edit/${item.id}`)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
-                    Üýtgetmek
-                  </button>
-                  <button type="button" :key="item.id" @click="openModalWrapper('Ýok etmek', item.name, item.id)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500 select-none">
-                    Pozmak
+                  <button type="button" :key="index" @click="goTo(item.type, item.id)"
+                    class="px-4 py-2 text-[0.8rem] rounded-lg font-medium bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700 select-none">
+                    Görmek
                   </button>
                 </div>
               </div>

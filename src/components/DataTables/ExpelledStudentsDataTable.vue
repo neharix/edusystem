@@ -4,10 +4,9 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import { useExpulsionReasonsStore } from "@/stores/api.store.js";
+import { useReinstateRequestsStore, useStudentsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
-import { useAuthStore } from "@/stores/auth.store.js";
 
 
 const props = defineProps(["data"])
@@ -20,9 +19,9 @@ watch(props, (newVal, oldVal) => {
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
 const { toasts, addToast } = useToast();
-const expulsionReasonsStore = useExpulsionReasonsStore();
-const { deleteStatus, updateStatus, createStatus } = storeToRefs(expulsionReasonsStore);
-const authStore = useAuthStore();
+const studentsStore = useStudentsStore();
+const reinstateRequestStore = useReinstateRequestsStore();
+const { createStatus } = storeToRefs(reinstateRequestStore);
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -31,7 +30,7 @@ const selectedItem = ref(null);
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
-const sortColumn = ref("name");
+const sortColumn = ref("full_name");
 const sortOrder = ref('asc');
 const currentPage = ref(1);
 const rowsPerPage = ref(10);
@@ -118,10 +117,6 @@ function onClickOutside(event) {
   }
 }
 
-function openModalWrapper(headerText, content, id) {
-  openModal(headerText, content);
-  selectedItem.value = id;
-}
 
 
 function closeModal() {
@@ -132,43 +127,22 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  expulsionReasonsStore.delete(selectedItem.value).then(() => {
+  studentsStore.delete(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
 }
 
-watch(deleteStatus, (newVal, oldVal) => {
-  if (newVal) {
-    if (newVal === 'success') {
-      addToast('Sebäp üstünlikli ýok edildi', 'success');
-    } else if (newVal === 'error') {
-      addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
-    }
-  }
-  deleteStatus.value = null;
-})
-
 onMounted(() => {
-  if (updateStatus.value) {
-    if (updateStatus.value === 'success') {
-      addToast('Sebäp üstünlikli üýtgedildi', 'success');
-    } else if (updateStatus.value === 'error') {
-      addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
-    }
-  }
-  updateStatus.value = null;
-
   if (createStatus.value) {
     if (createStatus.value === 'success') {
-      addToast('Sebäp üstünlikli hasaba alyndy', 'success');
+      addToast('Arza üstünlikli hasaba alyndy', 'success');
     } else if (createStatus.value === 'error') {
       addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   createStatus.value = null;
 })
-
 
 window.addEventListener("click", onClickOutside);
 
@@ -245,15 +219,32 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('name')">
-              SEBÄP
-              <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              @click="sort('full_name')">
+              TALYP
+              <span :class="sortColumn === 'full_name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
             </th>
-            <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]"
-              v-if="authStore.user.is_superuser">
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('expulsion_date')">
+              BOŞADYLAN WAGTY
+              <span :class="sortColumn === 'expulsion_date' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('study_year')">
+              KURSY
+              <span :class="sortColumn === 'study_year' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]">
               GURALLAR
             </th>
           </tr>
@@ -263,24 +254,26 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.name
-              }}
+              item.full_name
+            }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
-              v-if="authStore.user.is_superuser">
-              <!-- TODO -->
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
+              item.expulsion_date
+            }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
+              item.study_year
+            }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-full flex items-center justify-center">
                 <div class="inline-flex rounded-md shadow-xs" role="group">
-                  <button type="button" :key="item.id" @click="router.push(`/expulsion-reasons/edit/${item.id}`)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
-                    Üýtgetmek
-                  </button>
-                  <button type="button" :key="item.id" @click="openModalWrapper('Ýok etmek', item.name, item.id)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500 select-none">
-                    Pozmak
+                  <button type="button" @click="router.push(`/expelled-students/reinstate/${item.id}`)"
+                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
+                    Dikeltmek
                   </button>
                 </div>
               </div>

@@ -5,17 +5,15 @@ import { storeToRefs } from 'pinia';
 import { onBeforeMount, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import router from '@/router';
-import ExpulsionStatement from '@/components/Forms/ExpulsionStatement.vue';
+import ReinstateStatement from '@/components/Forms/ReinstateStatement.vue';
 import { useAuthStore } from '@/stores/auth.store';
 
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
 
 const route = useRoute();
 
 
 const studentsStore = useStudentsStore();
-const { studentInfo } = storeToRefs(studentsStore);
+const { expelledStudent: studentInfo } = storeToRefs(studentsStore);
 const student = reactive({
   fullName: '',
   highSchool: '',
@@ -39,75 +37,70 @@ const student = reactive({
 });
 
 onBeforeMount(() => {
-  studentsStore.getInfo(route.params.id).then(() => {
-    if (studentInfo.value.active) {
-      student.fullName = studentInfo.value.full_name;
-      student.nationality = studentInfo.value.nationality.name;
-      student.country = studentInfo.value.country.name;
-      student.region = studentInfo.value.region.name;
-      student.highSchool = studentInfo.value.high_school.name;
-      student.faculty = studentInfo.value.specialization.faculty_department.high_school_faculty.faculty.name;
-      student.department = studentInfo.value.specialization.faculty_department.department.name;
-      student.specialization = `${studentInfo.value.specialization.specialization.name} (${studentInfo.value.specialization.specialization.degree.name} ${studentInfo.value.specialization.specialization.degree.duration} ýyl)`;
-      student.registeredPlace = studentInfo.value.registered_place;
-      student.phoneNumber = studentInfo.value.phone_number;
-      student.passport = studentInfo.value.passport;
+  studentsStore.getExpelledStudent(route.params.id).then(() => {
+    student.fullName = studentInfo.value.full_name;
+    student.nationality = studentInfo.value.nationality.name;
+    student.country = studentInfo.value.country.name;
+    student.region = studentInfo.value.region.name;
+    student.highSchool = studentInfo.value.high_school.name;
+    student.faculty = studentInfo.value.specialization.faculty_department.high_school_faculty.faculty.name;
+    student.department = studentInfo.value.specialization.faculty_department.department.name;
+    student.specialization = `${studentInfo.value.specialization.specialization.name} (${studentInfo.value.specialization.specialization.degree.name} ${studentInfo.value.specialization.specialization.degree.duration} ýyl)`;
+    student.registeredPlace = studentInfo.value.registered_place;
+    student.phoneNumber = studentInfo.value.phone_number;
+    student.passport = studentInfo.value.passport;
 
-      switch (studentInfo.value.gender) {
-        case 'F':
-          student.gender = "Gyz";
-          break;
-        case 'M':
-          student.gender = "Oglan";
-          break;
-      }
-
-      switch (studentInfo.value.payment_type) {
-        case 'P':
-          student.paymentType = "Tölegli";
-          break;
-        case 'B':
-          student.paymentType = "Býudjet";
-          break;
-      }
-
-      switch (studentInfo.value.family_status) {
-        case 'FR':
-          student.familyStatus = "Hossarly";
-          break;
-        case 'HO':
-          student.familyStatus = "Ýarym ýetim";
-          break;
-        case 'CO':
-          student.familyStatus = "Doly ýetim";
-          break;
-        case 'OE':
-          student.familyStatus = "Ýetimler öýünde ösen";
-          break;
-      }
-
-      if (studentInfo.value.label) {
-        student.label = studentInfo.value.label;
-      }
-      if (studentInfo.value.military_service) {
-        student.militaryService = studentInfo.value.military_service;
-      }
-
-      let birthDate = new Date(studentInfo.value.birth_date);
-      student.birthDate = birthDate.toLocaleDateString();
-      let admissionDate = new Date(studentInfo.value.admission_date);
-      student.admissionDate = admissionDate.toLocaleDateString();
-
+    switch (studentInfo.value.gender) {
+      case 'F':
+        student.gender = "Gyz";
+        break;
+      case 'M':
+        student.gender = "Oglan";
+        break;
     }
-    else {
-      router.push('/403');
+
+    switch (studentInfo.value.payment_type) {
+      case 'P':
+        student.paymentType = "Tölegli";
+        break;
+      case 'B':
+        student.paymentType = "Býudjet";
+        break;
     }
+
+    switch (studentInfo.value.family_status) {
+      case 'FR':
+        student.familyStatus = "Hossarly";
+        break;
+      case 'HO':
+        student.familyStatus = "Ýarym ýetim";
+        break;
+      case 'CO':
+        student.familyStatus = "Doly ýetim";
+        break;
+      case 'OE':
+        student.familyStatus = "Ýetimler öýünde ösen";
+        break;
+    }
+
+    if (studentInfo.value.label) {
+      student.label = studentInfo.value.label;
+    }
+    if (studentInfo.value.military_service) {
+      student.militaryService = studentInfo.value.military_service;
+    }
+
+    let birthDate = new Date(studentInfo.value.birth_date);
+    student.birthDate = birthDate.toLocaleDateString();
+    let admissionDate = new Date(studentInfo.value.admission_date);
+    student.admissionDate = admissionDate.toLocaleDateString();
+
   })
 })
 
 const breadcrumbPaths = [
-  { path: "/students", name: "Talyplar" },
-  { path: "/students/view", name: "Görmek", current: true },
+  { path: "/expelled-students", name: "Okuwdan boşadylanlar" },
+  { path: "/expelled-students/reinstate", name: "Dikeltmek", current: true },
 ]
 
 </script>
@@ -197,5 +190,5 @@ const breadcrumbPaths = [
 
     </div>
   </div>
-  <expulsion-statement v-if="!user.is_superuser"></expulsion-statement>
+  <reinstate-statement></reinstate-statement>
 </template>

@@ -616,6 +616,137 @@ const router = createRouter({
       ],
     },
     {
+      path: "/expelled-students",
+      name: "expelled-students",
+      component: () =>
+        import("../views/ExpelledStudentViews/ExpelledStudents.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Okuwdan boşadylanlar",
+        staffRequired: true,
+      },
+      children: [
+        {
+          path: "",
+          name: "expelled-students-list",
+          component: () =>
+            import(
+              "../views/ExpelledStudentViews/ExpelledStudentsListView.vue"
+            ),
+          meta: {
+            layout: "MainLayout",
+            title: "Okuwdan boşadylanlar",
+            staffRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: "reinstate/:id",
+          name: "reinstate-student",
+          component: () =>
+            import(
+              "../views/ExpelledStudentViews/ReinstateExpelledStudentView.vue"
+            ),
+          meta: {
+            layout: "MainLayout",
+            title: "Dikeltmek",
+            staffRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+      ],
+    },
+    {
+      path: "/statements",
+      name: "statements",
+      component: () => import("../views/StatementViews/Statements.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Arzalar",
+      },
+      children: [
+        {
+          path: "",
+          name: "statements-list",
+          component: () =>
+            import("../views/StatementViews/StatementsListView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Arzalar",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: ":id/expulsion",
+          name: "verdict-expulsion-statement",
+          component: () =>
+            import("../views/StatementViews/VerdictStatementView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Okuwdan boşatmak arzasy",
+            adminRequired: true,
+            statementType: "expulsion",
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: ":id/reinstate",
+          name: "verdict-reinstate-statement",
+          component: () =>
+            import("../views/StatementViews/VerdictStatementView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Okuwy dikeltmek arzasy",
+            adminRequired: true,
+            statementType: "reinstate",
+          },
+          beforeEnter: guards.authGuard,
+        },
+      ],
+    },
+    {
+      path: "/diplomas",
+      name: "diplomas",
+      component: () => import("../views/DiplomasViews/Diplomas.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Diplomalar",
+      },
+      children: [
+        {
+          path: "",
+          name: "diplomas-view",
+          component: () => import("../views/DiplomasViews/DiplomasView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Diplomlar",
+          },
+        },
+        {
+          path: "add",
+          name: "add-diploma-request",
+          component: () =>
+            import("../views/DiplomasViews/AddDiplomaRequest.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Diplom hasabatyny döretmek",
+            stuffRequired: true,
+          },
+        },
+        {
+          path: "new-request",
+          name: "new-diploma-request",
+          component: () => import("../views/DiplomasViews/NewRequestView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Diplom hasabatyny täzelemek",
+            stuffRequired: true,
+          },
+        },
+      ],
+    },
+    {
       path: "/secondary-schools",
       name: "secondary-schools",
       component: () => import("../views/SecondarySchoolsView.vue"),

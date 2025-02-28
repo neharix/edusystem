@@ -1,6 +1,6 @@
 <script setup>
 
-import {useRouter} from "vue-router";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 
@@ -17,6 +17,12 @@ const props = defineProps({
     required: false,
     default: '',
   },
+  wholeLine: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  customClasses: String,
 })
 
 function cellClicked() {
@@ -28,8 +34,9 @@ function cellClicked() {
 </script>
 
 <template>
-  <!-- TODO add router-link like a wrapper for this component -->
-  <div class="bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4" :class="{'cursor-pointer': props.link !== ''}" @click="cellClicked">
+  <div class="bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4"
+    :class="[props.link !== '' ? 'cursor-pointer' : '', props.wholeLine ? 'md:col-span-4 sm:col-span-2' : '', props.customClasses]"
+    @click="cellClicked">
     <div>
       <div class="text-sm my-2 select-none">
         {{ label }}
@@ -44,6 +51,4 @@ function cellClicked() {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

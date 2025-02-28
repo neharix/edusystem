@@ -4,7 +4,7 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import { useExpulsionReasonsStore } from "@/stores/api.store.js";
+import { useDiplomasStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
@@ -20,8 +20,8 @@ watch(props, (newVal, oldVal) => {
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
 const { toasts, addToast } = useToast();
-const expulsionReasonsStore = useExpulsionReasonsStore();
-const { deleteStatus, updateStatus, createStatus } = storeToRefs(expulsionReasonsStore);
+const diplomasStore = useDiplomasStore();
+const { deactivateStatus } = storeToRefs(diplomasStore);
 const authStore = useAuthStore();
 
 const data = ref([]);
@@ -31,7 +31,7 @@ const selectedItem = ref(null);
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
-const sortColumn = ref("name");
+const sortColumn = ref("sender");
 const sortOrder = ref('asc');
 const currentPage = ref(1);
 const rowsPerPage = ref(10);
@@ -132,41 +132,21 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  expulsionReasonsStore.delete(selectedItem.value).then(() => {
+  studentsStore.delete(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
 }
 
-watch(deleteStatus, (newVal, oldVal) => {
+watch(deactivateStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Sebäp üstünlikli ýok edildi', 'success');
+      addToast('Hasabat üstünlikli arhiwleşdirildi', 'success');
     } else if (newVal === 'error') {
-      addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      addToast('Arhiwleşdirme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
-  deleteStatus.value = null;
-})
-
-onMounted(() => {
-  if (updateStatus.value) {
-    if (updateStatus.value === 'success') {
-      addToast('Sebäp üstünlikli üýtgedildi', 'success');
-    } else if (updateStatus.value === 'error') {
-      addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
-    }
-  }
-  updateStatus.value = null;
-
-  if (createStatus.value) {
-    if (createStatus.value === 'success') {
-      addToast('Sebäp üstünlikli hasaba alyndy', 'success');
-    } else if (createStatus.value === 'error') {
-      addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
-    }
-  }
-  createStatus.value = null;
+  deactivateStatus.value = null;
 })
 
 
@@ -245,15 +225,15 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('name')">
-              SEBÄP
-              <span :class="sortColumn === 'name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              @click="sort('sender')">
+              UGRADYJY
+              <span :class="sortColumn === 'sender' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
             </th>
-            <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]"
-              v-if="authStore.user.is_superuser">
+
+            <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]">
               GURALLAR
             </th>
           </tr>
@@ -263,24 +243,22 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.name
-              }}
+              item.sender
+            }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
-              v-if="authStore.user.is_superuser">
-              <!-- TODO -->
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-full flex items-center justify-center">
                 <div class="inline-flex rounded-md shadow-xs" role="group">
-                  <button type="button" :key="item.id" @click="router.push(`/expulsion-reasons/edit/${item.id}`)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
-                    Üýtgetmek
+                  <button type="button" :key="item.id" @click="router.push(`/students/view/${item.id}`)"
+                    class="px-4 py-2 text-[0.8rem] font-medium rounded-l-lg bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700 select-none">
+                    Görmek
                   </button>
-                  <button type="button" :key="item.id" @click="openModalWrapper('Ýok etmek', item.name, item.id)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500 select-none">
-                    Pozmak
+                  <button type="button" @click="openModalWrapper('Arhiwleşdirmek', item.full_name, item.id)"
+                    class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700 dark:focus:ring-pink-500 select-none">
+                    Arhiwleşdirmek
                   </button>
                 </div>
               </div>

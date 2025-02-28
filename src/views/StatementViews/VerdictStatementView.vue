@@ -1,21 +1,21 @@
 <script setup>
-import { useStudentsStore } from '@/stores/api.store';
+import { useStatementsStore, useStudentsStore } from '@/stores/api.store';
 import TheBreadcrumb from '@/components/TheBreadcrumb.vue';
 import { storeToRefs } from 'pinia';
 import { onBeforeMount, reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import router from '@/router';
-import ExpulsionStatement from '@/components/Forms/ExpulsionStatement.vue';
+import ReinstateInfo from '@/components/StatementInfo/ReinstateInfo.vue';
+import ExpulsionInfo from '@/components/StatementInfo/ExpulsionInfo.vue';
+import VerdictBtnsGroup from '@/components/VerdictBtnsGroup.vue';
 import { useAuthStore } from '@/stores/auth.store';
-
-const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
 
 const route = useRoute();
 
-
+const authStore = useAuthStore();
 const studentsStore = useStudentsStore();
+const statementsStore = useStatementsStore();
 const { studentInfo } = storeToRefs(studentsStore);
+const { statement } = storeToRefs(statementsStore);
 const student = reactive({
   fullName: '',
   highSchool: '',
@@ -39,8 +39,11 @@ const student = reactive({
 });
 
 onBeforeMount(() => {
-  studentsStore.getInfo(route.params.id).then(() => {
-    if (studentInfo.value.active) {
+  statementsStore.get(route.params.id, route.meta.statementType).then(() => {
+    statementsStore.markAsViewed(route.params.id, route.meta.statementType).then(() => {
+      authStore.fetchUser()
+    });
+    studentsStore.getNeutralInfo(statement.value.student).then(() => {
       student.fullName = studentInfo.value.full_name;
       student.nationality = studentInfo.value.nationality.name;
       student.country = studentInfo.value.country.name;
@@ -98,16 +101,13 @@ onBeforeMount(() => {
       let admissionDate = new Date(studentInfo.value.admission_date);
       student.admissionDate = admissionDate.toLocaleDateString();
 
-    }
-    else {
-      router.push('/403');
-    }
-  })
+    })
+  });
 })
 
 const breadcrumbPaths = [
-  { path: "/students", name: "Talyplar" },
-  { path: "/students/view", name: "Görmek", current: true },
+  { path: "/statements", name: "Arzalar" },
+  { path: "", name: "Karar", current: true },
 ]
 
 </script>
@@ -197,5 +197,23 @@ const breadcrumbPaths = [
 
     </div>
   </div>
-  <expulsion-statement v-if="!user.is_superuser"></expulsion-statement>
+  <div class="tile mt-8">
+    <reinstate-info :statement="statement" v-if="route.meta.statementType == 'reinstate'"></reinstate-info>
+    <expulsion-info :statement="statement" v-else-if="route.meta.statementType == 'expulsion'"></expulsion-info>
+    <verdict-btns-group v-if="statement.status === 'Barlagda'"
+      :statement-type="route.meta.statementType"></verdict-btns-group>
+    <div v-else-if="statement.status === 'Kabul edildi'" class="mt-4">
+      <h4
+        class="px-4 py-2 text-[0.8rem] w-max font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 dark:border-gray-700 rounded-lg select-none">
+        Tassyklanyldy
+      </h4>
+    </div>
+    <div v-else-if="statement.status === 'Ret edildi'" class="mt-4">
+      <h4
+        class="px-4 py-2 text-[0.8rem] w-max font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-lg  dark:border-gray-700  select-none">
+        Ret edildi
+      </h4>
+    </div>
+
+  </div>
 </template>

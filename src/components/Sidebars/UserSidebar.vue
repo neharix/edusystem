@@ -26,7 +26,7 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
       </sidebar-link>
       <sidebar-link link="/faculties">
         <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
-          <svg class="w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="4"
+          <svg class="w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.3"
             stroke="currentColor">
             <path strokeLinecap="round" strokeLineJoin="round"
               d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9" />
@@ -76,6 +76,16 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
         </div>
         <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Ýurtlar</span>
       </sidebar-link>
+      <sidebar-link link="/regions">
+        <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+          <svg class="w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>
+        <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Welaýatlar</span>
+      </sidebar-link>
       <sidebar-link link="/students">
         <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
           <svg class="w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -87,6 +97,32 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
           </svg>
         </div>
         <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Talyplar</span>
+      </sidebar-link>
+      <sidebar-link link="/expelled-students">
+        <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <polyline points="17 11 19 13 23 9"></polyline>
+          </svg>
+        </div>
+        <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Okuwdan boşadylanlar</span>
+      </sidebar-link>
+
+      <sidebar-link link="/diplomas">
+        <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+            </path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Diplomlar</span>
       </sidebar-link>
     </nav>
   </div>
