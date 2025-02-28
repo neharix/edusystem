@@ -5,6 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -149,6 +150,7 @@ class Student(models.Model):
     military_service = models.CharField(max_length=20, blank=True, null=True)
     label = models.TextField(null=True, blank=True)
     active = models.BooleanField(default=True)
+    is_expelled = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.full_name}"
@@ -192,6 +194,172 @@ class ExpulsionReason(models.Model):
 
     class Meta:
         ordering = ["name"]
+
+
+class ExpulsionRequest(models.Model):
+    class Verdict(models.TextChoices):
+        CONFIRMED = "C", "Confirmed"
+        REJECTED = "R", "Rejected"
+
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="expulsion_request_sender",
+    )
+    reason = models.ForeignKey("ExpulsionReason", on_delete=models.SET_NULL, null=True)
+    student = models.ForeignKey("Student", on_delete=models.CASCADE)
+    detail = models.TextField()
+    request_date = models.DateTimeField(auto_now_add=True)
+    verdict_date = models.DateTimeField(null=True, blank=True)
+    verdict = models.CharField(
+        max_length=1, choices=Verdict.choices, null=True, blank=True
+    )
+    viewed_by = models.ManyToManyField(User, blank=True)
+    is_obsolete = models.BooleanField(default=False)
+
+    def confirm(self, *args, **kwargs):
+        self.verdict = "C"
+        self.student.is_expelled = True
+        self.student.save()
+        for reinstate_request in ReinstateRequest.objects.filter(student=self.student):
+            reinstate_request.is_obsolete = True
+            reinstate_request.save()
+        self.verdict_date = timezone.now()
+        self.save()
+
+    def reject(self, *args, **kwargs):
+        self.verdict = "R"
+        self.verdict_date = timezone.now()
+        self.save()
+
+    def __str__(self):
+        return f"{self.student.full_name} {self.request_date} {self.verdict}"
+
+    class Meta:
+        ordering = ["verdict_date"]
+
+
+class ReinstateRequest(models.Model):
+    class Verdict(models.TextChoices):
+        CONFIRMED = "C", "Confirmed"
+        REJECTED = "R", "Rejected"
+
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="reinstate_request_sender",
+    )
+    student = models.ForeignKey("Student", on_delete=models.CASCADE)
+    detail = models.TextField()
+    request_date = models.DateTimeField(auto_now_add=True)
+    verdict_date = models.DateTimeField(null=True, blank=True)
+    verdict = models.CharField(
+        max_length=1, choices=Verdict.choices, null=True, blank=True
+    )
+    viewed_by = models.ManyToManyField(User, blank=True)
+    is_obsolete = models.BooleanField(default=False)
+
+    def confirm(self, *args, **kwargs):
+        self.verdict = "C"
+        self.student.is_expelled = False
+        self.student.save()
+        for expulsion_request in ExpulsionRequest.objects.filter(student=self.student):
+            expulsion_request.is_obsolete = True
+            expulsion_request.save()
+
+        self.verdict_date = timezone.now()
+        self.save()
+
+    def reject(self, *args, **kwargs):
+        self.verdict = "R"
+        self.verdict_date = timezone.now()
+        self.save()
+
+    def __str__(self):
+        return f"{self.student.full_name} {self.request_date} {self.verdict}"
+
+    class Meta:
+        ordering = ["verdict_date"]
+
+
+class DiplomaRequest(models.Model):
+    class Verdict(models.TextChoices):
+        CONFIRMED = "C", "Confirmed"
+        REJECTED = "R", "Rejected"
+
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="diploma_request_sender",
+    )
+    simple_diploma_count = models.PositiveIntegerField(default=0)
+    honor_diploma_count = models.PositiveIntegerField(default=0)
+    request_date = models.DateTimeField(auto_now_add=True)
+    verdict_date = models.DateTimeField(null=True, blank=True)
+    verdict = models.CharField(
+        max_length=1, choices=Verdict.choices, null=True, blank=True
+    )
+    allowed_until = models.DateTimeField(
+        default=timezone.now() + datetime.timedelta(days=30)
+    )
+    viewed_by = models.ManyToManyField(User, blank=True)
+    is_obsolete = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.sender} {self.request_date}"
+
+
+class DiplomaRequestAction(models.Model):
+    class Verdict(models.TextChoices):
+        CONFIRMED = "C", "Confirmed"
+
+    update_simple_to = models.PositiveIntegerField(default=0)
+    update_honor_to = models.PositiveIntegerField(default=0)
+    diploma_request = models.ForeignKey("DiplomaRequest", on_delete=models.CASCADE)
+    request_date = models.DateTimeField(auto_now_add=True)
+    verdict_date = models.DateTimeField(null=True, blank=True)
+    verdict = models.CharField(
+        max_length=1, choices=Verdict.choices, null=True, blank=True
+    )
+
+    def update_diploma_request(self, *args, **kwargs):
+        self.diploma_request.viewed_by.clear()
+        self.diploma_request.save()
+
+    def __str__(self):
+        return f"{self.diploma_request} {self.request_date}"
+
+    class Meta:
+        ordering = ["-verdict_date"]
+
+
+class DiplomaReport(models.Model):
+    class Verdict(models.TextChoices):
+        CONFIRMED = "C", "Confirmed"
+
+    diploma_request = models.ForeignKey("DiplomaRequest", on_delete=models.CASCADE)
+    two_year_work_off = models.PositiveIntegerField(default=0)
+    died = models.PositiveIntegerField(default=0)
+    went_abroad = models.PositiveIntegerField(default=0)
+    other_reasons = models.PositiveIntegerField(default=0)
+    request_date = models.DateTimeField(auto_now_add=True)
+    verdict_date = models.DateTimeField(null=True, blank=True)
+    verdict = models.CharField(
+        max_length=1, choices=Verdict.choices, null=True, blank=True
+    )
+
+    def update_diploma_request(self, *args, **kwargs):
+        self.diploma_request.viewed_by.clear()
+        self.diploma_request.save()
+
+    def __str__(self):
+        return f"{self.diploma_request} {self.request_date}"
+
+    class Meta:
+        ordering = ["-verdict_date"]
 
 
 @receiver(post_save, sender=User)

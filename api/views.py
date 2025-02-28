@@ -2,6 +2,7 @@ import io
 
 import numpy as np
 import pandas as pd
+import pytz
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
@@ -25,7 +26,11 @@ from .models import (
     Degree,
     Department,
     DepartmentSpecialization,
+    DiplomaReport,
+    DiplomaRequest,
+    DiplomaRequestAction,
     ExpulsionReason,
+    ExpulsionRequest,
     Faculty,
     FacultyDepartment,
     HighSchool,
@@ -33,6 +38,7 @@ from .models import (
     Nationality,
     Profile,
     Region,
+    ReinstateRequest,
     Specialization,
     Student,
 )
@@ -41,16 +47,21 @@ from .serializers import (
     CountrySerializer,
     DegreeSerializer,
     DepartmentSerializer,
+    DiplomaRequestSerializer,
+    ExpelledStudentInfoSerializer,
     ExpulsionReasonSerializer,
+    ExpulsionRequestSerializer,
     FacultySerializer,
     HighSchoolSerializer,
     NationalitySerializer,
     ProfileSerializer,
     RegionSerializer,
+    ReinstateRequestSerializer,
     SpecializationSerializer,
     StudentAdditionalSerializer,
     StudentInfoSerializer,
     StudentSerializer,
+    advanced_diploma_serializer,
 )
 from .utils import create_example, validate_not_null_field
 
@@ -73,11 +84,39 @@ def echo(request: HttpRequest):
 @api_view(http_method_names=["GET"])
 def get_user_data(request: HttpRequest):
     if request.user.is_superuser:
+        notifications = []
+        for expulsion_request in ExpulsionRequest.objects.filter(
+            is_obsolete=False, verdict=None
+        ):
+            if not request.user in expulsion_request.viewed_by.all():
+                notifications.append(
+                    {
+                        "id": expulsion_request.id,
+                        "sender": HighSchool.objects.get(
+                            manager__user=expulsion_request.sender
+                        ).abbreviation,
+                        "type": "expulsion",
+                    }
+                )
+        for reinstate_request in ReinstateRequest.objects.filter(
+            is_obsolete=False, verdict=None
+        ):
+            if not request.user in reinstate_request.viewed_by.all():
+                notifications.append(
+                    {
+                        "id": reinstate_request.id,
+                        "sender": HighSchool.objects.get(
+                            manager__user=reinstate_request.sender
+                        ).abbreviation,
+                        "type": "reinstate",
+                    }
+                )
         return Response(
             {
                 "id": request.user.id,
                 "email": request.user.email,
                 "is_superuser": request.user.is_superuser,
+                "notifications": notifications,
             }
         )
     else:
@@ -129,12 +168,14 @@ def dashboard_api_view(request: HttpRequest):
                     study_year=specialization.degree.duration,
                     gender="M",
                     active=True,
+                    is_expelled=False,
                 ).count()
                 female_graduates += Student.objects.filter(
                     specialization=d_specialization,
                     study_year=specialization.degree.duration,
                     gender="F",
                     active=True,
+                    is_expelled=False,
                 ).count()
 
         return Response(
@@ -146,12 +187,18 @@ def dashboard_api_view(request: HttpRequest):
                     active=True
                 ).count(),
                 "nationalities_count": Nationality.objects.all().count(),
-                "students_count": Student.objects.filter(active=True).count(),
+                "students_count": Student.objects.filter(
+                    active=True, is_expelled=False
+                ).count(),
                 "male_students_count": Student.objects.filter(
-                    gender="M", active=True
+                    gender="M",
+                    active=True,
+                    is_expelled=False,
                 ).count(),
                 "female_students_count": Student.objects.filter(
-                    gender="F", active=True
+                    gender="F",
+                    active=True,
+                    is_expelled=False,
                 ).count(),
                 "male_graduates": male_graduates,
                 "female_graduates": female_graduates,
@@ -162,11 +209,13 @@ def dashboard_api_view(request: HttpRequest):
                             gender="M",
                             admission_date__year=year,
                             active=True,
+                            is_expelled=False,
                         ).count(),
                         "female_students_count": Student.objects.filter(
                             gender="F",
                             admission_date__year=year,
                             active=True,
+                            is_expelled=False,
                         ).count(),
                     }
                     for year in range(ADMISSION_START_RANGE, timezone.now().year + 1)
@@ -189,13 +238,21 @@ def dashboard_api_view(request: HttpRequest):
                 # FIXME
                 "nationalities_count": Nationality.objects.all().count(),
                 "students_count": Student.objects.filter(
-                    active=True, high_school=high_school
+                    active=True,
+                    high_school=high_school,
+                    is_expelled=False,
                 ).count(),
                 "male_students_count": Student.objects.filter(
-                    gender="M", high_school=high_school, active=True
+                    gender="M",
+                    high_school=high_school,
+                    active=True,
+                    is_expelled=False,
                 ).count(),
                 "female_students_count": Student.objects.filter(
-                    gender="F", high_school=high_school, active=True
+                    gender="F",
+                    high_school=high_school,
+                    active=True,
+                    is_expelled=False,
                 ).count(),
                 "admissions": [
                     {
@@ -244,7 +301,9 @@ def create_high_school_api_view(request: HttpRequest):
 
 
 @api_view(http_method_names=["PUT"])
-@validate_payload(keys=["high_school_name", "abbreviation", "username", "password"])
+@validate_payload(
+    keys=["high_school_name", "abbreviation", "us, status=404ername", "password"]
+)
 def put_high_school_api_view(request: HttpRequest, high_school_id: int):
     if HighSchool.objects.filter(id=high_school_id).exists():
         high_school = HighSchool.objects.get(id=high_school_id)
@@ -274,10 +333,14 @@ def get_high_school_with_additional_data_api_view(request: HttpRequest):
         response = []
         for high_school in high_schools:
             male_count = Student.objects.filter(
-                high_school=high_school, gender="M"
+                high_school=high_school,
+                gender="M",
+                is_expelled=False,
             ).count()
             female_count = Student.objects.filter(
-                high_school=high_school, gender="F"
+                high_school=high_school,
+                gender="F",
+                is_expelled=False,
             ).count()
             response.append(
                 {
@@ -518,10 +581,12 @@ def get_faculties_with_additional_data_api_view(request: HttpRequest):
                 male_count += Student.objects.filter(
                     specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="M",
+                    is_expelled=False,
                 ).count()
                 female_count += Student.objects.filter(
                     specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="F",
+                    is_expelled=False,
                 ).count()
             response.append(
                 {
@@ -547,10 +612,12 @@ def get_faculties_with_additional_data_api_view(request: HttpRequest):
                 male_count += Student.objects.filter(
                     specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="M",
+                    is_expelled=False,
                 ).count()
                 female_count += Student.objects.filter(
                     specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="F",
+                    is_expelled=False,
                 ).count()
             response.append(
                 {
@@ -631,10 +698,12 @@ def get_departments_with_additional_data_api_view(request: HttpRequest):
                 male_count += Student.objects.filter(
                     specialization__faculty_department=f_department,
                     gender="M",
+                    is_expelled=False,
                 ).count()
                 female_count += Student.objects.filter(
                     specialization__faculty_department=f_department,
                     gender="F",
+                    is_expelled=False,
                 ).count()
             response.append(
                 {
@@ -654,10 +723,14 @@ def get_departments_with_additional_data_api_view(request: HttpRequest):
         )
         for department in departments:
             male_count = Student.objects.filter(
-                specialization__faculty_department=department, gender="M"
+                specialization__faculty_department=department,
+                gender="M",
+                is_expelled=False,
             ).count()
             female_count = Student.objects.filter(
-                specialization__faculty_department=department, gender="F"
+                specialization__faculty_department=department,
+                gender="F",
+                is_expelled=False,
             ).count()
             response.append(
                 {
@@ -751,10 +824,14 @@ def get_degrees_with_additional_data_api_view(request: HttpRequest):
 
         for degree in degrees:
             male_count = Student.objects.filter(
-                specialization__specialization__degree=degree, gender="M"
+                specialization__specialization__degree=degree,
+                gender="M",
+                is_expelled=False,
             ).count()
             female_count = Student.objects.filter(
-                specialization__specialization__degree=degree, gender="F"
+                specialization__specialization__degree=degree,
+                gender="F",
+                is_expelled=False,
             ).count()
 
             response.append(
@@ -796,10 +873,14 @@ def get_classificators_with_additional_data_api_view(request: HttpRequest):
 
         for classificator in classificators:
             male_count = Student.objects.filter(
-                specialization__specialization__classificator=classificator, gender="M"
+                specialization__specialization__classificator=classificator,
+                gender="M",
+                is_expelled=False,
             ).count()
             female_count = Student.objects.filter(
-                specialization__specialization__classificator=classificator, gender="F"
+                specialization__specialization__classificator=classificator,
+                gender="F",
+                is_expelled=False,
             ).count()
 
             response.append(
@@ -839,10 +920,14 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
         specializations = Specialization.objects.filter(active=True)
         for specialization in specializations:
             male_count = Student.objects.filter(
-                specialization__specialization=specialization, gender="M"
+                specialization__specialization=specialization,
+                gender="M",
+                is_expelled=False,
             ).count()
             female_count = Student.objects.filter(
-                specialization__specialization=specialization, gender="F"
+                specialization__specialization=specialization,
+                gender="F",
+                is_expelled=False,
             ).count()
 
             response.append(
@@ -868,10 +953,14 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
         )
         for specialization in specializations:
             male_count = Student.objects.filter(
-                specialization=specialization, gender="M"
+                specialization=specialization,
+                gender="M",
+                is_expelled=False,
             ).count()
             female_count = Student.objects.filter(
-                specialization=specialization, gender="F"
+                specialization=specialization,
+                gender="F",
+                is_expelled=False,
             ).count()
             response.append(
                 {
@@ -1154,11 +1243,16 @@ def import_students_from_excel_api_view(request: HttpRequest):
 @api_view(http_method_names=["GET"])
 def get_students_with_additional_data_api_view(request: HttpRequest):
     if request.user.is_superuser:
-        students = Student.objects.filter(active=True)
+        students = Student.objects.filter(
+            active=True,
+            is_expelled=False,
+        )
         return Response(StudentAdditionalSerializer(students, many=True).data)
     else:
         students = Student.objects.filter(
-            high_school=HighSchool.objects.get(manager__user=request.user), active=True
+            high_school=HighSchool.objects.get(manager__user=request.user),
+            active=True,
+            is_expelled=False,
         )
 
         return Response(
@@ -1175,12 +1269,18 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
 
 
 class StudentListAPIView(ListAPIView):
-    queryset = Student.objects.all()
+    queryset = Student.objects.filter(is_expelled=False)
     serializer_class = StudentSerializer
     lookup_field = "id"
 
 
 class StudentInfoAPIView(RetrieveAPIView):
+    queryset = Student.objects.filter(is_expelled=False)
+    serializer_class = StudentInfoSerializer
+    lookup_field = "id"
+
+
+class NeutralStudentInfoAPIView(RetrieveAPIView):
     queryset = Student.objects.all()
     serializer_class = StudentInfoSerializer
     lookup_field = "id"
@@ -1284,8 +1384,16 @@ def get_countries_with_additional_data_api_view(request: HttpRequest):
     countries = Country.objects.all()
     if request.user.is_superuser:
         for country in countries:
-            male_count = Student.objects.filter(country=country, gender="M").count()
-            female_count = Student.objects.filter(country=country, gender="F").count()
+            male_count = Student.objects.filter(
+                country=country,
+                gender="M",
+                is_expelled=False,
+            ).count()
+            female_count = Student.objects.filter(
+                country=country,
+                gender="F",
+                is_expelled=False,
+            ).count()
 
             response.append(
                 {
@@ -1304,11 +1412,13 @@ def get_countries_with_additional_data_api_view(request: HttpRequest):
                 country=country,
                 gender="M",
                 high_school=high_school,
+                is_expelled=False,
             ).count()
             female_count = Student.objects.filter(
                 country=country,
                 gender="F",
                 high_school=high_school,
+                is_expelled=False,
             ).count()
 
             response.append(
@@ -1344,8 +1454,16 @@ def get_regions_with_additional_data_api_view(request: HttpRequest):
     regions = Region.objects.all()
     if request.user.is_superuser:
         for region in regions:
-            male_count = Student.objects.filter(region=region, gender="M").count()
-            female_count = Student.objects.filter(region=region, gender="F").count()
+            male_count = Student.objects.filter(
+                region=region,
+                gender="M",
+                is_expelled=False,
+            ).count()
+            female_count = Student.objects.filter(
+                region=region,
+                gender="F",
+                is_expelled=False,
+            ).count()
 
             response.append(
                 {
@@ -1364,11 +1482,13 @@ def get_regions_with_additional_data_api_view(request: HttpRequest):
                 region=region,
                 gender="M",
                 high_school=high_school,
+                is_expelled=False,
             ).count()
             female_count = Student.objects.filter(
                 region=region,
                 gender="F",
                 high_school=high_school,
+                is_expelled=False,
             ).count()
 
             response.append(
@@ -1396,3 +1516,377 @@ class ExpulsionReasonRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = ExpulsionReason.objects.all()
     serializer_class = ExpulsionReasonSerializer
     lookup_field = "id"
+
+
+# Expulsion request API views
+
+
+class ExpulsionRequestListCreateAPIView(ListCreateAPIView):
+    queryset = ExpulsionRequest.objects.all()
+    serializer_class = ExpulsionRequestSerializer
+    lookup_field = "id"
+
+
+class ExpulsionRequestRetrieveAPIView(RetrieveAPIView):
+    queryset = ExpulsionRequest.objects.all()
+    serializer_class = ExpulsionRequestSerializer
+    lookup_field = "id"
+
+
+@api_view(http_method_names=["GET"])
+def get_expelled_students_api_view(request: HttpRequest):
+    response = []
+    students = Student.objects.filter(
+        is_expelled=True, high_school=HighSchool.objects.get(manager__user=request.user)
+    )
+    for student in students:
+        if ExpulsionRequest.objects.filter(
+            student=student,
+            verdict="C",
+            is_obsolete=False,
+        ).exists():
+            expulsion_request = ExpulsionRequest.objects.filter(
+                student=student,
+                verdict="C",
+                is_obsolete=False,
+            ).last()
+            response.append(
+                {
+                    "id": student.id,
+                    "request_id": expulsion_request.id,
+                    "full_name": student.full_name,
+                    "expulsion_date": expulsion_request.verdict_date.astimezone(
+                        pytz.timezone("Asia/Ashgabat")
+                    ).strftime("%d.%m.%Y %H:%M:%S"),
+                    "study_year": student.study_year,
+                }
+            )
+    return Response(response)
+
+
+@api_view(http_method_names=["GET"])
+def get_expelled_student_api_view(request: HttpRequest, student_id: int):
+    if Student.objects.filter(
+        is_expelled=True,
+        high_school=HighSchool.objects.get(manager__user=request.user),
+        id=student_id,
+    ).exists():
+        student = Student.objects.get(
+            is_expelled=True,
+            high_school=HighSchool.objects.get(manager__user=request.user),
+            id=student_id,
+        )
+    else:
+        return Response({"detail": "Expelled student not found"}, status=404)
+
+    if ExpulsionRequest.objects.filter(
+        student=student,
+        verdict="C",
+        is_obsolete=False,
+    ).exists():
+        expulsion_request = ExpulsionRequest.objects.filter(
+            student=student,
+            verdict="C",
+            is_obsolete=False,
+        ).last()
+        return Response(ExpelledStudentInfoSerializer(student).data)
+    return Response({"detail": "Expelled student not found"}, status=404)
+
+
+# Reinstate request API views
+
+
+class ReinstateRequestListCreateAPIView(ListCreateAPIView):
+    queryset = ReinstateRequest.objects.all()
+    serializer_class = ReinstateRequestSerializer
+    lookup_field = "id"
+
+
+class ReinstateRequestRetrieveAPIView(RetrieveAPIView):
+    queryset = ReinstateRequest.objects.all()
+    serializer_class = ReinstateRequestSerializer
+    lookup_field = "id"
+
+
+# Statement special API views
+
+
+@api_view(http_method_names=["GET"])
+def get_statements_api_view(request: HttpRequest):
+    response = []
+
+    for expulsion_request in ExpulsionRequest.objects.filter(is_obsolete=False):
+        if expulsion_request.verdict:
+            if expulsion_request.verdict == "C":
+                verdict = "Kabul edildi"
+            else:
+                verdict = "Ret edildi"
+        else:
+            verdict = "Barlagda"
+
+        response.append(
+            {
+                "id": expulsion_request.id,
+                "type": "Okuwdan boşatmak",
+                "sender": HighSchool.objects.get(
+                    manager__user=expulsion_request.sender
+                ).name,
+                "status": verdict,
+                "request_date": expulsion_request.request_date.astimezone(
+                    pytz.timezone("Asia/Ashgabat")
+                ).strftime("%d.%m.%Y %H:%M:%S"),
+            }
+        )
+    for reinstate_request in ReinstateRequest.objects.filter(is_obsolete=False):
+        if reinstate_request.verdict:
+            if reinstate_request.verdict == "C":
+                verdict = "Kabul edildi"
+            else:
+                verdict = "Ret edildi"
+        else:
+            verdict = "Barlagda"
+
+        response.append(
+            {
+                "id": reinstate_request.id,
+                "type": "Okuwy dikeltmek",
+                "sender": HighSchool.objects.get(
+                    manager__user=reinstate_request.sender
+                ).name,
+                "status": verdict,
+                "request_date": reinstate_request.request_date.astimezone(
+                    pytz.timezone("Asia/Ashgabat")
+                ).strftime("%d.%m.%Y %H:%M:%S"),
+            }
+        )
+    response.sort(key=lambda e: e["request_date"])
+    response.reverse()
+    return Response(response)
+
+
+@api_view(http_method_names=["GET"])
+def get_statement_api_view(
+    request: HttpRequest, statement_id: int, statement_type: str
+):
+
+    if statement_type == "expulsion":
+        if ExpulsionRequest.objects.filter(id=statement_id, is_obsolete=False).exists():
+            statement = ExpulsionRequest.objects.get(id=statement_id)
+        else:
+            return Response({"detail": "Expulsion request not found"}, status=404)
+    elif statement_type == "reinstate":
+        if ReinstateRequest.objects.filter(id=statement_id, is_obsolete=False).exists():
+            statement = ReinstateRequest.objects.get(id=statement_id)
+        else:
+            return Response({"detail": "Reinstate request not found"}, status=404)
+    else:
+        return Response({"detail": "Invalid statement type"}, status=400)
+
+    if statement.verdict:
+        if statement.verdict == "C":
+            verdict = "Kabul edildi"
+        else:
+            verdict = "Ret edildi"
+    else:
+        verdict = "Barlagda"
+
+    response = (
+        {
+            "id": statement.id,
+            "type": statement_type,
+            "reason": statement.reason.name,
+            "student": statement.student.id,
+            "sender": HighSchool.objects.get(manager__user=statement.sender).name,
+            "status": verdict,
+            "detail": statement.detail,
+            "request_date": statement.request_date.astimezone(
+                pytz.timezone("Asia/Ashgabat")
+            ).strftime("%d.%m.%Y %H:%M:%S"),
+        }
+        if statement_type == "expulsion"
+        else {
+            "id": statement.id,
+            "type": statement_type,
+            "student": statement.student.id,
+            "sender": HighSchool.objects.get(manager__user=statement.sender).name,
+            "status": verdict,
+            "detail": statement.detail,
+            "request_date": statement.request_date.astimezone(
+                pytz.timezone("Asia/Ashgabat")
+            ).strftime("%d.%m.%Y %H:%M:%S"),
+        }
+    )
+    return Response(response)
+
+
+@api_view(http_method_names=["GET"])
+def verdict_statement_api_view(
+    request: HttpRequest, statement_id: int, statement_type: str, verdict: str
+):
+
+    if statement_type == "expulsion":
+        if ExpulsionRequest.objects.filter(id=statement_id, is_obsolete=False).exists():
+            statement = ExpulsionRequest.objects.get(id=statement_id)
+        else:
+            return Response({"detail": "Expulsion request not found"}, status=404)
+    elif statement_type == "reinstate":
+        if ReinstateRequest.objects.filter(id=statement_id, is_obsolete=False).exists():
+            statement = ReinstateRequest.objects.get(id=statement_id)
+        else:
+            return Response({"detail": "Reinstate request not found"}, status=404)
+    else:
+        return Response({"detail": "Invalid statement type"}, status=400)
+
+    if verdict == "confirm":
+        statement.confirm()
+    elif verdict == "reject":
+        statement.reject()
+    else:
+        return Response({"detail": "Invalid verdict"}, status=400)
+    return Response({"detail": "Success"})
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(["obj_name"])
+def mark_as_viewed_api_view(request: HttpRequest, obj_id: int):
+    object_name = request.data["obj_name"]
+    if object_name == "expulsion":
+        if ExpulsionRequest.objects.filter(id=obj_id).exists():
+            obj = ExpulsionRequest.objects.get(id=obj_id)
+        else:
+            return Response({"detail": "Expulsion request not found"}, status=404)
+    elif object_name == "reinstate":
+        if ReinstateRequest.objects.filter(id=obj_id).exists():
+            obj = ReinstateRequest.objects.get(id=obj_id)
+        else:
+            return Response({"detail": "Reinstate request not found"}, status=404)
+
+    obj.viewed_by.add(request.user)
+    return Response({"detail": "Success"})
+
+
+# Diploma API views
+
+
+@api_view(http_method_names=["GET"])
+def get_diploma_request_by_user_api_view(request: HttpRequest):
+    if DiplomaRequest.objects.filter(sender=request.user, is_obsolete=False).exists():
+        if (
+            DiplomaRequest.objects.get(sender=request.user).verdict == "C"
+            or DiplomaRequest.objects.get(sender=request.user).verdict == None
+        ):
+            diploma_request = DiplomaRequest.objects.get(sender=request.user)
+        else:
+            return Response({"null": True})
+    else:
+        return Response({"null": True})
+    return Response(advanced_diploma_serializer(diploma_request))
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(keys=["simple_diploma_count", "honor_diploma_count"])
+def create_diploma_request_api_view(request: HttpRequest):
+    DiplomaRequest.objects.create(
+        simple_diploma_count=request.data["simple_diploma_count"],
+        honor_diploma_count=request.data["honor_diploma_count"],
+        sender=request.user,
+    )
+    return Response({"detail": "Success"})
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(
+    keys=[
+        "simple_diploma_count",
+        "honor_diploma_count",
+        "two_year_work_off",
+        "died",
+        "went_abroad",
+        "other_reasons",
+    ]
+)
+def update_diploma_request_api_view(request: HttpRequest, diploma_request_id: int):
+    if DiplomaRequest.objects.filter(id=diploma_request_id).exists():
+        diploma_request = DiplomaRequest.objects.get(id=diploma_request_id)
+    else:
+        return Response({"detail": "Diploma request not found"}, status=404)
+    if (
+        request.data["simple_diploma_count"] > 0
+        or request.data["honor_diploma_count"] > 0
+    ):
+        DiplomaRequestAction.objects.create(
+            update_simple_to=request.data["simple_diploma_count"],
+            update_honor_to=request.data["honor_diploma_count"],
+            diploma_request=diploma_request,
+        )
+    if (
+        request.data["two_year_work_off"] > 0
+        or request.data["died"] > 0
+        or request.data["went_abroad"]
+        or request.data["other_reasons"] > 0
+    ):
+        DiplomaReport.objects.create(
+            two_year_work_off=request.data["two_year_work_off"],
+            died=request.data["died"],
+            went_abroad=request.data["went_abroad"],
+            other_reasons=request.data["other_reasons"],
+            diploma_request=diploma_request,
+        )
+    return Response({"detail": "Success"})
+
+
+@api_view(http_method_names=["GET"])
+def get_diplomas_for_table_api_view(request: HttpRequest):
+    response = []
+    for diploma_request in DiplomaRequest.objects.filter(is_obsolete=False):
+        response.append(
+            {
+                "id": diploma_request.id,
+                "sender": HighSchool.objects.get(
+                    manager__user=diploma_request.sender
+                ).name,
+            }
+        )
+    return Response(response)
+
+
+@api_view(http_method_names=["GET"])
+def get_diploma_request_actions_api_view(request: HttpRequest):
+    response = []
+    for diploma_request_action in DiplomaRequestAction.objects.filter(verdict="C"):
+        response.append(
+            {
+                "id": diploma_request_action.id,
+                "verdict_date": diploma_request_action.verdict_date.astimezone(
+                    pytz.timezone("Asia/Ashgabat")
+                ).strftime("%d.%m.%Y %H:%M:%S"),
+                "sender": HighSchool.objects.get(
+                    manager__user=diploma_request_action.diploma_request.sender
+                ).abbreviation,
+                "count": diploma_request_action.update_honor_to
+                + diploma_request_action.update_simple_to,
+                "type": "up",
+            }
+        )
+    for diploma_report in DiplomaReport.objects.filter(verdict="C"):
+        response.append(
+            {
+                "id": diploma_report.id,
+                "verdict_date": diploma_report.verdict_date.astimezone(
+                    pytz.timezone("Asia/Ashgabat")
+                ).strftime("%d.%m.%Y %H:%M:%S"),
+                "sender": HighSchool.objects.get(
+                    manager__user=diploma_report.diploma_request.sender
+                ).abbreviation,
+                "count": diploma_report.two_year_work_off
+                + diploma_report.died
+                + diploma_report.went_abroad
+                + diploma_report.other_reasons,
+                "type": "down",
+            }
+        )
+    response.sort(key=lambda e: e["verdict_date"])
+    return Response(response)
+
+
+# Diploma request API views

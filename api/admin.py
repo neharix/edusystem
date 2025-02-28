@@ -95,3 +95,47 @@ class DegreeAdmin(admin.ModelAdmin):
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ["full_name"]
+
+
+@admin.register(ExpulsionReason)
+class ExpulsionReasonAdmin(admin.ModelAdmin):
+    list_display = ["name", "id"]
+    readonly_fields = ("id",)
+    search_fields = ["name"]
+
+
+@admin.register(ExpulsionRequest)
+class ExpulsionRequestAdmin(admin.ModelAdmin):
+    list_display = ["student", "request_date", "verdict_date", "verdict", "id"]
+    readonly_fields = ("request_date", "verdict_date", "id")
+
+
+@admin.register(ReinstateRequest)
+class ReinstateRequestAdmin(admin.ModelAdmin):
+    list_display = ["student", "request_date", "verdict_date", "verdict", "id"]
+    readonly_fields = ("request_date", "verdict_date", "id")
+
+
+@admin.register(DiplomaRequest)
+class DiplomaRequestAdmin(admin.ModelAdmin):
+    list_display = ["sender", "request_date", "is_obsolete", "id", "allowed_until"]
+    list_editable = ["allowed_until"]
+    readonly_fields = ("request_date", "verdict_date", "id")
+
+
+@admin.register(DiplomaRequestAction)
+class DiplomaRequestActionAdmin(admin.ModelAdmin):
+    list_display = [
+        "diploma_request",
+        "update_simple_to",
+        "update_honor_to",
+        "request_date",
+        "id",
+    ]
+    readonly_fields = ("request_date", "id")
+
+
+@admin.register(DiplomaReport)
+class DiplomaReportAdmin(admin.ModelAdmin):
+    list_display = ["diploma_request", "request_date", "id"]
+    readonly_fields = ("request_date", "id")

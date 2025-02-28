@@ -183,6 +183,11 @@ urlpatterns = [
         name="student-info",
     ),
     path(
+        "neutral-students-info/<int:id>/",
+        NeutralStudentInfoAPIView.as_view(),
+        name="student-info",
+    ),
+    path(
         "students-with-additional/",
         get_students_with_additional_data_api_view,
         name="get-students-with-additional-data",
@@ -250,5 +255,79 @@ urlpatterns = [
         "expulsion-reasons/<int:id>/",
         ExpulsionReasonRetrieveUpdateDestroyAPIView.as_view(),
         name="expulsion-reason-retrieve-update-destroy",
+    ),
+    # Expulsion request routes
+    path(
+        "expulsion-requests/",
+        ExpulsionRequestListCreateAPIView.as_view(),
+        name="expulsion-request-list-create",
+    ),
+    path(
+        "expulsion-requests/<int:id>/",
+        ExpulsionRequestRetrieveAPIView.as_view(),
+        name="expulsion-request-retrieve",
+    ),
+    path(
+        "expelled-students/",
+        get_expelled_students_api_view,
+        name="expelled-students-list",
+    ),
+    path(
+        "expelled-students/<int:student_id>/",
+        get_expelled_student_api_view,
+        name="expelled-students-list",
+    ),
+    # Reinstate request routes
+    path(
+        "reinstate-requests/",
+        ReinstateRequestListCreateAPIView.as_view(),
+        name="reinstate-request-list-create",
+    ),
+    path(
+        "reinstate-requests/<int:id>/",
+        ReinstateRequestRetrieveAPIView.as_view(),
+        name="reinstate-request-retrieve",
+    ),
+    # Statement routes
+    path("statements/", get_statements_api_view, name="statements-list"),
+    path(
+        "statements/<int:statement_id>/<str:statement_type>/",
+        get_statement_api_view,
+        name="statements-retrieve",
+    ),
+    path(
+        "statements/<int:statement_id>/<str:statement_type>/<str:verdict>/",
+        verdict_statement_api_view,
+        name="statement-verdict",
+    ),
+    path(
+        "mark-as-viewed/<int:obj_id>/", mark_as_viewed_api_view, name="mark-as-viewed"
+    ),
+    # Diploma routes
+    path(
+        "diploma-request-by-user/",
+        get_diploma_request_by_user_api_view,
+        name="advanced-diploma-request-retrieve",
+    ),
+    # Diploma request routes
+    path(
+        "create-diploma-request/",
+        create_diploma_request_api_view,
+        name="diploma-request-create",
+    ),
+    path(
+        "update-diploma-request/<int:diploma_request_id>/",
+        update_diploma_request_api_view,
+        name="diploma-request-update",
+    ),
+    path(
+        "diploma-requests-table/",
+        get_diplomas_for_table_api_view,
+        name="diploma-requests-table-list",
+    ),
+    path(
+        "diploma-request-actions/",
+        get_diploma_request_actions_api_view,
+        name="diploma-request-actions-list",
     ),
 ]
