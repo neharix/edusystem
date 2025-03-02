@@ -302,11 +302,13 @@ class DiplomaRequest(models.Model):
     verdict = models.CharField(
         max_length=1, choices=Verdict.choices, null=True, blank=True
     )
-    allowed_until = models.DateTimeField(
-        default=timezone.now() + datetime.timedelta(days=30)
-    )
+    allowed_until = models.DateTimeField(null=True, blank=True)
     viewed_by = models.ManyToManyField(User, blank=True)
     is_obsolete = models.BooleanField(default=False)
+
+    def clear_viewed_by(self, *args, **kwargs):
+        self.viewed_by.clear()
+        self.save()
 
     def __str__(self):
         return f"{self.sender} {self.request_date}"
@@ -324,10 +326,6 @@ class DiplomaRequestAction(models.Model):
     verdict = models.CharField(
         max_length=1, choices=Verdict.choices, null=True, blank=True
     )
-
-    def update_diploma_request(self, *args, **kwargs):
-        self.diploma_request.viewed_by.clear()
-        self.diploma_request.save()
 
     def __str__(self):
         return f"{self.diploma_request} {self.request_date}"
@@ -351,15 +349,50 @@ class DiplomaReport(models.Model):
         max_length=1, choices=Verdict.choices, null=True, blank=True
     )
 
-    def update_diploma_request(self, *args, **kwargs):
-        self.diploma_request.viewed_by.clear()
-        self.diploma_request.save()
-
     def __str__(self):
         return f"{self.diploma_request} {self.request_date}"
 
     class Meta:
         ordering = ["-verdict_date"]
+
+
+class TeacherStatement(models.Model):
+    class Verdict(models.TextChoices):
+        CONFIRMED = "C", "Confirmed"
+        REJECTED = "R", "Rejected"
+
+    workload_1_25 = models.PositiveIntegerField(default=0)
+    workload_1_00 = models.PositiveIntegerField(default=0)
+    workload_0_75 = models.PositiveIntegerField(default=0)
+    workload_0_50 = models.PositiveIntegerField(default=0)
+    doctor_degree = models.PositiveIntegerField(default=0)
+    candidate_degree = models.PositiveIntegerField(default=0)
+    professor = models.PositiveIntegerField(default=0)
+    docent = models.PositiveIntegerField(default=0)
+    department_head = models.PositiveIntegerField(default=0)
+    professor_job = models.PositiveIntegerField(default=0)
+    docent_job = models.PositiveIntegerField(default=0)
+    senior_teachers = models.PositiveIntegerField(default=0)
+    teachers = models.PositiveIntegerField(default=0)
+    intern_teachers = models.PositiveIntegerField(default=0)
+
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="teacher_statement_sender",
+    )
+    allowed_until = models.DateTimeField(null=True, blank=True)
+    viewed_by = models.ManyToManyField(User, blank=True)
+    is_obsolete = models.BooleanField(default=False)
+    request_date = models.DateTimeField(auto_now_add=True)
+    verdict_date = models.DateTimeField(null=True, blank=True)
+    verdict = models.CharField(
+        max_length=1, choices=Verdict.choices, null=True, blank=True
+    )
+
+    def __str__(self):
+        return f"{self.sender.username} {self.request_date}"
 
 
 @receiver(post_save, sender=User)

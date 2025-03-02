@@ -5,12 +5,18 @@ from django.shortcuts import redirect
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
+from .classes import Null
+
+null = Null()
+
 
 def validate_payload(keys: List[str]):
     def method_wrapper(view):
         def args_wrapper(request: HttpRequest, *args, **kwargs):
-            validation_list = [request.data.get(key, False) for key in keys]
-            if False in validation_list:
+            print(request.data)
+            validation_list = [request.data.get(key, null) for key in keys]
+            print(validation_list)
+            if null in validation_list:
                 print("Payload invalid")
                 return Response({"detail": "Payload invalid"}, status=400)
             else:

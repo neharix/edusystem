@@ -1,5 +1,6 @@
 import datetime
 
+import pytz
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -24,6 +25,7 @@ from .models import (
     ReinstateRequest,
     Specialization,
     Student,
+    TeacherStatement,
 )
 
 
@@ -257,6 +259,15 @@ class DiplomaRequestSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+# Teacher statement serializer
+
+
+class TeacherStatementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeacherStatement
+        fields = "__all__"
+
+
 # Custom function serializers
 
 
@@ -266,7 +277,9 @@ class DiplomaRequestSerializer(serializers.ModelSerializer):
 def advanced_diploma_serializer(diploma_request: DiplomaRequest) -> dict:
     response = {
         "id": diploma_request.id,
-        "allowed_until": diploma_request.allowed_until.isoformat(),
+        "allowed_until": diploma_request.allowed_until.astimezone(
+            pytz.timezone("Asia/Ashgabat")
+        ).isoformat(),
         "verdict": diploma_request.verdict,
         "verdict_date": (
             diploma_request.verdict_date.strftime("%d.%m.%Y %H:%M:%S")

@@ -139,3 +139,10 @@ class DiplomaRequestActionAdmin(admin.ModelAdmin):
 class DiplomaReportAdmin(admin.ModelAdmin):
     list_display = ["diploma_request", "request_date", "id"]
     readonly_fields = ("request_date", "id")
+
+
+@admin.register(TeacherStatement)
+class TeacherStatementAdmin(admin.ModelAdmin):
+    list_display = ["sender", "request_date", "is_obsolete", "id", "allowed_until"]
+    list_editable = ["allowed_until"]
+    readonly_fields = ("request_date", "verdict_date", "id")

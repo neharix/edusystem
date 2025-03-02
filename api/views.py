@@ -1,3 +1,4 @@
+import datetime
 import io
 
 import numpy as np
@@ -9,6 +10,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import (
+    DestroyAPIView,
     ListAPIView,
     ListCreateAPIView,
     RetrieveAPIView,
@@ -41,6 +43,7 @@ from .models import (
     ReinstateRequest,
     Specialization,
     Student,
+    TeacherStatement,
 )
 from .serializers import (
     ClassificatorSerializer,
@@ -61,6 +64,7 @@ from .serializers import (
     StudentAdditionalSerializer,
     StudentInfoSerializer,
     StudentSerializer,
+    TeacherStatementSerializer,
     advanced_diploma_serializer,
 )
 from .utils import create_example, validate_not_null_field
@@ -109,6 +113,31 @@ def get_user_data(request: HttpRequest):
                             manager__user=reinstate_request.sender
                         ).abbreviation,
                         "type": "reinstate",
+                    }
+                )
+        for teacher_statement in TeacherStatement.objects.filter(
+            is_obsolete=False, verdict=None
+        ):
+            if not request.user in teacher_statement.viewed_by.all():
+                notifications.append(
+                    {
+                        "id": teacher_statement.id,
+                        "sender": HighSchool.objects.get(
+                            manager__user=teacher_statement.sender
+                        ).abbreviation,
+                        "type": "teacher",
+                    }
+                )
+
+        for diploma_request in DiplomaRequest.objects.filter(is_obsolete=False):
+            if not request.user in diploma_request.viewed_by.all():
+                notifications.append(
+                    {
+                        "id": diploma_request.id,
+                        "sender": HighSchool.objects.get(
+                            manager__user=diploma_request.sender
+                        ).abbreviation,
+                        "type": "diploma",
                     }
                 )
         return Response(
@@ -1783,6 +1812,15 @@ def get_diploma_request_by_user_api_view(request: HttpRequest):
     return Response(advanced_diploma_serializer(diploma_request))
 
 
+@api_view(http_method_names=["GET"])
+def get_diploma_request_by_id_api_view(request: HttpRequest, diploma_request_id: int):
+    if DiplomaRequest.objects.filter(is_obsolete=False, id=diploma_request_id).exists():
+        diploma_request = DiplomaRequest.objects.get(id=diploma_request_id)
+    else:
+        return Response({"null": True})
+    return Response(advanced_diploma_serializer(diploma_request))
+
+
 @api_view(http_method_names=["POST"])
 @validate_payload(keys=["simple_diploma_count", "honor_diploma_count"])
 def create_diploma_request_api_view(request: HttpRequest):
@@ -1790,6 +1828,7 @@ def create_diploma_request_api_view(request: HttpRequest):
         simple_diploma_count=request.data["simple_diploma_count"],
         honor_diploma_count=request.data["honor_diploma_count"],
         sender=request.user,
+        allowed_until=timezone.now() + datetime.timedelta(days=30),
     )
     return Response({"detail": "Success"})
 
@@ -1832,13 +1871,16 @@ def update_diploma_request_api_view(request: HttpRequest, diploma_request_id: in
             other_reasons=request.data["other_reasons"],
             diploma_request=diploma_request,
         )
+    diploma_request.clear_viewed_by()
     return Response({"detail": "Success"})
 
 
 @api_view(http_method_names=["GET"])
 def get_diplomas_for_table_api_view(request: HttpRequest):
     response = []
-    for diploma_request in DiplomaRequest.objects.filter(is_obsolete=False):
+    for diploma_request in DiplomaRequest.objects.filter(
+        is_obsolete=False, verdict__in=["C", None]
+    ):
         response.append(
             {
                 "id": diploma_request.id,
@@ -1854,39 +1896,374 @@ def get_diplomas_for_table_api_view(request: HttpRequest):
 def get_diploma_request_actions_api_view(request: HttpRequest):
     response = []
     for diploma_request_action in DiplomaRequestAction.objects.filter(verdict="C"):
-        response.append(
-            {
-                "id": diploma_request_action.id,
-                "verdict_date": diploma_request_action.verdict_date.astimezone(
-                    pytz.timezone("Asia/Ashgabat")
-                ).strftime("%d.%m.%Y %H:%M:%S"),
-                "sender": HighSchool.objects.get(
-                    manager__user=diploma_request_action.diploma_request.sender
-                ).abbreviation,
-                "count": diploma_request_action.update_honor_to
-                + diploma_request_action.update_simple_to,
-                "type": "up",
-            }
-        )
+        if (
+            not diploma_request_action.diploma_request.is_obsolete
+            and not diploma_request_action.diploma_request.verdict == "R"
+        ):
+            response.append(
+                {
+                    "id": diploma_request_action.id,
+                    "verdict_date": (
+                        diploma_request_action.verdict_date.astimezone(
+                            pytz.timezone("Asia/Ashgabat")
+                        ).strftime("%d.%m.%Y %H:%M:%S")
+                        if diploma_request_action.verdict_date
+                        else None
+                    ),
+                    "sender": HighSchool.objects.get(
+                        manager__user=diploma_request_action.diploma_request.sender
+                    ).abbreviation,
+                    "count": diploma_request_action.update_honor_to
+                    + diploma_request_action.update_simple_to,
+                    "type": "up",
+                }
+            )
     for diploma_report in DiplomaReport.objects.filter(verdict="C"):
-        response.append(
-            {
-                "id": diploma_report.id,
-                "verdict_date": diploma_report.verdict_date.astimezone(
-                    pytz.timezone("Asia/Ashgabat")
-                ).strftime("%d.%m.%Y %H:%M:%S"),
-                "sender": HighSchool.objects.get(
-                    manager__user=diploma_report.diploma_request.sender
-                ).abbreviation,
-                "count": diploma_report.two_year_work_off
-                + diploma_report.died
-                + diploma_report.went_abroad
-                + diploma_report.other_reasons,
-                "type": "down",
-            }
-        )
-    response.sort(key=lambda e: e["verdict_date"])
+        if (
+            not diploma_report.diploma_request.is_obsolete
+            and not diploma_report.diploma_request.verdict == "R"
+        ):
+            response.append(
+                {
+                    "id": diploma_report.id,
+                    "verdict_date": (
+                        diploma_report.verdict_date.astimezone(
+                            pytz.timezone("Asia/Ashgabat")
+                        ).strftime("%d.%m.%Y %H:%M:%S")
+                        if diploma_report.verdict_date
+                        else None
+                    ),
+                    "sender": HighSchool.objects.get(
+                        manager__user=diploma_report.diploma_request.sender
+                    ).abbreviation,
+                    "count": diploma_report.two_year_work_off
+                    + diploma_report.died
+                    + diploma_report.went_abroad
+                    + diploma_report.other_reasons,
+                    "type": "down",
+                }
+            )
     return Response(response)
 
 
-# Diploma request API views
+@api_view(http_method_names=["GET"])
+def get_high_school_diploma_request_actions_api_view(
+    request: HttpRequest, diploma_request_id: int
+):
+    response = {"actions": [], "reports": []}
+    if DiplomaRequest.objects.filter(id=diploma_request_id).exists():
+        diploma_request = DiplomaRequest.objects.get(id=diploma_request_id)
+    else:
+        return Response({"detail": "Diploma request not found"}, status=404)
+
+    diploma_request.viewed_by.add(request.user)
+    diploma_request.save()
+
+    for diploma_request_action in DiplomaRequestAction.objects.filter(
+        diploma_request=diploma_request
+    ):
+
+        response["actions"].append(
+            {
+                "id": diploma_request_action.id,
+                "verdict": diploma_request_action.verdict,
+                "request_date": diploma_request_action.request_date.astimezone(
+                    pytz.timezone("Asia/Ashgabat")
+                ).strftime("%d.%m.%Y %H:%M:%S"),
+                "verdict_date": (
+                    diploma_request_action.verdict_date.astimezone(
+                        pytz.timezone("Asia/Ashgabat")
+                    ).strftime("%d.%m.%Y %H:%M:%S")
+                    if diploma_request_action.verdict_date
+                    else None
+                ),
+                "sender": HighSchool.objects.get(
+                    manager__user=diploma_request_action.diploma_request.sender
+                ).abbreviation,
+                "honor_diploma_count": diploma_request_action.update_honor_to,
+                "simple_diploma_count": diploma_request_action.update_simple_to,
+                "type": "up",
+            }
+        )
+    for diploma_report in DiplomaReport.objects.filter(diploma_request=diploma_request):
+        response["reports"].append(
+            {
+                "id": diploma_report.id,
+                "verdict": diploma_report.verdict,
+                "request_date": diploma_report.request_date.astimezone(
+                    pytz.timezone("Asia/Ashgabat")
+                ).strftime("%d.%m.%Y %H:%M:%S"),
+                "verdict_date": (
+                    diploma_report.verdict_date.astimezone(
+                        pytz.timezone("Asia/Ashgabat")
+                    ).strftime("%d.%m.%Y %H:%M:%S")
+                    if diploma_report.verdict_date
+                    else None
+                ),
+                "sender": HighSchool.objects.get(
+                    manager__user=diploma_report.diploma_request.sender
+                ).abbreviation,
+                "two_year_work_off": diploma_report.two_year_work_off,
+                "died": diploma_report.died,
+                "went_abroad": diploma_report.went_abroad,
+                "other_reasons": diploma_report.other_reasons,
+                "type": "down",
+            }
+        )
+    response["actions"].sort(key=lambda e: e["request_date"])
+    response["reports"].sort(key=lambda e: e["request_date"])
+    return Response(response)
+
+
+@api_view(http_method_names=["GET"])
+def submit_diploma_report_api_view(request: HttpRequest, diploma_report_id: int):
+    response = {"actions": [], "reports": []}
+    if DiplomaReport.objects.filter(id=diploma_report_id).exists():
+        diploma_report = DiplomaReport.objects.get(id=diploma_report_id)
+    else:
+        return Response({"detail": "Diploma report not found"}, status=404)
+
+    diploma_report.verdict = "C"
+    diploma_report.verdict_date = timezone.now()
+    diploma_report.save()
+
+    return Response(response)
+
+
+@api_view(http_method_names=["GET"])
+def submit_diploma_action_api_view(request: HttpRequest, diploma_action_id: int):
+    response = {"actions": [], "reports": []}
+    if DiplomaRequestAction.objects.filter(id=diploma_action_id).exists():
+        diploma_action = DiplomaRequestAction.objects.get(id=diploma_action_id)
+    else:
+        return Response({"detail": "Diploma action not found"}, status=404)
+
+    diploma_action.verdict = "C"
+    diploma_action.verdict_date = timezone.now()
+    diploma_action.save()
+
+    return Response(response)
+
+
+@api_view(http_method_names=["GET"])
+def verdict_diploma_request_api_view(
+    request: HttpRequest, diploma_request_id: int, verdict: str
+):
+    if not verdict in ["C", "R"]:
+        return Response({"detail": "Invalid verdict type"}, status=400)
+    if DiplomaRequest.objects.filter(id=diploma_request_id).exists():
+        diploma_request = DiplomaRequest.objects.get(id=diploma_request_id)
+    else:
+        return Response({"detail": "Diploma request not found"}, status=404)
+
+    diploma_request.verdict = verdict.upper()
+    diploma_request.verdict_date = timezone.now()
+    diploma_request.save()
+
+    return Response({"detail": "Success"})
+
+
+class DiplomaRequestsAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = DiplomaRequest.objects.all()
+    serializer_class = DiplomaRequestSerializer
+    lookup_field = "id"
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_obsolete = True
+        instance.save()
+        return Response({"detail": "Success"})
+
+
+# Teacher Statement
+
+
+@api_view(http_method_names=["GET"])
+def get_teacher_statement_by_user_api_view(request: HttpRequest):
+    if TeacherStatement.objects.filter(sender=request.user, is_obsolete=False).exists():
+        if (
+            TeacherStatement.objects.get(sender=request.user).verdict == "C"
+            or TeacherStatement.objects.get(sender=request.user).verdict == None
+        ):
+            teacher_statement = TeacherStatement.objects.get(sender=request.user)
+        else:
+            return Response({"null": True})
+    else:
+        return Response({"null": True})
+    return Response(TeacherStatementSerializer(teacher_statement).data)
+
+
+@api_view(http_method_names=["GET"])
+def get_teacher_statement_by_id_api_view(
+    request: HttpRequest, teacher_statement_id: int
+):
+    if TeacherStatement.objects.filter(
+        is_obsolete=False, id=teacher_statement_id
+    ).exists():
+        teacher_statement = TeacherStatement.objects.get(id=teacher_statement_id)
+    else:
+        return Response({"null": True})
+
+    teacher_statement.viewed_by.add(request.user)
+    teacher_statement.save()
+    return Response(TeacherStatementSerializer(teacher_statement).data)
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(
+    keys=[
+        "workload_1_25",
+        "workload_1_00",
+        "workload_0_75",
+        "workload_0_50",
+        "doctor_degree",
+        "candidate_degree",
+        "professor",
+        "docent",
+        "department_head",
+        "professor_job",
+        "docent_job",
+        "senior_teachers",
+        "teachers",
+        "intern_teachers",
+    ]
+)
+def create_teacher_statement_api_view(request: HttpRequest):
+    TeacherStatement.objects.create(
+        workload_1_25=request.data["workload_1_25"],
+        workload_1_00=request.data["workload_1_00"],
+        workload_0_75=request.data["workload_0_75"],
+        workload_0_50=request.data["workload_0_50"],
+        doctor_degree=request.data["doctor_degree"],
+        candidate_degree=request.data["candidate_degree"],
+        professor=request.data["professor"],
+        docent=request.data["docent"],
+        department_head=request.data["department_head"],
+        professor_job=request.data["professor_job"],
+        docent_job=request.data["docent_job"],
+        senior_teachers=request.data["senior_teachers"],
+        teachers=request.data["teachers"],
+        intern_teachers=request.data["intern_teachers"],
+        sender=request.user,
+        allowed_until=timezone.now() + datetime.timedelta(days=30),
+    )
+    return Response({"detail": "Success"})
+
+
+@api_view(http_method_names=["GET"])
+def get_teacher_statements_for_table_api_view(request: HttpRequest):
+    response = []
+    for teacher_statement in TeacherStatement.objects.filter(
+        is_obsolete=False,
+    ):
+        sender = HighSchool.objects.get(manager__user=teacher_statement.sender)
+        if teacher_statement.verdict == "C":
+            response.append(
+                {
+                    "id": teacher_statement.id,
+                    "sender": sender.name,
+                    "sender_abbr": sender.abbreviation,
+                    "workload_1_25": teacher_statement.workload_1_25,
+                    "workload_1_00": teacher_statement.workload_1_00,
+                    "workload_0_75": teacher_statement.workload_0_75,
+                    "workload_0_50": teacher_statement.workload_0_50,
+                    "doctor_degree": teacher_statement.doctor_degree,
+                    "candidate_degree": teacher_statement.candidate_degree,
+                    "professor": teacher_statement.professor,
+                    "docent": teacher_statement.docent,
+                    "department_head": teacher_statement.department_head,
+                    "professor_job": teacher_statement.professor_job,
+                    "docent_job": teacher_statement.docent_job,
+                    "senior_teachers": teacher_statement.senior_teachers,
+                    "teachers": teacher_statement.teachers,
+                    "intern_teachers": teacher_statement.intern_teachers,
+                }
+            )
+        else:
+            response.append(
+                {
+                    "id": teacher_statement.id,
+                    "sender": sender.name,
+                    "sender_abbr": sender.abbreviation,
+                    "workload_1_25": 0,
+                    "workload_1_00": 0,
+                    "workload_0_75": 0,
+                    "workload_0_50": 0,
+                    "doctor_degree": 0,
+                    "candidate_degree": 0,
+                    "professor": 0,
+                    "docent": 0,
+                    "department_head": 0,
+                    "professor_job": 0,
+                    "docent_job": 0,
+                    "senior_teachers": 0,
+                    "teachers": 0,
+                    "intern_teachers": 0,
+                }
+            )
+
+    return Response(response)
+
+
+class TeacherStatementsAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = TeacherStatement.objects.all()
+    serializer_class = TeacherStatementSerializer
+    lookup_field = "id"
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_obsolete = True
+        instance.save()
+        return Response({"detail": "Success"})
+
+
+@api_view(http_method_names=["GET"])
+def verdict_teacher_statement_api_view(
+    request: HttpRequest, teacher_statement_id: int, verdict: str
+):
+    if not verdict in ["C", "R"]:
+        return Response({"detail": "Invalid verdict type"}, status=400)
+    if TeacherStatement.objects.filter(id=teacher_statement_id).exists():
+        teacher_statement = TeacherStatement.objects.get(id=teacher_statement_id)
+    else:
+        return Response({"detail": "Teacher statement not found"}, status=404)
+
+    teacher_statement.verdict = verdict.upper()
+    teacher_statement.verdict_date = timezone.now()
+    teacher_statement.save()
+
+    return Response({"detail": "Success"})
+
+
+# Filter API views
+
+
+@api_view(http_method_names=["GET", "POST"])
+def filter_api_view(request: HttpRequest):
+    response = {
+        "students": [
+            {"name": "Jemi", "count": 0},
+            {"name": "Oglan", "count": 0},
+            {"name": "Gyz", "count": 0},
+        ],
+        "regions": [
+            {"name": region.name, "count": 0} for region in Region.objects.all()
+        ],
+        "degrees": [
+            {"name": "Bakalawr", "count": 0},
+            {"name": "Hünärmen", "count": 0},
+            {"name": "Aspirantura", "count": 0},
+            {"name": "Magistratura", "count": 0},
+            {"name": "Bakalawr tölegli", "count": 0},
+            {"name": "Hünärmen tölegli", "count": 0},
+            {"name": "Aspirantura tölegli", "count": 0},
+            {"name": "Magistratura tölegli", "count": 0},
+            {"name": "Bakalawr tölegsiz", "count": 0},
+            {"name": "Hünärmen tölegsiz", "count": 0},
+            {"name": "Aspirantura tölegsiz", "count": 0},
+            {"name": "Magistratura tölegsiz", "count": 0},
+        ],
+    }
+    if request.method == "POST":
+        pass
+    return Response(response)

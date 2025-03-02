@@ -307,7 +307,12 @@ urlpatterns = [
     path(
         "diploma-request-by-user/",
         get_diploma_request_by_user_api_view,
-        name="advanced-diploma-request-retrieve",
+        name="advanced-diploma-request-retrieve-user",
+    ),
+    path(
+        "diploma-request-by-id/<int:diploma_request_id>/",
+        get_diploma_request_by_id_api_view,
+        name="advanced-diploma-request-retrieve-id",
     ),
     # Diploma request routes
     path(
@@ -330,4 +335,62 @@ urlpatterns = [
         get_diploma_request_actions_api_view,
         name="diploma-request-actions-list",
     ),
+    path(
+        "high-school-diploma-request-actions/<int:diploma_request_id>/",
+        get_high_school_diploma_request_actions_api_view,
+        name="high-school-diploma-request-actions-list",
+    ),
+    path(
+        "submit-diploma-report/<int:diploma_report_id>/",
+        submit_diploma_report_api_view,
+        name="diploma-report-submit",
+    ),
+    path(
+        "submit-diploma-action/<int:diploma_action_id>/",
+        submit_diploma_action_api_view,
+        name="diploma-action-submit",
+    ),
+    path(
+        "diploma-requests/<int:id>/",
+        DiplomaRequestsAPIView.as_view(),
+        name="diploma-requests-retrieve-update-destroy",
+    ),
+    path(
+        "verdict-diploma-request/<int:diploma_request_id>/<str:verdict>/",
+        verdict_diploma_request_api_view,
+        name="diploma-request-verdict",
+    ),
+    # Teacher statement routes
+    path(
+        "create-teacher-statement/",
+        create_teacher_statement_api_view,
+        name="teacher-statement-create",
+    ),
+    path(
+        "teacher-statement-by-user/",
+        get_teacher_statement_by_user_api_view,
+        name="teacher-statement-retrieve-user",
+    ),
+    path(
+        "teacher-statement-by-id/<int:teacher_statement_id>/",
+        get_teacher_statement_by_id_api_view,
+        name="teacher-statement-retrieve-id",
+    ),
+    path(
+        "teacher-statements-table/",
+        get_teacher_statements_for_table_api_view,
+        name="teacher-statements-table-list",
+    ),
+    path(
+        "teacher-statements/<int:id>/",
+        TeacherStatementsAPIView.as_view(),
+        name="teacher-statements-retrieve-update-destroy",
+    ),
+    path(
+        "verdict-teacher-statement/<int:teacher_statement_id>/<str:verdict>/",
+        verdict_teacher_statement_api_view,
+        name="teacher-statement-verdict",
+    ),
+    # Filter routes
+    path("filter/", filter_api_view, name="filter"),
 ]
