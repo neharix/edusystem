@@ -4,7 +4,7 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import { useDiplomasStore } from "@/stores/api.store.js";
+import { useTeacherStatementsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
@@ -20,8 +20,8 @@ watch(props, (newVal, oldVal) => {
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
 const { toasts, addToast } = useToast();
-const diplomasStore = useDiplomasStore();
-const { deactivateStatus } = storeToRefs(diplomasStore);
+const teacherStatementsStore = useTeacherStatementsStore();
+const { deactivateStatus } = storeToRefs(teacherStatementsStore);
 const authStore = useAuthStore();
 
 const data = ref([]);
@@ -132,7 +132,7 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  diplomasStore.deactivate(selectedItem.value).then(() => {
+  teacherStatementsStore.deactivate(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
@@ -243,16 +243,16 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.sender
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-full flex items-center justify-center">
                 <div class="inline-flex rounded-md shadow-xs" role="group">
-                  <button type="button" :key="item.id" @click="router.push(`/diplomas/view/${item.id}`)"
+                  <button type="button" :key="item.id" @click="router.push(`/teachers/view/${item.id}`)"
                     class="px-4 py-2 text-[0.8rem] font-medium rounded-l-lg bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700 select-none">
                     Görmek
                   </button>

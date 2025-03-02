@@ -37,3 +37,9 @@
 .info-content {
   @apply bg-gray-200 py-2 px-3 rounded-md border border-gray-300 dark:bg-[#231f39] dark:border-gray-700;
 }
+
+.t-base thead tr th,
+.t-base tbody tr td,
+.t-base tbody tr th {
+  @apply text-center p-3 border border-gray-300 dark:border-[#32237cef] select-none;
+}

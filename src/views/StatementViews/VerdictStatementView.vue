@@ -8,6 +8,7 @@ import ReinstateInfo from '@/components/StatementInfo/ReinstateInfo.vue';
 import ExpulsionInfo from '@/components/StatementInfo/ExpulsionInfo.vue';
 import VerdictBtnsGroup from '@/components/VerdictBtnsGroup.vue';
 import { useAuthStore } from '@/stores/auth.store';
+import router from '@/router';
 
 const route = useRoute();
 
@@ -105,6 +106,18 @@ onBeforeMount(() => {
   });
 })
 
+function submitStatement() {
+  statementsStore.confirmStatement(route.params.id, route.meta.statementType)
+  router.push("/statements");
+}
+
+
+function rejectStatement() {
+  statementsStore.rejectStatement(route.params.id, route.meta.statementType)
+  router.push("/statements");
+}
+
+
 const breadcrumbPaths = [
   { path: "/statements", name: "Arzalar" },
   { path: "", name: "Karar", current: true },
@@ -200,8 +213,8 @@ const breadcrumbPaths = [
   <div class="tile mt-8">
     <reinstate-info :statement="statement" v-if="route.meta.statementType == 'reinstate'"></reinstate-info>
     <expulsion-info :statement="statement" v-else-if="route.meta.statementType == 'expulsion'"></expulsion-info>
-    <verdict-btns-group v-if="statement.status === 'Barlagda'"
-      :statement-type="route.meta.statementType"></verdict-btns-group>
+    <verdict-btns-group v-if="statement.status === 'Barlagda'" :statement-type="route.meta.statementType"
+      @submit-click="submitStatement" @reject-click="rejectStatement"></verdict-btns-group>
     <div v-else-if="statement.status === 'Kabul edildi'" class="mt-4">
       <h4
         class="px-4 py-2 text-[0.8rem] w-max font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 dark:border-gray-700 rounded-lg select-none">

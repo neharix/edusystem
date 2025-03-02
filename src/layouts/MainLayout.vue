@@ -159,9 +159,6 @@ onMounted(() => {
   }
 
 })
-onBeforeMount(() => {
-  authStore.fetchUser()
-})
 </script>
 
 <style scoped></style>

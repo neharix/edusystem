@@ -1107,9 +1107,11 @@ export const useDiplomasStore = defineStore({
     diplomaRequests: [],
     diplomaActions: [],
     diplomaRequestAdvanced: { null: true },
+    highSchoolDiplomaActions: {},
     deactivateStatus: null,
     createStatus: null,
     updateStatus: null,
+    submitStatus: null,
   }),
   actions: {
     async create(data) {
@@ -1121,6 +1123,27 @@ export const useDiplomasStore = defineStore({
         this.createStatus = "success";
       } catch (error) {
         this.createStatus = "error";
+        console.error("Error", error);
+      }
+    },
+    async put(id, data) {
+      try {
+        const response = await axiosInstance.put(
+          `/diploma-requests/${id}/`,
+          data
+        );
+        this.updateStatus = "success";
+      } catch (error) {
+        this.updateStatus = "error";
+        console.error("Error", error);
+      }
+    },
+    async giveVerdictDiplomaRequest(id, verdict) {
+      try {
+        const response = await axiosInstance.get(
+          `/verdict-diploma-request/${id}/${verdict}/`
+        );
+      } catch (error) {
         console.error("Error", error);
       }
     },
@@ -1144,6 +1167,28 @@ export const useDiplomasStore = defineStore({
         console.error("Error", error);
       }
     },
+    async submitAction(id) {
+      try {
+        const response = await axiosInstance.get(
+          `/submit-diploma-action/${id}/`
+        );
+        this.submitStatus = "success";
+      } catch (error) {
+        this.submitStatus = "error";
+        console.error("Error", error);
+      }
+    },
+    async submitReport(id) {
+      try {
+        const response = await axiosInstance.get(
+          `/submit-diploma-report/${id}/`
+        );
+        this.submitStatus = "success";
+      } catch (error) {
+        this.submitStatus = "error";
+        console.error("Error", error);
+      }
+    },
     async getActions() {
       try {
         const response = await axiosInstance.get(`/diploma-request-actions/`);
@@ -1152,10 +1197,150 @@ export const useDiplomasStore = defineStore({
         console.error("Error", error);
       }
     },
+    async getHighSchoolActions(id) {
+      try {
+        const response = await axiosInstance.get(
+          `/high-school-diploma-request-actions/${id}/`
+        );
+        this.highSchoolDiplomaActions = response.data;
+      } catch {
+        console.error("Error", error);
+      }
+    },
     async getDiplomaRequestAdvanced() {
       try {
         const response = await axiosInstance.get(`/diploma-request-by-user/`);
         this.diplomaRequestAdvanced = response.data;
+      } catch {
+        console.error("Error", error);
+      }
+    },
+
+    async getDiplomaRequestAdvancedById(id) {
+      try {
+        const response = await axiosInstance.get(
+          `/diploma-request-by-id/${id}/`
+        );
+        this.diplomaRequestAdvanced = response.data;
+      } catch {
+        console.error("Error", error);
+      }
+    },
+    async deactivate(id) {
+      try {
+        const response = await axiosInstance.delete(`/diploma-requests/${id}/`);
+        this.deactivateStatus = "success";
+      } catch (error) {
+        this.deactivateStatus = "error";
+      }
+    },
+  },
+});
+
+export const useTeacherStatementsStore = defineStore({
+  id: "teacher-statements",
+  state: () => ({
+    teacherStatements: [],
+    teacherStatement: { null: true },
+    deactivateStatus: null,
+    createStatus: null,
+    updateStatus: null,
+    submitStatus: null,
+  }),
+  actions: {
+    async create(data) {
+      try {
+        const response = await axiosInstance.post(
+          "/create-teacher-statement/",
+          data
+        );
+        this.createStatus = "success";
+      } catch (error) {
+        this.createStatus = "error";
+        console.error("Error", error);
+      }
+    },
+    async put(id, data) {
+      try {
+        const response = await axiosInstance.put(
+          `/teacher-statements/${id}/`,
+          data
+        );
+        this.updateStatus = "success";
+      } catch (error) {
+        this.updateStatus = "error";
+        console.error("Error", error);
+      }
+    },
+    async giveVerdictStatement(id, verdict) {
+      try {
+        const response = await axiosInstance.get(
+          `/verdict-teacher-statement/${id}/${verdict}/`
+        );
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getAll() {
+      try {
+        const response = await axiosInstance.get(`/teacher-statements-table/`);
+        this.teacherStatements = response.data;
+      } catch {
+        console.error("Error", error);
+      }
+    },
+    async getTeacherStatementByUser() {
+      try {
+        const response = await axiosInstance.get(`/teacher-statement-by-user/`);
+        this.teacherStatement = response.data;
+      } catch {
+        console.error("Error", error);
+      }
+    },
+
+    async getTeacherStatementById(id) {
+      try {
+        const response = await axiosInstance.get(
+          `/teacher-statement-by-id/${id}/`
+        );
+        this.teacherStatement = response.data;
+      } catch {
+        console.error("Error", error);
+      }
+    },
+    async deactivate(id) {
+      try {
+        const response = await axiosInstance.delete(
+          `/teacher-statements/${id}/`
+        );
+        this.deactivateStatus = "success";
+      } catch (error) {
+        this.deactivateStatus = "error";
+      }
+    },
+  },
+});
+
+export const useFilterStore = defineStore({
+  id: "filter",
+  state: () => ({
+    data: null,
+    isLoading: true,
+  }),
+  actions: {
+    async post(data) {
+      try {
+        const response = await axiosInstance.post("/filter/", data);
+        this.data = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async get() {
+      try {
+        const response = await axiosInstance.get(`/filter/`);
+        this.data = response.data;
+        this.isLoading = false;
       } catch {
         console.error("Error", error);
       }

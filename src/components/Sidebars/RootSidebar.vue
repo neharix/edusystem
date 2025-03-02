@@ -204,6 +204,35 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
           </div>
           <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Diplomlar</span>
         </sidebar-link>
+        <sidebar-link link="/teachers">
+          <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+              </path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
+          <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Mugallymlar</span>
+        </sidebar-link>
+        <h4 class="uppercase text-gray-400 dark:text-gray-500 p-4 select-none text-nowrap"
+          :class="{ 'text-center font-extrabold': !sidebarExpanded && !sidebarHover }">
+          {{ sidebarExpanded || sidebarHover ? "Gurallar" : "..." }}</h4>
+        <sidebar-link link="/filter">
+          <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+          </div>
+          <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Süzgüç</span>
+        </sidebar-link>
+
+
         <div class="h-16"></div>
 
 

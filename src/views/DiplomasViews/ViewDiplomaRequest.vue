@@ -2,49 +2,96 @@
 import GridCell from '@/components/GridCell.vue';
 import { useDiplomasStore } from '@/stores/api.store';
 import { storeToRefs } from 'pinia';
-import { onBeforeMount, onMounted } from 'vue';
-import router from '@/router';
+import { onBeforeMount, watch, ref } from 'vue';
+import { Field, Form } from "vee-validate";
+import * as Yup from 'yup';
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
+import { useRoute } from 'vue-router';
+import TheBreadcrumb from '@/components/TheBreadcrumb.vue';
+import HighSchoolDiplomaReportsDataTable from '@/components/DataTables/HighSchoolDiplomaReportsDataTable.vue';
+import HighSchoolDiplomaActionsDataTable from '@/components/DataTables/HighSchoolDiplomaActionsDataTable.vue';
+import VerdictBtnsGroup from '@/components/VerdictBtnsGroup.vue';
+import { useAuthStore } from '@/stores/auth.store';
+import TheSpinner from '@/components/TheSpinner.vue';
 
+const route = useRoute();
 
 const { toasts, addToast } = useToast();
 
+const authStore = useAuthStore()
 const diplomasStore = useDiplomasStore();
-const { diplomaRequestAdvanced, createStatus, updateStatus } = storeToRefs(diplomasStore);
+const { diplomaRequestAdvanced, highSchoolDiplomaActions, submitStatus, updateStatus } = storeToRefs(diplomasStore);
+
+const allowingDate = ref(null);
+
+const schema = Yup.object().shape({
+  allowed_until: Yup.date(),
+});
+
+
 
 onBeforeMount(() => {
-  diplomasStore.getDiplomaRequestAdvanced();
+  diplomasStore.getDiplomaRequestAdvancedById(route.params.id).then(() => {
+    console.log(diplomaRequestAdvanced.value.allowed_until)
+    let allowingDt = new Date(diplomaRequestAdvanced.value.allowed_until);
+    allowingDt.setHours(allowingDt.getHours() + 5);
+    allowingDate.value = allowingDt.toISOString().slice(0, 16)
+    console.log(allowingDate.value)
+  });
+  diplomasStore.getHighSchoolActions(route.params.id);
+  authStore.fetchUser()
 })
 
 
-onMounted(() => {
-  if (createStatus.value) {
-    if (createStatus.value === 'success') {
-      addToast('Arza üstünlikli hasaba alyndy', 'success');
-    } else if (createStatus.value === 'error') {
-      addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
+function update() {
+  diplomasStore.getDiplomaRequestAdvancedById(route.params.id);
+  diplomasStore.getHighSchoolActions(route.params.id);
+}
+
+function onSubmit(values, { setErrors }) {
+  const { allowed_until } = values;
+  return diplomasStore.put(route.params.id, { allowed_until }).catch(error => setErrors({ apiError: error }));
+}
+
+watch(submitStatus, (newVal) => {
+  if (submitStatus.value) {
+    if (submitStatus.value === 'success') {
+      addToast('Hasabat üstünlikli tassyklandy', 'success');
+    } else if (submitStatus.value === 'error') {
+      addToast('Tassyklama prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
-  createStatus.value = null;
-  if (updateStatus.value) {
-    if (updateStatus.value === 'success') {
-      addToast('Hasabat üstünlikli täzelendi. Üýtgeşmeler dolandyryjy tassyklandan soňra işe girer', 'success');
-    } else if (updateStatus.value === 'error') {
-      addToast('Prosesde ýalňyşlyk ýüze çykdy', 'error');
+  submitStatus.value = null;
+})
+
+watch(updateStatus, (newVal, oldVal) => {
+  if (newVal) {
+    if (newVal === 'success') {
+      addToast('Hasabat üstünlikli üýtgedildi', 'success');
+    } else if (newVal === 'error') {
+      addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   updateStatus.value = null;
 })
 
 
+function giveVerdict(id, verdict) {
+  diplomasStore.giveVerdictDiplomaRequest(id, verdict).then(() => {
+    update();
+  });
+}
+
+const breadcrumbPaths = [
+  { path: "/diplomas", name: "Diplomlar" },
+  { path: "/diplomas/view", name: "Görmek", current: true },
+]
+
 </script>
 <template>
-  <div class="bg-yellow-200/50 p-4 rounded-xl border border-yellow-500 dark:border-yellow-300 mb-8"
-    v-if="!diplomaRequestAdvanced.null && !diplomaRequestAdvanced.verdict">
-    <h4 class="text-yellow-500 dark:text-yellow-300 select-none">Arza heniz dolandyryjy tarapyndan tassyklanylmady</h4>
-  </div>
-  <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8" v-if="!diplomaRequestAdvanced.null">
+  <the-breadcrumb :paths="breadcrumbPaths"></the-breadcrumb>
+  <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
     <grid-cell label="Başdaky talap edilen diplom sany" :custom-classes="'md:col-span-2 sm:col-span-1'"
       :data-value="diplomaRequestAdvanced.original_requested_quantity"
       icon-bg-class="bg-green-200 dark:bg-green-500/75">
@@ -194,8 +241,8 @@ onMounted(() => {
         </defs>
       </svg>
     </grid-cell>
-    <grid-cell label="Ätiýaçdaky diplomlar" :whole-line="true" :data-value="diplomaRequestAdvanced.spare_diplomas"
-      icon-bg-class="bg-green-200 dark:bg-green-500/75">
+    <grid-cell label="Ätiýaçdaky diplomlar" :custom-classes="'md:col-span-2 sm:col-span-1'"
+      :data-value="diplomaRequestAdvanced.spare_diplomas" icon-bg-class="bg-green-200 dark:bg-green-500/75">
       <svg class="w-6 stroke-green-500 dark:stroke-green-900" viewBox="0 0 32 32" fill="none"
         xmlns="http://www.w3.org/2000/svg">
         <g clip-path="url(#clip0_901_948)">
@@ -210,19 +257,62 @@ onMounted(() => {
         </defs>
       </svg>
     </grid-cell>
-
-  </div>
-
-  <div v-else
-    class="flex w-full h-[58vh] items-center justify-center border-dashed border-4 rounded-2xl border-gray-400 bg-gray-200 dark:border-gray-700 dark:bg-[#242035]">
-    <div>
-      <h2 class="text-lg md:text-2xl font-semibold text-center select-none">Hasabat heniz döredilmedi</h2>
-      <div class="flex justify-center my-4">
-        <button @click="router.push('/diplomas/add')" class="link-active px-4 py-2 rounded-lg">Hasabat döretmek</button>
+    <div class="tile md:col-span-2 sm:col-span-1">
+      <div class="flex justify-center" v-if="!diplomaRequestAdvanced.verdict">
+        <verdict-btns-group @submit-click="giveVerdict(route.params.id, 'C')"
+          @reject-click="giveVerdict(route.params.id, 'R')"></verdict-btns-group>
       </div>
+      <div v-else-if="diplomaRequestAdvanced.verdict === 'C'" class="mt-4 flex justify-center">
+        <div>
+          <h4
+            class="px-4 py-2 text-[0.8rem] w-max font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 dark:border-gray-700 rounded-lg select-none">
+            Tassyklanyldy
+          </h4>
+        </div>
+
+      </div>
+      <div v-else-if="diplomaRequestAdvanced.verdict === 'R'" class="mt-4 flex justify-center">
+        <h4
+          class="px-4 py-2 text-[0.8rem] w-max font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-lg  dark:border-gray-700  select-none">
+          Ret edildi
+        </h4>
+      </div>
+
+    </div>
+    <div class="tile md:col-span-4 sm:col-span-2">
+      <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4">
+        <div>
+          <label for="allowingDate" class="info-label">Hasabat kabul ediş möhleti</label>
+          <Field name="allowed_until" type="datetime-local" id="allowingDate" v-model="allowingDate"
+            class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
+            :class="{ 'is-invalid': errors.birth_date }" placeholder="Doglan senesi"></Field>
+          <div class="invalid-feedback select-none text-red-500 my-2 text-sm">{{ errors.allowed_until }}
+          </div>
+        </div>
+        <div class="flex flex-wrap justify-center md:justify-end lg:justify-end">
+          <button :disabled="isSubmitting"
+            class="flex w-50 px-4 py-2 my-2 justify-center rounded-lg border-none dark:border-violet-500/50 border-1 bg-gradient-to-r from-blue-400 to-blue-500 dark:from-violet-600 dark:to-violet-500 text-white hover:shadow-lg hover:shadow-blue-300/50 hover:ease-in ease-out duration-200 dark:hover:shadow-violet-500/50">
+            <the-spinner :class="{ hidden: !isSubmitting }"></the-spinner>
+            <span :class="{ hidden: isSubmitting }">Üýtget</span>
+          </button>
+        </div>
+        <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm select-none">{{
+          errors.apiError
+        }}
+        </div>
+      </Form>
     </div>
   </div>
-
+  <div v-if="diplomaRequestAdvanced.verdict === 'C'">
+    <div class="mt-8">
+      <high-school-diploma-reports-data-table @update="update"
+        :data="highSchoolDiplomaActions.reports"></high-school-diploma-reports-data-table>
+    </div>
+    <div class="mt-8">
+      <high-school-diploma-actions-data-table @update="update"
+        :data="highSchoolDiplomaActions.actions"></high-school-diploma-actions-data-table>
+    </div>
+  </div>
   <teleport to="body">
     <div class="toast-container w-5/6 fixed top-25
        md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">

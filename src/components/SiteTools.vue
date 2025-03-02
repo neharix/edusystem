@@ -2,18 +2,47 @@
   <div class="flex items-center space-x-2">
     <div class="relative inline-block text-left">
       <div>
-        <button :class="{ 'lg:hidden': isMobile }" v-if="notifications" id="dropdown" @click="toggleMenu">Hel</button>
+        <button :class="{ 'lg:hidden': isMobile }" v-if="notifications" id="dropdown" @click="toggleMenu"><svg
+            xmlns="http://www.w3.org/2000/svg" class="w-8 mt-1" viewBox="0 0 24 24" fill="none">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M7.07046 10.26C7.96453 7.86801 9.19303 7.03601 11.2132 7.03601C13.2334 7.03601 14.4619 7.86801 15.356 10.26C15.3728 10.3055 15.3862 10.3524 15.396 10.4L16.5543 15.917C16.6155 16.2008 16.5485 16.4978 16.3719 16.7251C16.1953 16.9525 15.928 17.0858 15.6446 17.088H13.3173C13.37 17.6989 13.1737 18.3048 12.7751 18.7618C12.3764 19.2188 11.811 19.4861 11.2132 19.5C10.6151 19.4861 10.0494 19.2186 9.65063 18.7611C9.25191 18.3037 9.05587 17.6972 9.10918 17.086H6.78186C6.49847 17.0838 6.2312 16.9505 6.0546 16.7231C5.878 16.4958 5.81096 16.1988 5.87218 15.915L7.03048 10.4C7.04027 10.3524 7.05363 10.3055 7.07046 10.26Z"
+              stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" />
+            <path
+              d="M9.10921 16.336C8.69499 16.336 8.35921 16.6718 8.35921 17.086C8.35921 17.5002 8.69499 17.836 9.10921 17.836V16.336ZM13.3173 17.836C13.7315 17.836 14.0673 17.5002 14.0673 17.086C14.0673 16.6718 13.7315 16.336 13.3173 16.336V17.836ZM9.62888 4.75C9.21467 4.75 8.87888 5.08579 8.87888 5.5C8.87888 5.91421 9.21467 6.25 9.62888 6.25V4.75ZM12.7976 6.25C13.2118 6.25 13.5476 5.91421 13.5476 5.5C13.5476 5.08579 13.2118 4.75 12.7976 4.75V6.25ZM9.10921 17.836H13.3173V16.336H9.10921V17.836ZM9.62888 6.25H12.7976V4.75H9.62888V6.25Z"
+              fill="currentColor" />
+          </svg></button>
         <transition name="fade-scale" @before-enter="el => (el.style.display = 'block')"
           @after-leave="el => (el.style.display = 'none')">
           <div v-show="isOpen"
-            class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#171131ef] shadow-lg ring-1 ring-white dark:ring-gray-800 ring-opacity-5">
-            <div class="px-2 pt-2 select-none">
-              <h3 class="uppercase text-center">Arzalar</h3>
+            class="absolute overflow-y-auto right-0 z-10 mt-2 w-56 max-h-[40vh] origin-top-right rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#171131ef] shadow-lg ring-1 ring-white dark:ring-gray-800 ring-opacity-5">
+            <div class="px-2 pt-2 select-none" v-if="statementsVisibility">
+              <h3 class="uppercase text-center">
+                Arzalar</h3>
             </div>
-            <div class="py-1">
-              <dropdown-notification v-if="notifications" v-for="(notification, index) in user.notifications"
-                :notification="notification" :key="index" redirect-to="statements"></dropdown-notification>
+            <div class="py-1" v-if="statementsVisibility">
+              <dropdown-notification :types="['expulsion', 'reinstate']"
+                :redirect-to="`/statements/${notification.id}/${notification.type}`"
+                v-for="(notification, index) in user.notifications" :notification="notification"
+                :key="index"></dropdown-notification>
             </div>
+            <div class="px-2 pt-2 select-none" v-if="diplomasVisibility">
+              <h3 class="uppercase text-center">Diplomlar</h3>
+            </div>
+            <div class="py-1" ref="diplomas" v-if="diplomasVisibility">
+              <dropdown-notification :types="['diploma']" :redirect-to="`/diplomas/view/${notification.id}`"
+                v-for="(notification, index) in user.notifications" :notification="notification"
+                :key="index"></dropdown-notification>
+            </div>
+            <div class="px-2 pt-2 select-none" v-if="teacherStatementsVisibility">
+              <h3 class="uppercase text-center">
+                MUGALLYMLAR</h3>
+            </div>
+            <div class="py-1" v-if="teacherStatementsVisibility">
+              <dropdown-notification :types="['teacher']" :redirect-to="`/teachers/view/${notification.id}`"
+                v-for="(notification, index) in user.notifications" :notification="notification"
+                :key="index"></dropdown-notification>
+            </div>
+
           </div>
         </transition>
       </div>
@@ -63,6 +92,8 @@
 <script setup>
 import { useAuthStore } from "@/stores/auth.store";
 import DropdownNotification from "./DropdownNotification.vue";
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
@@ -73,14 +104,58 @@ const props = defineProps({
   notifications: Boolean,
 });
 
+const diplomas = ref(null);
 
-import { ref } from "vue";
-import { storeToRefs } from "pinia";
+const statementsVisibility = computed(() => {
+  try {
+    let isVisible = false;
+    for (let notification of user.value.notifications) {
+      if (notification.type === "expulsion" || notification.type === "reinstate") {
+        isVisible = true;
+      }
+    }
+    return isVisible;
+  } catch {
+    return false
+  }
+})
+
+const diplomasVisibility = computed(() => {
+  try {
+    let isVisible = false;
+    for (let notification of user.value.notifications) {
+      if (notification.type === "diploma") {
+        isVisible = true;
+      }
+    }
+    return isVisible;
+  } catch {
+    return false
+  }
+})
+
+const teacherStatementsVisibility = computed(() => {
+  try {
+    let isVisible = false;
+    for (let notification of user.value.notifications) {
+      if (notification.type === "teacher") {
+        isVisible = true;
+      }
+    }
+    return isVisible;
+  } catch {
+    return false
+  }
+})
+
 
 const isOpen = ref(false);
 
+
+
 function toggleMenu() {
   isOpen.value = !isOpen.value;
+  console.log(user.value.notifications)
 }
 
 function closeMenu() {

@@ -1,14 +1,12 @@
 <script setup>
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
-import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
 import { useDiplomasStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
-import { useAuthStore } from "@/stores/auth.store.js";
-
+import ConfirmModal from '../Modals/ConfirmModal.vue';
 
 const props = defineProps(["data"])
 const emit = defineEmits(["update"]);
@@ -21,8 +19,6 @@ watch(props, (newVal, oldVal) => {
 const { isModalOpen, openModal, header, context } = useConfirmModal();
 const { toasts, addToast } = useToast();
 const diplomasStore = useDiplomasStore();
-const { deactivateStatus } = storeToRefs(diplomasStore);
-const authStore = useAuthStore();
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -31,28 +27,12 @@ const selectedItem = ref(null);
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
-const sortColumn = ref("sender");
+const sortColumn = ref("request_date");
 const sortOrder = ref('asc');
 const currentPage = ref(1);
 const rowsPerPage = ref(10);
 const rowsPerPageOptions = [10, 20, 50, 100];
-const searchQuery = ref('');
-const isSearching = ref(false);
 
-const applySearch = () => {
-  filteredData.value = data.value.filter((item) =>
-    item.sender.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-  currentPage.value = 1;
-  isSearching.value = true;
-};
-
-const resetTable = () => {
-  searchQuery.value = '';
-  filteredData.value = [...data.value];
-  currentPage.value = 1;
-  isSearching.value = false;
-};
 
 const sortedData = computed(() => {
   if (!sortColumn.value) return data.value;
@@ -118,6 +98,7 @@ function onClickOutside(event) {
   }
 }
 
+
 function openModalWrapper(headerText, content, id) {
   openModal(headerText, content);
   selectedItem.value = id;
@@ -132,31 +113,18 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  diplomasStore.deactivate(selectedItem.value).then(() => {
+  diplomasStore.submitReport(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
 }
 
-watch(deactivateStatus, (newVal, oldVal) => {
-  if (newVal) {
-    if (newVal === 'success') {
-      addToast('Hasabat üstünlikli arhiwleşdirildi', 'success');
-    } else if (newVal === 'error') {
-      addToast('Arhiwleşdirme prosesinde ýalňyşlyk ýüze çykdy', 'error');
-    }
-  }
-  deactivateStatus.value = null;
-})
-
-
-window.addEventListener("click", onClickOutside);
 
 </script>
 
 <template>
   <confirm-modal :is-open="isModalOpen" @close="closeModal" @submit="submitModal" :header="header"
-    :context='`${context} arzasynyň arhiwleşdirilmegini tassyklaýarsyňyzmy?`'></confirm-modal>
+    :context='`${context} arzasyny tassyklaýarsyňyzmy?`'></confirm-modal>
 
   <div class="w-full rounded-lg shadow-lg">
     <div class="pt-1  rounded-t-lg dark:bg-[#171131ef] bg-white">
@@ -186,33 +154,8 @@ window.addEventListener("click", onClickOutside);
             </transition>
           </div>
         </div>
-        <div class="lg:w-1/3 md:w-1/3 w-2/3 flex items-center space-x-2">
-          <button @click="resetTable" :class="{ 'opacity-0': !isSearching }" :disabled="!isSearching"
-            class="p-2 text-sm rounded-xl shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="w-6 h-6"
-              viewBox="0 0 24 24" version="1.1">
-              <title>Reload</title>
-              <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                <g id="Reload">
-                  <rect id="Rectangle" fill-rule="nonzero" x="0" y="0" width="24" height="24">
-
-                  </rect>
-                  <path
-                    d="M4,13 C4,17.4183 7.58172,21 12,21 C16.4183,21 20,17.4183 20,13 C20,8.58172 16.4183,5 12,5 C10.4407,5 8.98566,5.44609 7.75543,6.21762"
-                    id="Path" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-
-                  </path>
-                  <path
-                    d="M9.2384,1.89795 L7.49856,5.83917 C7.27552,6.34441 7.50429,6.9348 8.00954,7.15784 L11.9508,8.89768"
-                    id="Path" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-
-                  </path>
-                </g>
-              </g>
-            </svg>
-          </button>
-          <input v-model="searchQuery" type="text" @keyup.enter="applySearch" placeholder="Gözleg"
-            class="w-full dark:text-gray-300 transition duration-200 ease-in bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none" />
+        <div>
+          <h4 class="font-bold select-none">HASABATLAR</h4>
         </div>
       </div>
     </div>
@@ -232,7 +175,52 @@ window.addEventListener("click", onClickOutside);
                 ▲
               </span>
             </th>
-
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('two_year_work_off')">
+              IKI ÝYL IŞ
+              <span
+                :class="sortColumn === 'two_year_work_off' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('died')">
+              ÝOGALAN
+              <span :class="sortColumn === 'died' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('went_abroad')">
+              DAŞARY ÝURDA GIDEN
+              <span :class="sortColumn === 'went_abroad' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('other_reasons')">
+              GAÝRY SEBÄPLER
+              <span :class="sortColumn === 'other_reasons' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
+            <th
+              class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
+              @click="sort('request_date')">
+              WAGTY
+              <span :class="sortColumn === 'request_date' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+                class="ml-2 transition-transform duration-200 inline-block">
+                ▲
+              </span>
+            </th>
             <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]">
               GURALLAR
             </th>
@@ -243,22 +231,50 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.sender
+            }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+              {{
+                item.two_year_work_off
               }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
-              <div class="w-full flex items-center justify-center">
+              {{
+                item.died
+              }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+              {{
+                item.went_abroad
+              }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+              {{
+                item.other_reasons
+              }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
+              item.request_date
+            }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+              <div class="w-full flex items-center justify-center" v-if="item.verdict === 'C'">
                 <div class="inline-flex rounded-md shadow-xs" role="group">
-                  <button type="button" :key="item.id" @click="router.push(`/diplomas/view/${item.id}`)"
-                    class="px-4 py-2 text-[0.8rem] font-medium rounded-l-lg bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700 select-none">
-                    Görmek
-                  </button>
-                  <button type="button" @click="openModalWrapper('Arhiwleşdirmek', item.sender, item.id)"
-                    class="px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-e-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700 dark:focus:ring-pink-500 select-none">
-                    Arhiwleşdirmek
+                  <div
+                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-600  transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-lg dark:border-gray-700 select-none">
+                    Tassyklandy
+                  </div>
+                </div>
+              </div>
+              <div class="w-full flex items-center justify-center" v-else>
+                <div class="inline-flex rounded-md shadow-xs" role="group">
+                  <button type="button" @click="openModalWrapper('Tassyklamak', item.sender, item.id)"
+                    class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
+                    Tassyklamak
                   </button>
                 </div>
               </div>

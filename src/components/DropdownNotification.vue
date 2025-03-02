@@ -4,10 +4,11 @@ import router from '@/router';
 const props = defineProps({
   notification: Object,
   redirectTo: String,
+  types: Array,
 })
 </script>
 <template>
-  <button @click="router.push(`/statements/${notification.id}/${notification.type}/`)"
+  <button @click="router.push(redirectTo)" v-if="types.includes(notification.type)"
     class="bg-none w-full flex items-center text-gray-600 dark:text-gray-200 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-[#261c52ef] transition duration-300 ease-out">
     <span class="px-2 select-none"><svg class="w-6" viewBox="0 -0.5 25 25" fill="none"
         xmlns="http://www.w3.org/2000/svg">

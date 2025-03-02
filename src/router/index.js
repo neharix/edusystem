@@ -722,6 +722,7 @@ const router = createRouter({
             layout: "MainLayout",
             title: "Diplomlar",
           },
+          beforeEnter: guards.authGuard,
         },
         {
           path: "add",
@@ -733,6 +734,7 @@ const router = createRouter({
             title: "Diplom hasabatyny döretmek",
             stuffRequired: true,
           },
+          beforeEnter: guards.authGuard,
         },
         {
           path: "new-request",
@@ -743,6 +745,86 @@ const router = createRouter({
             title: "Diplom hasabatyny täzelemek",
             stuffRequired: true,
           },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: "view/:id",
+          name: "view-diploma-request",
+          component: () =>
+            import("../views/DiplomasViews/ViewDiplomaRequest.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Diplom hasabatyny görmek",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+      ],
+    },
+    {
+      path: "/teachers",
+      name: "teachers",
+      component: () => import("../views/TeacherViews/Teachers.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Mugallymlar",
+      },
+      children: [
+        {
+          path: "",
+          name: "teachers-view",
+          component: () => import("../views/TeacherViews/TeachersView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Mugallymlar",
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: "add",
+          name: "add-teacher-statement",
+          component: () =>
+            import("../views/TeacherViews/AddTeacherStatement.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Mugallym hasabatyny döretmek",
+            stuffRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+
+        {
+          path: "view/:id",
+          name: "view-teacher-statement",
+          component: () =>
+            import("../views/TeacherViews/ViewTeacherStatement.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Mugallym hasabatyny görmek",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+      ],
+    },
+    {
+      path: "/filter",
+      name: "filter",
+      component: () => import("../views/FilterViews/Filter.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Süzgüç",
+      },
+      children: [
+        {
+          path: "",
+          name: "filter-view",
+          component: () => import("../views/FilterViews/FilterView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Süzgüç",
+          },
+          beforeEnter: guards.filterGuard,
         },
       ],
     },
