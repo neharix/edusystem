@@ -5,14 +5,20 @@ import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
 import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth.store.js";
 import StudentsDataTable from "@/components/DataTables/StudentsDataTable.vue";
+import { useRoute } from "vue-router";
 
+const route = useRoute()
 const authStore = useAuthStore()
 const studentsStore = useStudentsStore()
 const { studentsAdditional } = storeToRefs(studentsStore);
 const { user } = storeToRefs(authStore);
 
 onMounted(() => {
-  studentsStore.getAllAdditional()
+  if (Object.keys(route.query).length > 0) {
+    studentsStore.getAllAdditionalWithQuery(Object.keys(route.query)[0], route.query[Object.keys(route.query)[0]])
+  } else {
+    studentsStore.getAllAdditional()
+  }
 })
 
 const breadcrumbPathsForAdmin = [

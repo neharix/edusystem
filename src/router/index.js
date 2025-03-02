@@ -826,6 +826,17 @@ const router = createRouter({
           },
           beforeEnter: guards.filterGuard,
         },
+        {
+          path: "detail",
+          name: "filter-detail",
+          component: () =>
+            import("../views/FilterViews/FilteredStudentsListView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Süzgüçlenen talyplar",
+          },
+          beforeEnter: guards.filterGuard,
+        },
       ],
     },
     {

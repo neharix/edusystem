@@ -291,33 +291,32 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.name
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               {{ item.students_count }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.male_count
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               {{ item.female_count }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
               v-if="authStore.user.is_superuser">
-              <!-- TODO -->
               <div class="w-full flex items-center justify-center">
                 <div class="inline-flex rounded-md shadow-xs" role="group">
                   <button type="button" :key="item.id" @click="router.push(`/regions/edit/${item.id}`)"
                     class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-s-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
                     Üýtgetmek
                   </button>
-                  <!-- FIXME -->
                   <button type="button" :key="item.id"
+                    @click="router.push({ name: 'students-list', query: { 'region': item.id } })"
                     class="px-4 py-2 text-[0.8rem] font-medium bg-violet-400 hover:bg-violet-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-violet-700 border border-gray-200 focus:z-10 focus:ring-2 focus:ring-violet-500 dark:border-gray-700 select-none">
                     Görmek
                   </button>

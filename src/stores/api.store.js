@@ -877,6 +877,16 @@ export const useStudentsStore = defineStore({
         console.error("Error", error);
       }
     },
+    async getAllAdditionalWithQuery(key, value) {
+      try {
+        const response = await axiosInstance.get(
+          `/students-with-additional/?${key}=${value}`
+        );
+        this.studentsAdditional = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
     async create(data) {
       try {
         const response = await axiosInstance.post("/import-students/", data, {
@@ -1326,12 +1336,27 @@ export const useFilterStore = defineStore({
   state: () => ({
     data: null,
     isLoading: true,
+    isfilterOptionsInSession: sessionStorage.getItem("filterOptions")
+      ? true
+      : false,
+    filterOptions: JSON.parse(sessionStorage.getItem("filterOptions")),
+    filteredStudents: [],
   }),
   actions: {
+    async getFilterOptions() {
+      this.filterOptions = JSON.parse(sessionStorage.getItem("filterOptions"));
+      this.isfilterOptionsInSession = sessionStorage.getItem("filterOptions")
+        ? true
+        : false;
+    },
     async post(data) {
       try {
         const response = await axiosInstance.post("/filter/", data);
         this.data = response.data;
+        sessionStorage.setItem(
+          "filterOptions",
+          JSON.stringify(this.filterOptions)
+        );
       } catch (error) {
         console.error("Error", error);
       }
@@ -1341,6 +1366,17 @@ export const useFilterStore = defineStore({
         const response = await axiosInstance.get(`/filter/`);
         this.data = response.data;
         this.isLoading = false;
+      } catch {
+        console.error("Error", error);
+      }
+    },
+    async getFilteredStudents(data, key, value) {
+      try {
+        const response = await axiosInstance.post(
+          `/filtered-students/?${key}=${value}`,
+          data
+        );
+        this.filteredStudents = response.data;
       } catch {
         console.error("Error", error);
       }
