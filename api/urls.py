@@ -393,4 +393,7 @@ urlpatterns = [
     ),
     # Filter routes
     path("filter/", filter_api_view, name="filter"),
+    path(
+        "filtered-students/", filtered_students_api_view, name="filtered-students-list"
+    ),
 ]

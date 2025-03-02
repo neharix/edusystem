@@ -13,14 +13,12 @@ null = Null()
 def validate_payload(keys: List[str]):
     def method_wrapper(view):
         def args_wrapper(request: HttpRequest, *args, **kwargs):
-            print(request.data)
-            validation_list = [request.data.get(key, null) for key in keys]
-            print(validation_list)
-            if null in validation_list:
-                print("Payload invalid")
-                return Response({"detail": "Payload invalid"}, status=400)
-            else:
-                return view(request, *args, **kwargs)
+            if request.method in ["POST", "PUT", "PATCH"]:
+                validation_list = [request.data.get(key, null) for key in keys]
+                if null in validation_list:
+                    print("Payload invalid", request.data)
+                    return Response({"detail": "Payload invalid"}, status=400)
+            return view(request, *args, **kwargs)
 
         return args_wrapper
 

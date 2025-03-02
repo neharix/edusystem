@@ -67,7 +67,13 @@ from .serializers import (
     TeacherStatementSerializer,
     advanced_diploma_serializer,
 )
-from .utils import create_example, validate_not_null_field
+from .utils import (
+    advanced_filter,
+    advanced_quantity_filter,
+    create_example,
+    filter_by_query,
+    validate_not_null_field,
+)
 
 ADMISSION_START_RANGE = 2018
 
@@ -1271,19 +1277,20 @@ def import_students_from_excel_api_view(request: HttpRequest):
 
 @api_view(http_method_names=["GET"])
 def get_students_with_additional_data_api_view(request: HttpRequest):
+
     if request.user.is_superuser:
         students = Student.objects.filter(
             active=True,
             is_expelled=False,
         )
-        return Response(StudentAdditionalSerializer(students, many=True).data)
+        response = filter_by_query(students, request.GET)
+        return Response(StudentAdditionalSerializer(response, many=True).data)
     else:
         students = Student.objects.filter(
             high_school=HighSchool.objects.get(manager__user=request.user),
             active=True,
             is_expelled=False,
         )
-
         return Response(
             [
                 {
@@ -2239,15 +2246,27 @@ def verdict_teacher_statement_api_view(
 
 
 @api_view(http_method_names=["GET", "POST"])
+@validate_payload(
+    keys=[
+        "high_schools",
+        "faculties",
+        "departments",
+        "specializations",
+        "study_years",
+        "payment_types",
+        "genders",
+        "nationalities",
+        "regions",
+        "countries",
+        "military_service",
+    ]
+)
 def filter_api_view(request: HttpRequest):
     response = {
         "students": [
-            {"name": "Jemi", "count": 0},
-            {"name": "Oglan", "count": 0},
-            {"name": "Gyz", "count": 0},
-        ],
-        "regions": [
-            {"name": region.name, "count": 0} for region in Region.objects.all()
+            {"name": "Jemi", "count": 0, "query": 0},
+            {"name": "Oglan", "count": 0, "query": 1},
+            {"name": "Gyz", "count": 0, "query": 2},
         ],
         "degrees": [
             {"name": "Bakalawr", "count": 0},
@@ -2263,7 +2282,195 @@ def filter_api_view(request: HttpRequest):
             {"name": "Aspirantura tölegsiz", "count": 0},
             {"name": "Magistratura tölegsiz", "count": 0},
         ],
+        "high_schools": [
+            {"id": high_school.id, "name": high_school.name}
+            for high_school in HighSchool.objects.filter(active=True)
+        ],
+        "faculties": [
+            {"id": faculty.id, "name": faculty.name}
+            for faculty in Faculty.objects.filter(active=True)
+        ],
+        "departments": [
+            {"id": department.id, "name": department.name}
+            for department in Department.objects.filter(active=True)
+        ],
+        "specializations": [
+            {"id": specialization.id, "name": specialization.name}
+            for specialization in Specialization.objects.filter(active=True)
+        ],
+        "study_years": [
+            {"id": 1, "name": "I kurs"},
+            {"id": 2, "name": "II kurs"},
+            {"id": 3, "name": "III kurs"},
+            {"id": 4, "name": "IV kurs"},
+            {"id": 5, "name": "V kurs"},
+            {"id": 6, "name": "VI kurs"},
+            {"id": 7, "name": "VII kurs"},
+        ],
+        "payment_types": [
+            {"id": 1, "name": "Tölegli"},
+            {"id": 2, "name": "Býudjet"},
+        ],
+        "genders": [
+            {"id": 1, "name": "Oglan"},
+            {"id": 2, "name": "Gyz"},
+        ],
+        "nationalities": [
+            {"id": nationality.id, "name": nationality.name}
+            for nationality in Nationality.objects.all()
+        ],
+        "countries": [
+            {"id": country.id, "name": country.name}
+            for country in Country.objects.all()
+        ],
+        "regions": [
+            {"id": region.id, "name": region.name, "count": 0}
+            for region in Region.objects.all()
+        ],
     }
     if request.method == "POST":
-        pass
+        faculty_ids = [faculty["id"] for faculty in response["faculties"]]
+        department_ids = [department["id"] for department in response["departments"]]
+        specialization_ids = [
+            specializiation["id"] for specializiation in response["specializations"]
+        ]
+        if len(request.data["high_schools"]) > 0:
+            faculty_ids.clear()
+            department_ids.clear()
+            specialization_ids.clear()
+            for high_school_id in request.data["high_schools"]:
+                [
+                    faculty_ids.append(faculty.id)
+                    for faculty in Faculty.objects.filter(
+                        id__in=[
+                            high_school_faculty.faculty.id
+                            for high_school_faculty in HighSchoolFaculty.objects.filter(
+                                high_school__id=high_school_id
+                            )
+                        ],
+                        active=True,
+                    )
+                ]
+                [
+                    department_ids.append(department.id)
+                    for department in Department.objects.filter(
+                        id__in=[
+                            faculty_department.department.id
+                            for faculty_department in FacultyDepartment.objects.filter(
+                                high_school_faculty__high_school__id=high_school_id,
+                            )
+                        ],
+                        active=True,
+                    )
+                ]
+                [
+                    specialization_ids.append(specialization.id)
+                    for specialization in Specialization.objects.filter(
+                        id__in=[
+                            department_specialization.specialization.id
+                            for department_specialization in DepartmentSpecialization.objects.filter(
+                                faculty_department__high_school_faculty__high_school__id=high_school_id,
+                            )
+                        ],
+                        active=True,
+                    )
+                ]
+            faculty_ids = list(set(faculty_ids))
+            department_ids = list(set(department_ids))
+            specialization_ids = list(set(specialization_ids))
+
+        if len(request.data["faculties"]) > 0:
+            department_ids.clear()
+            specialization_ids.clear()
+            for faculty_id in request.data["faculties"]:
+                [
+                    department_ids.append(department.id)
+                    for department in Department.objects.filter(
+                        id__in=[
+                            faculty_department.department.id
+                            for faculty_department in FacultyDepartment.objects.filter(
+                                high_school_faculty__faculty__id=faculty_id,
+                            )
+                        ],
+                        active=True,
+                    )
+                ]
+                [
+                    specialization_ids.append(specialization.id)
+                    for specialization in Specialization.objects.filter(
+                        id__in=[
+                            department_specialization.specialization.id
+                            for department_specialization in DepartmentSpecialization.objects.filter(
+                                faculty_department__high_school_faculty__faculty__id=faculty_id,
+                            )
+                        ],
+                        active=True,
+                    )
+                ]
+            department_ids = list(set(department_ids))
+            specialization_ids = list(set(specialization_ids))
+        if len(request.data["departments"]) > 0:
+            specialization_ids.clear()
+            for department_id in request.data["departments"]:
+                [
+                    specialization_ids.append(specialization.id)
+                    for specialization in Specialization.objects.filter(
+                        id__in=[
+                            department_specialization.specialization.id
+                            for department_specialization in DepartmentSpecialization.objects.filter(
+                                faculty_department__department__id=department_id,
+                            )
+                        ],
+                        active=True,
+                    )
+                ]
+            specialization_ids = list(set(specialization_ids))
+
+        response["faculties"] = [
+            {"id": faculty.id, "name": faculty.name}
+            for faculty in Faculty.objects.filter(id__in=faculty_ids)
+        ]
+        response["departments"] = [
+            {"id": department.id, "name": department.name}
+            for department in Department.objects.filter(id__in=department_ids)
+        ]
+
+        response["specializations"] = [
+            {"id": specialization.id, "name": specialization.name}
+            for specialization in Specialization.objects.filter(
+                id__in=specialization_ids
+            )
+        ]
+        filter_output = advanced_quantity_filter(request.data)
+        response["students"] = filter_output["students"]
+        response["regions"] = filter_output["regions"]
+        response["degrees"] = filter_output["degrees"]
+
     return Response(response)
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(
+    keys=[
+        "high_schools",
+        "faculties",
+        "departments",
+        "specializations",
+        "study_years",
+        "payment_types",
+        "genders",
+        "nationalities",
+        "regions",
+        "countries",
+        "military_service",
+    ]
+)
+def filtered_students_api_view(request: HttpRequest):
+    print(request.GET)
+    return Response(
+        advanced_filter(
+            request.data,
+            list(request.GET.keys())[0],
+            int(request.GET.get(list(request.GET.keys())[0])),
+        )
+    )

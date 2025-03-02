@@ -22,7 +22,7 @@ class HighSchool(models.Model):
     manager = models.OneToOneField(
         Profile, on_delete=models.SET_NULL, null=True, blank=True
     )
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
     lat = models.FloatField(blank=True, default=37.95)
     lng = models.FloatField(blank=True, default=58.38)
 
