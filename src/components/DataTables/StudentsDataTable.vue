@@ -199,8 +199,6 @@ window.addEventListener("click", onClickOutside);
     :context='`\"${context}\" ýok edilmegini tassyklaýarsyňyzmy?`'></confirm-modal>
   <info-modal :is-open="isInfoModalOpen" @close="closeInfoModal" :header="infoHeader"
     :context='infoContext'></info-modal>
-
-  <button @click="openInfoModal('h', 'text')">Open</button>
   <div class="w-full rounded-lg shadow-lg">
     <div class="pt-1  rounded-t-lg dark:bg-[#171131ef] bg-white">
       <div class="flex items-center justify-between space-x-2 py-3 px-4">
@@ -313,11 +311,11 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.full_name
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
               v-if="authStore.role === 'root' && route.name === 'students-list'">{{
