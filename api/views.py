@@ -1174,7 +1174,10 @@ def import_students_from_excel_api_view(request: HttpRequest):
                 or type(row["Kursy"]) == float
                 or type(row["Kursy"]) == str
             ):
-                course = int(row["Kursy"])
+                if type(row["Kursy"]) == float:
+                    course = str(int(row["Kursy"]))
+                else:
+                    course = str(row["Kursy"])
             else:
                 invalid_fields.append(
                     f"Setir №{index + 1}: 'Kursy' meýdançasynda ýalňyşlyk goýberildi"

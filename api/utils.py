@@ -104,6 +104,12 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
     gender_ws["A1"].value = "Oglan"
     gender_ws["A2"].value = "Gyz"
 
+    # Course validation values
+    study_year_ws: Worksheet = wb.create_sheet("Kurslar")
+    study_year_ws["A1"].value = "DÖB"
+    for i in range(7):
+        study_year_ws[f"A{i + 2}"].value = str(i + 1)
+
     # Family status validation values
     family_status_ws: Worksheet = wb.create_sheet("Maşgala ýagdaýlary")
     family_status_ws["A1"].value = "Hossarly"
@@ -136,6 +142,10 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
         type="list",
         formula1=f"={quote_sheetname('Jynslar')}!$A:$A",
     )
+    study_year_data_val = DataValidation(
+        type="list",
+        formula1=f"={quote_sheetname('Kurslar')}!$A:$A",
+    )
     family_status_data_val = DataValidation(
         type="list",
         formula1=f"={quote_sheetname('Maşgala ýagdaýlary')}!$A:$A",
@@ -150,6 +160,7 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
     ws.add_data_validation(nationality_data_val)
     ws.add_data_validation(region_data_val)
     ws.add_data_validation(gender_data_val)
+    ws.add_data_validation(study_year_data_val)
     ws.add_data_validation(family_status_data_val)
     ws.add_data_validation(payment_type_data_val)
     for row_index in range(2, row_count + 2):
@@ -158,6 +169,7 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
         country_data_val.add(ws[f"G{row_index}"])
         region_data_val.add(ws[f"E{row_index}"])
         gender_data_val.add(ws[f"D{row_index}"])
+        study_year_data_val.add(ws[f"I{row_index}"])
         family_status_data_val.add(ws[f"K{row_index}"])
         nationality_data_val.add(ws[f"F{row_index}"])
         payment_type_data_val.add(ws[f"J{row_index}"])
