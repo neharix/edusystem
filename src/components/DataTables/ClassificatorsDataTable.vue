@@ -9,7 +9,6 @@ import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
 
-
 const props = defineProps(["data"])
 const emit = defineEmits(["update"]);
 
@@ -27,6 +26,11 @@ const authStore = useAuthStore();
 const data = ref([]);
 const filteredData = ref([]);
 const selectedItem = ref(null);
+
+if (props.data.length > 0) {
+  data.value = props.data;
+  filteredData.value = [...data.value];
+}
 
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");

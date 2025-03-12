@@ -5,8 +5,12 @@ export const useDashboardStore = defineStore({
   id: "root",
   state: () => ({
     data: {},
+    isLoading: false,
   }),
   actions: {
+    clearData() {
+      this.data = {};
+    },
     async get() {
       try {
         const response = await axiosInstance.get("/dashboard/");
@@ -418,7 +422,6 @@ export const useSpecializationsStore = defineStore({
           `/high-school-specializations/${highSchoolId}/inc/`
         );
         this.highSchoolSpecializations = response.data;
-        console.log(response.data);
       } catch (error) {
         console.error("Error", error);
       }
@@ -429,7 +432,6 @@ export const useSpecializationsStore = defineStore({
           `/high-school-specializations/${highSchoolId}/exc/`
         );
         this.highSchoolExcSpecializations = response.data;
-        console.log(response.data);
       } catch (error) {
         console.error("Error", error);
       }
@@ -799,10 +801,16 @@ export const useStudentsStore = defineStore({
     excelForm: null,
     excelFormContentType: null,
     createStatus: null,
+    createSessionStatus: null,
+    createSessionMistakes: [],
     deleteStatus: null,
     updateStatus: null,
   }),
   actions: {
+    resetMistakeVariables() {
+      this.createSessionStatus = null;
+      this.createSessionMistakes = [];
+    },
     resetExcelFormStates() {
       this.excelForm = null;
       this.excelFormContentType = null;
@@ -894,6 +902,10 @@ export const useStudentsStore = defineStore({
             "Content-Type": "multipart/form-data",
           },
         });
+        this.createSessionStatus = response.data.mistakes ? false : true;
+        if (!this.createSessionStatus) {
+          this.createSessionMistakes = response.data.mistakes;
+        }
         this.createStatus = "success";
       } catch (error) {
         this.createStatus = "error";
@@ -1225,11 +1237,20 @@ export const useDiplomasStore = defineStore({
         console.error("Error", error);
       }
     },
-
     async getDiplomaRequestAdvancedById(id) {
       try {
         const response = await axiosInstance.get(
           `/diploma-request-by-id/${id}/`
+        );
+        this.diplomaRequestAdvanced = response.data;
+      } catch {
+        console.error("Error", error);
+      }
+    },
+    async getDiplomaRequestAdvancedByHighSchool(id) {
+      try {
+        const response = await axiosInstance.get(
+          `/diploma-request-by-high-school/${id}/`
         );
         this.diplomaRequestAdvanced = response.data;
       } catch {

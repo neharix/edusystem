@@ -2,31 +2,43 @@
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
 import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
+import useInfoModal from "@/use/useInfoModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
 import { useStudentsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
+import InfoModal from '../Modals/InfoModal.vue';
+import { useRoute } from 'vue-router';
 
 
 const props = defineProps(["data"])
 const emit = defineEmits(["update"]);
+
 
 watch(props, (newVal, oldVal) => {
   data.value = newVal.data;
   filteredData.value = [...data.value];
 })
 
+const route = useRoute();
+
 const { isModalOpen, openModal, header, context } = useConfirmModal();
+const { isInfoModalOpen, openInfoModal, infoHeader, infoContext } = useInfoModal();
 const { toasts, addToast } = useToast();
 const studentsStore = useStudentsStore();
-const { deleteStatus, updateStatus, createStatus } = storeToRefs(studentsStore);
+const { deleteStatus, updateStatus, createStatus, createSessionStatus, createSessionMistakes } = storeToRefs(studentsStore);
 const authStore = useAuthStore();
 
 const data = ref([]);
 const filteredData = ref([]);
 const selectedItem = ref(null);
+
+if (props.data.length > 0) {
+  data.value = props.data;
+  filteredData.value = [...data.value];
+}
 
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
@@ -123,9 +135,17 @@ function openModalWrapper(headerText, content, id) {
   selectedItem.value = id;
 }
 
+function openInfoModalWrapper(headerText, content, id) {
+  openInfoModal(headerText, content);
+  selectedItem.value = id;
+}
 
 function closeModal() {
   isModalOpen.value = false;
+  selectedItem.value = null;
+}
+function closeInfoModal() {
+  isInfoModalOpen.value = false;
   selectedItem.value = null;
 }
 
@@ -161,7 +181,7 @@ onMounted(() => {
 
   if (createStatus.value) {
     if (createStatus.value === 'success') {
-      addToast('Hasaba alma prosesi üstünlikli tamamlandy', 'success');
+      addToast('Talyplar üstünlikli hasaba alyndy!', 'success');
     } else if (createStatus.value === 'error') {
       addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
@@ -177,7 +197,10 @@ window.addEventListener("click", onClickOutside);
 <template>
   <confirm-modal :is-open="isModalOpen" @close="closeModal" @submit="submitModal" :header="header"
     :context='`\"${context}\" ýok edilmegini tassyklaýarsyňyzmy?`'></confirm-modal>
+  <info-modal :is-open="isInfoModalOpen" @close="closeInfoModal" :header="infoHeader"
+    :context='infoContext'></info-modal>
 
+  <button @click="openInfoModal('h', 'text')">Open</button>
   <div class="w-full rounded-lg shadow-lg">
     <div class="pt-1  rounded-t-lg dark:bg-[#171131ef] bg-white">
       <div class="flex items-center justify-between space-x-2 py-3 px-4">
@@ -254,7 +277,7 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('high_school.name')" v-if="authStore.user.is_superuser">
+              @click="sort('high_school.name')" v-if="authStore.role === 'root' && route.name === 'students-list'">
               ÝOM
               <span
                 :class="sortColumn === 'high_school.name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
@@ -264,7 +287,7 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('faculty')" v-else>
+              @click="sort('faculty')" v-else-if="authStore.role === 'user'">
               FAKULTETI
               <span :class="sortColumn === 'faculty' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
@@ -273,7 +296,7 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('study_year')">
+              @click="sort('study_year')" v-if="route.name === 'students-list'">
               KURSY
               <span :class="sortColumn === 'study_year' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
@@ -297,17 +320,19 @@ window.addEventListener("click", onClickOutside);
             }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
-              v-if="authStore.user.is_superuser">{{
+              v-if="authStore.role === 'root' && route.name === 'students-list'">{{
                 item.high_school.name
               }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]" v-else>{{
-              item.faculty
-            }}
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
+              v-else-if="authStore.role === 'user'">{{
+                item.faculty
+              }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.study_year
-            }}
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
+              v-if="route.name === 'students-list'">{{
+                item.study_year
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-full flex items-center justify-center">

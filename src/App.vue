@@ -3,10 +3,10 @@
 </template>
 
 <script setup>
-import {defineAsyncComponent, onBeforeMount, onMounted, ref, shallowRef, watch} from "vue";
-import {useRoute} from "vue-router";
+import { defineAsyncComponent, onBeforeMount, onMounted, ref, shallowRef, watch } from "vue";
+import { useRoute } from "vue-router";
 import LoaderLayout from "@/layouts/LoaderLayout.vue";
-import {useAuthStore} from "@/stores/auth.store.js";
+import { useAuthStore } from "@/stores/auth.store.js";
 import router from "@/router/index.js";
 
 
@@ -33,10 +33,10 @@ onBeforeMount(() => {
   }
 })
 
-onMounted(async () => {
+onMounted(() => {
   if (authStore.token) {
     if (!authStore.user) {
-      await authStore.fetchUser();
+      authStore.fetchUser();
     }
   } else {
     router.push("/login");

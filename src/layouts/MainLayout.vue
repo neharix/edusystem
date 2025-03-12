@@ -60,11 +60,12 @@
             src="/src/assets/svgs/favicon.svg" alt=""><span class="px-2 select-none">BMDU</span></div>
       </router-link>
 
-      <site-tools :is-mobile="true" :is-dark="isDark"
-        :notifications="user.is_superuser && user.notifications.length > 0" @toggle-theme="toggleTheme"></site-tools>
+      <site-tools :is-mobile="true" :is-dark="isDark" :notifications="role === 'root' && user.notifications.length > 0"
+        @toggle-theme="toggleTheme"></site-tools>
       <div class="hidden lg:flex items-center space-x-4">
+        <the-spinner v-if="uxStore.isLoading"></the-spinner>
         <site-tools :is-mobile="false" :is-dark="isDark"
-          :notifications="user.is_superuser && user.notifications.length > 0" @toggle-theme="toggleTheme"></site-tools>
+          :notifications="role === 'root' && user.notifications.length > 0" @toggle-theme="toggleTheme"></site-tools>
         <user-dropdown v-if="user"></user-dropdown>
       </div>
     </div>
@@ -92,6 +93,7 @@ import RootSidebar from "@/components/Sidebars/RootSidebar.vue";
 import UserSidebar from "@/components/Sidebars/UserSidebar.vue";
 import EmptySidebar from "@/components/Sidebars/EmptySidebar.vue";
 import { useUxStore } from "@/stores/ux.store.js";
+import TheSpinner from "@/components/TheSpinner.vue";
 
 const uxStore = useUxStore();
 const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);

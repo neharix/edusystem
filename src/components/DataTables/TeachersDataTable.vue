@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineProps, onMounted, ref, watch } from 'vue';
+import { computed, defineProps, ref, watch } from 'vue';
 import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
@@ -7,7 +7,6 @@ import useToast from "@/use/useToast.js";
 import { useTeacherStatementsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
-import { useAuthStore } from "@/stores/auth.store.js";
 
 
 const props = defineProps(["data"])
@@ -22,12 +21,16 @@ const { isModalOpen, openModal, header, context } = useConfirmModal();
 const { toasts, addToast } = useToast();
 const teacherStatementsStore = useTeacherStatementsStore();
 const { deactivateStatus } = storeToRefs(teacherStatementsStore);
-const authStore = useAuthStore();
 
 const data = ref([]);
 const filteredData = ref([]);
 const selectedItem = ref(null);
 
+if (props.data.length > 0) {
+  data.value = props.data;
+  console.log(data.value)
+  filteredData.value = [...data.value];
+}
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");

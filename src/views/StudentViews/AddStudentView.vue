@@ -17,8 +17,9 @@
         </div>
         <div>
           <button @click="getExcel" class="btn-active rounded-e-md h-full px-2 lg:px-6">
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="w-6" version="1.1"
-              id="Capa_1" viewBox="0 0 26 26" xml:space="preserve">
+            <the-spinner v-if="uxStore.isLoading"></the-spinner>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="w-12 h-6"
+              version="1.1" id="Capa_1" viewBox="0 0 26 26" xml:space="preserve">
               <g>
                 <path fill="currentColor"
                   d="M25.162,3H16v2.984h3.031v2.031H16V10h3v2h-3v2h3v2h-3v2h3v2h-3v3h9.162   C25.623,23,26,22.609,26,22.13V3.87C26,3.391,25.623,3,25.162,3z M24,20h-4v-2h4V20z M24,16h-4v-2h4V16z M24,12h-4v-2h4V12z M24,8   h-4V6h4V8z" />
@@ -53,8 +54,12 @@
         errors.apiError
       }}
       </div>
-
     </Form>
+    <div v-if="createSessionMistakes.length > 0" class="space-y-4">
+      <h3 class="text-xl font-bold text-red-500 select-none">Üstünlikli ýüklenildi, emma käbir setirlerde näsazlyk ýüze
+        çykdy</h3>
+      <p v-for="mistake in createSessionMistakes" class="text-red-500 select-none">{{ mistake }}</p>
+    </div>
   </div>
 </template>
 
@@ -62,22 +67,25 @@
 
 import TheSpinner from "@/components/TheSpinner.vue";
 import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
-import { Field, Form, useSetFieldValue } from "vee-validate";
+import { Field, Form } from "vee-validate";
 import * as Yup from 'yup';
 import { useHighSchoolsStore, useStudentsStore } from "@/stores/api.store.js";
 import router from "@/router/index.js";
 import { ref, onBeforeMount } from "vue";
 import { storeToRefs } from "pinia";
+import { useUxStore } from "@/stores/ux.store";
 
-
+const uxStore = useUxStore();
 const highSchoolsStore = useHighSchoolsStore();
 const studentsStore = useStudentsStore();
 
 
+const { createSessionMistakes, createSessionStatus } = storeToRefs(studentsStore);
 const { highSchoolsResponse } = storeToRefs(highSchoolsStore);
 const highSchoolId = ref(0);
 const fileObj = ref(null);
 const fileError = ref(null);
+const hasMistake = ref(false);
 
 const schema = Yup.object().shape({
   high_school: Yup.number(),
@@ -89,6 +97,7 @@ const handleFileChange = (event) => {
 };
 
 function getExcel() {
+  uxStore.isLoading = true;
   studentsStore.getForm(highSchoolId.value, 10).then(() => {
     const blob = new Blob([studentsStore.excelForm], { type: studentsStore.excelFormContentType })
     console.log(blob)
@@ -102,6 +111,7 @@ function getExcel() {
     link.click();
     document.body.removeChild(link);
     studentsStore.resetExcelFormStates();
+    uxStore.isLoading = false;
   })
 }
 // FIXME
@@ -113,7 +123,9 @@ const onSubmit = async (values) => {
     formData.append("high_school_id", values.high_school)
 
     return studentsStore.create(formData).then(() => {
-      router.push('/students');
+      if (createSessionStatus.value) {
+        router.push('/students');
+      }
     }).catch(error => {
       setErrors({ apiError: error });
     })

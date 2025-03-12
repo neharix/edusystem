@@ -2,14 +2,27 @@
 import { useStudentsStore } from '@/stores/api.store';
 import TheBreadcrumb from '@/components/TheBreadcrumb.vue';
 import { storeToRefs } from 'pinia';
-import { onBeforeMount, reactive } from 'vue';
+import { computed, onBeforeMount, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import router from '@/router';
 import ExpulsionStatement from '@/components/Forms/ExpulsionStatement.vue';
 import { useAuthStore } from '@/stores/auth.store';
+import { useUxStore } from '@/stores/ux.store';
+import TheSpinner from '@/components/TheSpinner.vue';
+
+const uxStore = useUxStore();
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
+
+const expulsionStatementVisibility = computed(() => {
+  try {
+    return !user.value.is_superuser;
+  }
+  catch {
+    return false;
+  }
+})
 
 const route = useRoute();
 
@@ -39,6 +52,7 @@ const student = reactive({
 });
 
 onBeforeMount(() => {
+  uxStore.isLoading = true;
   studentsStore.getInfo(route.params.id).then(() => {
     if (studentInfo.value.active) {
       student.fullName = studentInfo.value.full_name;
@@ -97,9 +111,10 @@ onBeforeMount(() => {
       student.birthDate = birthDate.toLocaleDateString();
       let admissionDate = new Date(studentInfo.value.admission_date);
       student.admissionDate = admissionDate.toLocaleDateString();
-
+      uxStore.isLoading = false;
     }
     else {
+      uxStore.isLoading = false;
       router.push('/403');
     }
   })
@@ -114,7 +129,10 @@ const breadcrumbPaths = [
 <template>
   <the-breadcrumb :paths="breadcrumbPaths"></the-breadcrumb>
   <div class="tile">
-    <h3 class="text-xl font-bold mx-2 select-none">Talyp barada maglumat</h3>
+    <div class="flex justify-between">
+      <h3 class="text-base md:text-xl font-bold mx-2 select-none">Talyp barada maglumat</h3>
+      <the-spinner v-if="uxStore.isLoading"></the-spinner>
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
       <div>
         <p class="info-label">Talybyň ady, familiýasy, atasynyň ady</p>
@@ -197,5 +215,5 @@ const breadcrumbPaths = [
 
     </div>
   </div>
-  <expulsion-statement v-if="!user.is_superuser"></expulsion-statement>
+  <expulsion-statement v-if="expulsionStatementVisibility"></expulsion-statement>
 </template>

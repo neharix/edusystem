@@ -8,6 +8,9 @@ import loginImage from "@/assets/svgs/login.svg";
 import SiteTools from "@/components/SiteTools.vue";
 import { onMounted, ref } from "vue";
 import router from "@/router/index.js";
+import { useDashboardStore } from '@/stores/api.store';
+
+const dashboardStore = useDashboardStore();
 
 const schema = Yup.object().shape({
   username: Yup.string().trim().required('Ulanyjy ady hökmany şekilde girizilmeli'),
@@ -43,6 +46,7 @@ function toggleTheme() {
 
 
 onMounted(() => {
+  dashboardStore.clearData();
   const theme = localStorage.getItem("theme")
   isDark.value = theme === "dark"
 })

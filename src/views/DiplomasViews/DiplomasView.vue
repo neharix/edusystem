@@ -8,7 +8,7 @@ import { ref, watch } from "vue";
 import { useDiplomasStore } from "@/stores/api.store";
 
 const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { role } = storeToRefs(authStore);
 const diplomasStore = useDiplomasStore();
 const { diplomaRequestAdvanced } = storeToRefs(diplomasStore);
 
@@ -51,7 +51,7 @@ watch(diplomaRequestAdvanced, (newVal) => {
 <template>
   <div class="w-full">
     <the-breadcrumb :paths="breadcrumbPaths"></the-breadcrumb>
-    <diplomas-view-for-admin v-if="user.is_superuser"></diplomas-view-for-admin>
+    <diplomas-view-for-admin v-if="role === 'root'"></diplomas-view-for-admin>
     <diplomas-view-for-stuff v-else></diplomas-view-for-stuff>
   </div>
 </template>

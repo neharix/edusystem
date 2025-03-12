@@ -4,7 +4,7 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import { useClassificatorsStore, useDegreesStore } from "@/stores/api.store.js";
+import { useDegreesStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
@@ -27,6 +27,11 @@ const authStore = useAuthStore();
 const data = ref([]);
 const filteredData = ref([]);
 const selectedItem = ref(null);
+
+if (props.data.length > 0) {
+  data.value = props.data;
+  filteredData.value = [...data.value];
+}
 
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
@@ -300,11 +305,11 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.name
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               {{ item.duration }} ýyl
@@ -314,7 +319,7 @@ window.addEventListener("click", onClickOutside);
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.male_count
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               {{ item.female_count }}

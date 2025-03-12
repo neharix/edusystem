@@ -28,6 +28,11 @@ const data = ref([]);
 const filteredData = ref([]);
 const selectedItem = ref(null);
 
+if (props.data.length > 0) {
+  data.value = props.data;
+  filteredData.value = [...data.value];
+}
+
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
@@ -281,7 +286,7 @@ window.addEventListener("click", onClickOutside);
             </th>
 
             <th class="border-y border-gray-300 dark:border-[#171131ef]  p-3 select-none text-center text-[0.8rem]"
-              v-if="authStore.user.is_superuser">
+              v-if="authStore.role === 'root'">
               GURALLAR
             </th>
           </tr>

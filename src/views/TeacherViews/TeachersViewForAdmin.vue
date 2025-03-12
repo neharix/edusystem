@@ -1,24 +1,26 @@
 <script setup>
 import { useTeacherStatementsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
-import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
 import { onBeforeMount } from "vue";
-import { useAuthStore } from "@/stores/auth.store.js";
 import TeachersDataTable from "@/components/DataTables/TeachersDataTable.vue";
 import useToast from "@/use/useToast";
 import TheToast from "@/components/TheToast.vue";
 import TotalTeachersDataTable from "@/components/DataTables/TotalTeachersDataTable.vue";
+import { useUxStore } from "@/stores/ux.store";
+import TheSpinner from "@/components/TheSpinner.vue";
 
 const { toasts, addToast } = useToast();
 
-const authStore = useAuthStore()
 const teacherStatementsStore = useTeacherStatementsStore();
 const { teacherStatements } = storeToRefs(teacherStatementsStore);
+const uxStore = useUxStore();
 
-const { user } = storeToRefs(authStore);
 
 onBeforeMount(() => {
-  teacherStatementsStore.getAll();
+  uxStore.isLoading = true;
+  teacherStatementsStore.getAll().then(() => {
+    uxStore.isLoading = false;
+  });
 })
 
 
@@ -26,8 +28,14 @@ onBeforeMount(() => {
 
 <template>
   <div class="w-full">
-    <teachers-data-table :data="teacherStatements" @update="teacherStatementsStore.getAll()"></teachers-data-table>
-    <total-teachers-data-table :data="teacherStatements"></total-teachers-data-table>
+    <div v-if="uxStore.isLoading"
+      class="flex w-full h-[58vh] items-center justify-center dark:bg-[#171131ef] bg-white rounded-lg border border-gray-200 dark:border-[#36314e]">
+      <the-spinner class="w-24"></the-spinner>
+    </div>
+    <div v-else>
+      <teachers-data-table :data="teacherStatements" @update="teacherStatementsStore.getAll()"></teachers-data-table>
+      <total-teachers-data-table :data="teacherStatements"></total-teachers-data-table>
+    </div>
   </div>
   <teleport to="body">
     <div class="toast-container w-5/6 fixed top-25

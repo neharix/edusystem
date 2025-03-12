@@ -14,7 +14,12 @@ const router = createRouter({
         title: "Giriş",
         adminRequired: false,
       },
-      beforeEnter: guards.defaultGuard,
+      beforeEnter: (to, from, next) => {
+        let title = to.meta.title || "";
+        document.title = title.length > 0 ? title + " | BMDU" : "BMDU";
+
+        return next();
+      },
     },
     {
       path: "/",
@@ -23,9 +28,8 @@ const router = createRouter({
       meta: {
         layout: "MainLayout",
         title: "Baş sahypa",
-        adminRequired: false,
       },
-      beforeEnter: guards.authGuard,
+      beforeEnter: guards.defaultGuard,
     },
     {
       path: "/high-schools",

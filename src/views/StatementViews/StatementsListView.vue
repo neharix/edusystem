@@ -7,14 +7,17 @@ import { useAuthStore } from "@/stores/auth.store.js";
 import StatementsDataTable from "@/components/DataTables/StatementsDataTable.vue";
 import useToast from "@/use/useToast";
 import TheToast from "@/components/TheToast.vue";
+import TheSpinner from "@/components/TheSpinner.vue";
+import { useUxStore } from "@/stores/ux.store";
 
 const { toasts, addToast } = useToast();
 
 const authStore = useAuthStore()
 const statementsStore = useStatementsStore();
 const { statements, confirmStatus, rejectStatus } = storeToRefs(statementsStore);
+const uxStore = useUxStore();
 
-const { user } = storeToRefs(authStore);
+const { role } = storeToRefs(authStore);
 
 onMounted(() => {
 
@@ -36,7 +39,10 @@ onMounted(() => {
   }
   confirmStatus.value = null;
 
-  statementsStore.getAll()
+  uxStore.isLoading = true;
+  statementsStore.getAll().then(() => {
+    uxStore.isLoading = false;
+  });
 })
 
 
@@ -48,8 +54,14 @@ const breadcrumbPaths = [
 
 <template>
   <div class="w-full">
-    <the-breadcrumb :paths="breadcrumbPaths" v-if="user.is_superuser"></the-breadcrumb>
-    <statements-data-table :data="statements" @update="statementsStore.getAll()"></statements-data-table>
+    <the-breadcrumb :paths="breadcrumbPaths" v-if="role === 'root'"></the-breadcrumb>
+    <div v-if="uxStore.isLoading"
+      class="flex w-full h-[58vh] items-center justify-center dark:bg-[#171131ef] bg-white rounded-lg border border-gray-200 dark:border-[#36314e]">
+      <the-spinner class="w-24"></the-spinner>
+    </div>
+    <div v-else>
+      <statements-data-table :data="statements" @update="statementsStore.getAll()"></statements-data-table>
+    </div>
   </div>
   <teleport to="body">
     <div class="toast-container w-5/6 fixed top-25

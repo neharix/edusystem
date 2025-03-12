@@ -42,7 +42,8 @@ const { data } = useDashboard();
         <circle cx="12" cy="10" r="3"></circle>
       </svg>
     </grid-cell>
-    <grid-cell label="Talyplar" :data-value="data.students_count" icon-bg-class="bg-sky-200 dark:bg-sky-500/75">
+    <grid-cell link="/students" label="Talyplar" :data-value="data.students_count"
+      icon-bg-class="bg-sky-200 dark:bg-sky-500/75">
       <svg class="w-6 h-8 stroke-sky-500 dark:stroke-sky-900" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
         stroke-linejoin="round">
@@ -73,36 +74,35 @@ const { data } = useDashboard();
       </svg>
     </grid-cell>
   </div>
-  <div class="mt-8 grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-1 gap-8">
-
+  <div class="mt-8 grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-8">
     <double-bar-chart :admissions="data.admissions"></double-bar-chart>
     <radial-bar-chart :studentsCount="data.students_count" :femaleCount="data.female_students_count"
       :maleCount="data.male_students_count"></radial-bar-chart>
+    <div class="space-y-6">
+      <h2 class="my-8 text-2xl select-none">Okuwy tamamlaýanlar</h2>
+      <grid-cell label="Gyzlar" :data-value="data.female_graduates" icon-bg-class="bg-sky-200 dark:bg-sky-500/75">
+        <svg class="w-6 h-8 stroke-sky-500 dark:stroke-sky-900" xmlns="http://www.w3.org/2000/svg" width="14"
+          height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </grid-cell>
+      <grid-cell label="Oglanlar" :data-value="data.male_graduates" icon-bg-class="bg-sky-200 dark:bg-sky-500/75">
+        <svg class="w-6 h-8 stroke-sky-500 dark:stroke-sky-900" xmlns="http://www.w3.org/2000/svg" width="14"
+          height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </grid-cell>
+    </div>
   </div>
 
-  <h2 class="my-8 text-2xl select-none">Okuwy tamamlaýanlar</h2>
-  <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
-    <grid-cell label="Gyzlar" :data-value="data.female_graduates" icon-bg-class="bg-sky-200 dark:bg-sky-500/75">
-      <svg class="w-6 h-8 stroke-sky-500 dark:stroke-sky-900" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9" cy="7" r="4"></circle>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-      </svg>
-    </grid-cell>
-    <grid-cell label="Oglanlar" :data-value="data.male_graduates" icon-bg-class="bg-sky-200 dark:bg-sky-500/75">
-      <svg class="w-6 h-8 stroke-sky-500 dark:stroke-sky-900" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9" cy="7" r="4"></circle>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-      </svg>
-    </grid-cell>
-  </div>
 
 </template>
 
