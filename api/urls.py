@@ -314,6 +314,11 @@ urlpatterns = [
         get_diploma_request_by_id_api_view,
         name="advanced-diploma-request-retrieve-id",
     ),
+    path(
+        "diploma-request-by-high-school/<int:high_school_id>/",
+        get_diploma_request_by_high_school_api_view,
+        name="advanced-diploma-request-retrieve-high-school",
+    ),
     # Diploma request routes
     path(
         "create-diploma-request/",

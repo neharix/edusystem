@@ -1168,8 +1168,12 @@ def import_students_from_excel_api_view(request: HttpRequest):
                     f"Setir №{index + 1}: 'Hünäri' meýdançasynda ýalňyşlyk goýberildi"
                 )
                 row_validation = False
-
-            if type(row["Kursy"]) == int or type(row["Kursy"]) == float:
+            # FIXME
+            if (
+                type(row["Kursy"]) == int
+                or type(row["Kursy"]) == float
+                or type(row["Kursy"]) == str
+            ):
                 course = int(row["Kursy"])
             else:
                 invalid_fields.append(
@@ -1266,13 +1270,18 @@ def import_students_from_excel_api_view(request: HttpRequest):
                         f"Setir №{index + 1}: '{full_name}' atly talyp eýýäm maglumat goruna girizilen"
                     )
     if len(invalid_fields) > 0:
+        print("its me")
         return Response(
             {
                 "detail": "Success, but there are some mistakes",
                 "mistakes": invalid_fields,
             }
         )
-    return Response({"detail": "Success"})
+    return Response(
+        {
+            "detail": "Success",
+        }
+    )
 
 
 @api_view(http_method_names=["GET"])
@@ -1823,6 +1832,26 @@ def get_diploma_request_by_user_api_view(request: HttpRequest):
 def get_diploma_request_by_id_api_view(request: HttpRequest, diploma_request_id: int):
     if DiplomaRequest.objects.filter(is_obsolete=False, id=diploma_request_id).exists():
         diploma_request = DiplomaRequest.objects.get(id=diploma_request_id)
+    else:
+        return Response({"null": True})
+    return Response(advanced_diploma_serializer(diploma_request))
+
+
+@api_view(http_method_names=["GET"])
+def get_diploma_request_by_high_school_api_view(
+    request: HttpRequest, high_school_id: int
+):
+    if HighSchool.objects.filter(id=high_school_id).exists():
+        high_school = HighSchool.objects.get(id=high_school_id)
+    else:
+        return Response({"detail": "High school not found"}, status=404)
+
+    if DiplomaRequest.objects.filter(
+        is_obsolete=False, sender=high_school.manager.user
+    ).exists():
+        diploma_request = DiplomaRequest.objects.get(
+            is_obsolete=False, sender=high_school.manager.user
+        )
     else:
         return Response({"null": True})
     return Response(advanced_diploma_serializer(diploma_request))
