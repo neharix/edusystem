@@ -25,10 +25,9 @@ watch(props, (newVal, oldVal) => {
 const route = useRoute();
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
-const { isInfoModalOpen, openInfoModal, infoHeader, infoContext } = useInfoModal();
 const { toasts, addToast } = useToast();
 const studentsStore = useStudentsStore();
-const { deleteStatus, updateStatus, createStatus, createSessionStatus, createSessionMistakes } = storeToRefs(studentsStore);
+const { deleteStatus, updateStatus, createStatus } = storeToRefs(studentsStore);
 const authStore = useAuthStore();
 
 const data = ref([]);
@@ -135,17 +134,9 @@ function openModalWrapper(headerText, content, id) {
   selectedItem.value = id;
 }
 
-function openInfoModalWrapper(headerText, content, id) {
-  openInfoModal(headerText, content);
-  selectedItem.value = id;
-}
 
 function closeModal() {
   isModalOpen.value = false;
-  selectedItem.value = null;
-}
-function closeInfoModal() {
-  isInfoModalOpen.value = false;
   selectedItem.value = null;
 }
 
@@ -197,8 +188,7 @@ window.addEventListener("click", onClickOutside);
 <template>
   <confirm-modal :is-open="isModalOpen" @close="closeModal" @submit="submitModal" :header="header"
     :context='`\"${context}\" ýok edilmegini tassyklaýarsyňyzmy?`'></confirm-modal>
-  <info-modal :is-open="isInfoModalOpen" @close="closeInfoModal" :header="infoHeader"
-    :context='infoContext'></info-modal>
+
   <div class="w-full rounded-lg shadow-lg">
     <div class="pt-1  rounded-t-lg dark:bg-[#171131ef] bg-white">
       <div class="flex items-center justify-between space-x-2 py-3 px-4">
@@ -227,6 +217,7 @@ window.addEventListener("click", onClickOutside);
             </transition>
           </div>
         </div>
+
         <div class="lg:w-1/3 md:w-1/3 w-2/3 flex items-center space-x-2">
           <button @click="resetTable" :class="{ 'opacity-0': !isSearching }" :disabled="!isSearching"
             class="p-2 text-sm rounded-xl shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white">

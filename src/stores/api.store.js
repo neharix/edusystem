@@ -807,6 +807,13 @@ export const useStudentsStore = defineStore({
     updateStatus: null,
   }),
   actions: {
+    async updateStudyYears() {
+      try {
+        const response = await axiosInstance.get(`/update-study-year/`);
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
     resetMistakeVariables() {
       this.createSessionStatus = null;
       this.createSessionMistakes = [];
