@@ -570,6 +570,43 @@ const router = createRouter({
       ],
     },
     {
+      path: "/graduates",
+      name: "graduates",
+      component: () => import("../views/StudentViews/Students.vue"),
+      meta: {
+        layout: "MainLayout",
+        title: "Uçurymlar",
+        adminRequired: true,
+      },
+      beforeEnter: guards.authGuard,
+      children: [
+        {
+          path: "",
+          name: "graduates-list",
+          component: () =>
+            import("../views/GraduateViews/GraduatesListView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Uçurymlar",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+        {
+          path: "view/:id",
+          name: "view-graduates",
+          component: () =>
+            import("../views/GraduateViews/GraduateInfoView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Uçurym barada maglumat",
+            adminRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
+      ],
+    },
+    {
       path: "/expulsion-reasons",
       name: "expulsion-reasons",
       component: () =>

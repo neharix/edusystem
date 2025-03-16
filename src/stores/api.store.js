@@ -939,6 +939,33 @@ export const useStudentsStore = defineStore({
   },
 });
 
+export const useGraduatesStore = defineStore({
+  id: "graduates",
+  state: () => ({
+    graduatesAdditional: [],
+    studentInfo: {},
+  }),
+  actions: {
+    async getAllAdditional() {
+      try {
+        const response = await axiosInstance.get("/graduates-with-additional/");
+        this.graduatesAdditional = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+
+    async getInfo(id) {
+      try {
+        const response = await axiosInstance.get(`/graduates-info/${id}/`);
+        this.studentInfo = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+  },
+});
+
 export const useExpulsionReasonsStore = defineStore({
   id: "expulsion-reasons",
   state: () => ({
