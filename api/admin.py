@@ -4,6 +4,12 @@ from .models import *
 
 
 # Register your models here.
+@admin.register(AnnualUpdateReport)
+class AnnualUpdateReportAdmin(admin.ModelAdmin):
+    list_display = ["updated_at", "id"]
+    readonly_fields = ("id",)
+
+
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ["user", "id", "password"]

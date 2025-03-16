@@ -171,6 +171,7 @@ urlpatterns = [
         name="specialization-retrieve-update-destroy",
     ),
     # Student routes
+    path("update-study-year/", update_study_years_api_view),
     path("import-students/", import_students_from_excel_api_view),
     path(
         "students/",
@@ -183,6 +184,11 @@ urlpatterns = [
         name="student-info",
     ),
     path(
+        "graduates-info/<int:id>/",
+        GraduateInfoAPIView.as_view(),
+        name="graduate-info",
+    ),
+    path(
         "neutral-students-info/<int:id>/",
         NeutralStudentInfoAPIView.as_view(),
         name="student-info",
@@ -191,6 +197,11 @@ urlpatterns = [
         "students-with-additional/",
         get_students_with_additional_data_api_view,
         name="get-students-with-additional-data",
+    ),
+    path(
+        "graduates-with-additional/",
+        get_graduates_with_additional_data_api_view,
+        name="get-graduates-with-additional-data",
     ),
     path(
         "students/<int:id>/",

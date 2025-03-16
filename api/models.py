@@ -151,6 +151,7 @@ class Student(models.Model):
     label = models.TextField(null=True, blank=True)
     active = models.BooleanField(default=True)
     is_expelled = models.BooleanField(default=False)
+    is_obsolete = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.full_name}"
@@ -393,6 +394,13 @@ class TeacherStatement(models.Model):
 
     def __str__(self):
         return f"{self.sender.username} {self.request_date}"
+
+
+class AnnualUpdateReport(models.Model):
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Update made {self.updated_at}"
 
 
 @receiver(post_save, sender=User)

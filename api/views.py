@@ -23,6 +23,7 @@ from rest_framework.response import Response
 
 from .decorators import validate_files, validate_payload
 from .models import (
+    AnnualUpdateReport,
     Classificator,
     Country,
     Degree,
@@ -55,6 +56,8 @@ from .serializers import (
     ExpulsionReasonSerializer,
     ExpulsionRequestSerializer,
     FacultySerializer,
+    GraduateAdditionalSerializer,
+    GraduateInfoSerializer,
     HighSchoolSerializer,
     NationalitySerializer,
     ProfileSerializer,
@@ -78,6 +81,32 @@ from .utils import (
 ADMISSION_START_RANGE = 2018
 
 # Special API views
+
+
+@api_view(http_method_names=["GET"])
+def update_study_years_api_view(request: HttpRequest):
+    if request.user.is_superuser:
+        if not AnnualUpdateReport.objects.filter(updated_at__year=timezone.now().year):
+            students = Student.objects.filter(is_obsolete=False, is_expelled=False)
+            default_students = students.exclude(study_year__contains="DÖB")
+            for student in default_students:
+                if student.study_year.isdigit():
+                    if student.specialization.specialization.degree.duration == int(
+                        student.study_year
+                    ):
+                        student.is_obsolete = True
+                    else:
+                        student.study_year = int(student.study_year) + 1
+                student.save()
+
+            # Обновление курса бакалавров с языковым обучением
+            students.filter(study_year__contains="DÖB").update(study_year="1")
+            AnnualUpdateReport.objects.create()
+
+            return Response({"is_successfully": True})
+        return Response({"is_successfully": False}, status=406)
+    else:
+        return Response({"is_successfully": False}, status=403)
 
 
 class ProfileRetrieveApiView(RetrieveAPIView):
@@ -200,17 +229,19 @@ def dashboard_api_view(request: HttpRequest):
             ):
                 male_graduates += Student.objects.filter(
                     specialization=d_specialization,
-                    study_year=specialization.degree.duration,
+                    study_year=str(specialization.degree.duration),
                     gender="M",
                     active=True,
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count()
                 female_graduates += Student.objects.filter(
                     specialization=d_specialization,
-                    study_year=specialization.degree.duration,
+                    study_year=str(specialization.degree.duration),
                     gender="F",
                     active=True,
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count()
 
         return Response(
@@ -226,14 +257,10 @@ def dashboard_api_view(request: HttpRequest):
                     active=True, is_expelled=False
                 ).count(),
                 "male_students_count": Student.objects.filter(
-                    gender="M",
-                    active=True,
-                    is_expelled=False,
+                    gender="M", active=True, is_expelled=False, is_obsolete=False
                 ).count(),
                 "female_students_count": Student.objects.filter(
-                    gender="F",
-                    active=True,
-                    is_expelled=False,
+                    gender="F", active=True, is_expelled=False, is_obsolete=False
                 ).count(),
                 "male_graduates": male_graduates,
                 "female_graduates": female_graduates,
@@ -245,12 +272,14 @@ def dashboard_api_view(request: HttpRequest):
                             admission_date__year=year,
                             active=True,
                             is_expelled=False,
+                            is_obsolete=False,
                         ).count(),
                         "female_students_count": Student.objects.filter(
                             gender="F",
                             admission_date__year=year,
                             active=True,
                             is_expelled=False,
+                            is_obsolete=False,
                         ).count(),
                     }
                     for year in range(ADMISSION_START_RANGE, timezone.now().year + 1)
@@ -276,18 +305,21 @@ def dashboard_api_view(request: HttpRequest):
                     active=True,
                     high_school=high_school,
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count(),
                 "male_students_count": Student.objects.filter(
                     gender="M",
                     high_school=high_school,
                     active=True,
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count(),
                 "female_students_count": Student.objects.filter(
                     gender="F",
                     high_school=high_school,
                     active=True,
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count(),
                 "admissions": [
                     {
@@ -336,9 +368,7 @@ def create_high_school_api_view(request: HttpRequest):
 
 
 @api_view(http_method_names=["PUT"])
-@validate_payload(
-    keys=["high_school_name", "abbreviation", "us, status=404ername", "password"]
-)
+@validate_payload(keys=["high_school_name", "abbreviation", "username", "password"])
 def put_high_school_api_view(request: HttpRequest, high_school_id: int):
     if HighSchool.objects.filter(id=high_school_id).exists():
         high_school = HighSchool.objects.get(id=high_school_id)
@@ -371,11 +401,13 @@ def get_high_school_with_additional_data_api_view(request: HttpRequest):
                 high_school=high_school,
                 gender="M",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             female_count = Student.objects.filter(
                 high_school=high_school,
                 gender="F",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             response.append(
                 {
@@ -617,11 +649,13 @@ def get_faculties_with_additional_data_api_view(request: HttpRequest):
                     specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="M",
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count()
                 female_count += Student.objects.filter(
                     specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="F",
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count()
             response.append(
                 {
@@ -648,11 +682,13 @@ def get_faculties_with_additional_data_api_view(request: HttpRequest):
                     specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="M",
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count()
                 female_count += Student.objects.filter(
                     specialization__faculty_department__high_school_faculty=h_faculty,
                     gender="F",
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count()
             response.append(
                 {
@@ -734,11 +770,13 @@ def get_departments_with_additional_data_api_view(request: HttpRequest):
                     specialization__faculty_department=f_department,
                     gender="M",
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count()
                 female_count += Student.objects.filter(
                     specialization__faculty_department=f_department,
                     gender="F",
                     is_expelled=False,
+                    is_obsolete=False,
                 ).count()
             response.append(
                 {
@@ -761,11 +799,13 @@ def get_departments_with_additional_data_api_view(request: HttpRequest):
                 specialization__faculty_department=department,
                 gender="M",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             female_count = Student.objects.filter(
                 specialization__faculty_department=department,
                 gender="F",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             response.append(
                 {
@@ -862,11 +902,13 @@ def get_degrees_with_additional_data_api_view(request: HttpRequest):
                 specialization__specialization__degree=degree,
                 gender="M",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             female_count = Student.objects.filter(
                 specialization__specialization__degree=degree,
                 gender="F",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
 
             response.append(
@@ -911,11 +953,13 @@ def get_classificators_with_additional_data_api_view(request: HttpRequest):
                 specialization__specialization__classificator=classificator,
                 gender="M",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             female_count = Student.objects.filter(
                 specialization__specialization__classificator=classificator,
                 gender="F",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
 
             response.append(
@@ -958,11 +1002,13 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
                 specialization__specialization=specialization,
                 gender="M",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             female_count = Student.objects.filter(
                 specialization__specialization=specialization,
                 gender="F",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
 
             response.append(
@@ -991,11 +1037,13 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
                 specialization=specialization,
                 gender="M",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             female_count = Student.objects.filter(
                 specialization=specialization,
                 gender="F",
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             response.append(
                 {
@@ -1292,8 +1340,7 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
 
     if request.user.is_superuser:
         students = Student.objects.filter(
-            active=True,
-            is_expelled=False,
+            active=True, is_expelled=False, is_obsolete=False
         )
         response = filter_by_query(students, request.GET)
         return Response(StudentAdditionalSerializer(response, many=True).data)
@@ -1302,6 +1349,7 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
             high_school=HighSchool.objects.get(manager__user=request.user),
             active=True,
             is_expelled=False,
+            is_obsolete=False,
         )
         return Response(
             [
@@ -1316,6 +1364,17 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
         )
 
 
+@api_view(http_method_names=["GET"])
+def get_graduates_with_additional_data_api_view(request: HttpRequest):
+    if request.user.is_superuser:
+        students = Student.objects.filter(
+            active=True, is_expelled=False, is_obsolete=True
+        )
+        return Response(GraduateAdditionalSerializer(students, many=True).data)
+    else:
+        return Response({"detail": "Permission denied"}, status=403)
+
+
 class StudentListAPIView(ListAPIView):
     queryset = Student.objects.filter(is_expelled=False)
     serializer_class = StudentSerializer
@@ -1325,6 +1384,12 @@ class StudentListAPIView(ListAPIView):
 class StudentInfoAPIView(RetrieveAPIView):
     queryset = Student.objects.filter(is_expelled=False)
     serializer_class = StudentInfoSerializer
+    lookup_field = "id"
+
+
+class GraduateInfoAPIView(RetrieveAPIView):
+    queryset = Student.objects.filter(is_obsolete=True)
+    serializer_class = GraduateInfoSerializer
     lookup_field = "id"
 
 
@@ -1433,14 +1498,10 @@ def get_countries_with_additional_data_api_view(request: HttpRequest):
     if request.user.is_superuser:
         for country in countries:
             male_count = Student.objects.filter(
-                country=country,
-                gender="M",
-                is_expelled=False,
+                country=country, gender="M", is_expelled=False, is_obsolete=False
             ).count()
             female_count = Student.objects.filter(
-                country=country,
-                gender="F",
-                is_expelled=False,
+                country=country, gender="F", is_expelled=False, is_obsolete=False
             ).count()
 
             response.append(
@@ -1461,12 +1522,14 @@ def get_countries_with_additional_data_api_view(request: HttpRequest):
                 gender="M",
                 high_school=high_school,
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             female_count = Student.objects.filter(
                 country=country,
                 gender="F",
                 high_school=high_school,
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
 
             response.append(
@@ -1503,14 +1566,10 @@ def get_regions_with_additional_data_api_view(request: HttpRequest):
     if request.user.is_superuser:
         for region in regions:
             male_count = Student.objects.filter(
-                region=region,
-                gender="M",
-                is_expelled=False,
+                region=region, gender="M", is_expelled=False, is_obsolete=False
             ).count()
             female_count = Student.objects.filter(
-                region=region,
-                gender="F",
-                is_expelled=False,
+                region=region, gender="F", is_expelled=False, is_obsolete=False
             ).count()
 
             response.append(
@@ -1531,12 +1590,14 @@ def get_regions_with_additional_data_api_view(request: HttpRequest):
                 gender="M",
                 high_school=high_school,
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
             female_count = Student.objects.filter(
                 region=region,
                 gender="F",
                 high_school=high_school,
                 is_expelled=False,
+                is_obsolete=False,
             ).count()
 
             response.append(

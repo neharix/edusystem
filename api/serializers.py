@@ -98,6 +98,19 @@ class StudentAdditionalSerializer(serializers.ModelSerializer):
         fields = ["id", "full_name", "high_school", "study_year"]
 
 
+class GraduateAdditionalSerializer(serializers.ModelSerializer):
+    high_school = HighSchoolSerializer()
+    study_period = serializers.SerializerMethodField()
+
+    def get_study_period(self, instance):
+        admission_year = instance.admission_date.year
+        return f"{admission_year}-{admission_year + instance.specialization.specialization.degree.duration}"
+
+    class Meta:
+        model = Student
+        fields = ["id", "full_name", "high_school", "study_period"]
+
+
 class NationalitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Nationality
@@ -208,6 +221,44 @@ class StudentInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = "__all__"
+
+
+class GraduateInfoSerializer(serializers.ModelSerializer):
+    high_school = HighSchoolInfoSerializer()
+    nationality = NationalitySerializer()
+    country = CountrySerializer()
+    region = RegionSerializer()
+    specialization = DepartmentSpecializationInfoSerializer()
+
+    study_period = serializers.SerializerMethodField()
+
+    def get_study_period(self, instance):
+        admission_year = instance.admission_date.year
+        return f"{admission_year}-{admission_year + instance.specialization.specialization.degree.duration}"
+
+    class Meta:
+        model = Student
+        fields = (
+            "full_name",
+            "gender",
+            "family_status",
+            "payment_type",
+            "high_school",
+            "nationality",
+            "country",
+            "region",
+            "specialization",
+            "birth_date",
+            "admission_date",
+            "registered_place",
+            "study_year",
+            "phone_number",
+            "passport",
+            "military_service",
+            "label",
+            "active",
+            "study_period",
+        )
 
 
 class ExpelledStudentInfoSerializer(serializers.ModelSerializer):
