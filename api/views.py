@@ -1248,6 +1248,16 @@ def import_students_from_excel_api_view(request: HttpRequest):
             full_name = row["F.A.Aa"]
             if type(row["Doglan senesi"]) == datetime.datetime:
                 birth_date = row["Doglan senesi"]
+            elif type(row["Doglan senesi"]) == str:
+                try:
+                    birth_date = datetime.datetime.strptime(
+                        row["Doglan senesi"], "%d.%M.%Y"
+                    )
+                except:
+                    invalid_fields.append(
+                        f"Setir №{index + 1}: 'Okuwa giren senesi' meýdançasynda ýalňyşlyk goýberildi"
+                    )
+                    row_validation = False
             else:
                 birth_date = row["Doglan senesi"].to_pydatetime()
 
