@@ -1365,7 +1365,10 @@ def import_students_from_excel_api_view(request: HttpRequest):
                 )
                 row_validation = False
 
-            admission_date = row["Okuwa giren senesi"].to_pydatetime()
+            if type(row["Okuwa giren senesi"]) == datetime.datetime:
+                admission_date = row["Okuwa giren senesi"]
+            else:
+                admission_date = row["Okuwa giren senesi"].to_pydatetime()
 
             if row_validation:
                 if not Student.objects.filter(
