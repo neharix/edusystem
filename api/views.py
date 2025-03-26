@@ -1246,7 +1246,10 @@ def import_students_from_excel_api_view(request: HttpRequest):
             )
         else:
             full_name = row["F.A.Aa"]
-            birth_date = row["Doglan senesi"].to_pydatetime()
+            if type(row["Doglan senesi"]) == datetime.datetime:
+                birth_date = row["Doglan senesi"]
+            else:
+                birth_date = row["Doglan senesi"].to_pydatetime()
 
             if row["Jynsy"] in ("Oglan", "Gyz"):
                 gender = "M" if row["Jynsy"] == "Oglan" else "F"
