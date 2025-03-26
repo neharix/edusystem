@@ -6,28 +6,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-s2l-7eu!5s)n50pc&2)ya(-e=tehko1tp*(ol4s-x)8_0jub%*"
 
-DEBUG = False
+DEBUG = True
 # DEBUG = True
-
-
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "handlers": {
-#         "file": {
-#             "level": "DEBUG",
-#             "class": "logging.FileHandler",
-#             "filename": "logs/debug.log",
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["file"],
-#             "level": "DEBUG",
-#             "propagate": True,
-#         },
-#     },
-# }
 
 
 LOGGING = {
@@ -35,26 +15,46 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "file": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.FileHandler",
             "filename": "requests.log",
-            "formatter": "verbose",
-        },
-    },
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {message}",
-            "style": "{",
         },
     },
     "loggers": {
-        "django.request": {
+        "django": {
             "handlers": ["file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": True,
         },
     },
 }
+
+
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "handlers": {
+#         "file": {
+#             "level": "INFO",
+#             "class": "logging.FileHandler",
+#             "filename": "requests.log",
+#             "formatter": "verbose",
+#         },
+#     },
+#     "formatters": {
+#         "verbose": {
+#             "format": "{levelname} {asctime} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "loggers": {
+#         "django.request": {
+#             "handlers": ["file"],
+#             "level": "INFO",
+#             "propagate": True,
+#         },
+#     },
+# }
 
 REST_TITLE = "BMDU API"
 
