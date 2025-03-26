@@ -1,9 +1,13 @@
+import json
+import subprocess
+
 from django.contrib import admin
+from django.http import HttpResponse
+from django.utils.html import format_html
 
 from .models import *
 
 
-# Register your models here.
 @admin.register(AnnualUpdateReport)
 class AnnualUpdateReportAdmin(admin.ModelAdmin):
     list_display = ["updated_at", "id"]

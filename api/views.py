@@ -1,13 +1,19 @@
 import datetime
 import io
+import subprocess
 
 import numpy as np
 import pandas as pd
 import pytz
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest as DjangoHttpRequest
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.text import slugify
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import (
     DestroyAPIView,
@@ -78,7 +84,78 @@ from .utils import (
     validate_not_null_field,
 )
 
-ADMISSION_START_RANGE = 2018
+ADMISSION_START_RANGE = 2017
+
+# Dumper view
+
+import os
+import subprocess
+import sys
+
+from django.http import HttpResponse
+
+
+@api_view(http_method_names=["GET"])
+def dumpdata_view(request: HttpRequest):
+    if request.user.is_superuser:
+        try:
+            env = os.environ.copy()
+            env["PYTHONUTF8"] = "1"
+            output = subprocess.check_output(
+                [
+                    sys.executable,
+                    "manage.py",
+                    "dumpdata",
+                    "--exclude",
+                    "admin.logentry",
+                    "--exclude",
+                    "auth.permission",
+                    "--indent",
+                    "2",
+                ],
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                env=env,
+            )
+
+            output = output.encode("utf-8", "ignore").decode(
+                "utf-8"
+            )  # Убираем битые символы
+
+            response = HttpResponse(
+                output, content_type="application/json; charset=utf-8"
+            )
+            response["Content-Disposition"] = "attachment; filename=dumpdata.json"
+            return response
+
+        except subprocess.CalledProcessError as e:
+            return HttpResponse(f"Ошибка выполнения: {e.output}", status=500)
+    return HttpResponse("Знакомы?)", status=403)
+
+
+# Login/logout view
+
+
+# def login_view(request: DjangoHttpRequest):
+#     if request.user.is_anonymous:
+#         if request.method == "POST":
+#             form = AuthenticationForm(request, data=request.POST)
+#             if form.is_valid():
+#                 user = form.get_user()
+#                 login(request, user)
+#                 return redirect("redoc")
+#         form = AuthenticationForm()
+
+#         return render(request, "api/login.html", {"form": form})
+#     else:
+#         return redirect("redoc")
+
+
+def logout_view(request: DjangoHttpRequest):
+    logout(request)
+    return redirect("/api/v1/admin/login/")
+
 
 # Special API views
 
