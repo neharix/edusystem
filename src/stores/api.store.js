@@ -1,5 +1,20 @@
 import { defineStore } from "pinia";
 import axiosInstance from "@/api/axiosInstance.js";
+import { ref } from "vue";
+
+export const useSpecialFunctionsStore = defineStore("special-functions", () => {
+  const dump = ref(null);
+  const dumpContentType = ref(null);
+  async function getDump() {
+    const response = await axiosInstance.get(`dumpdata/`, {
+      responseType: "blob",
+    });
+    dump.value = response.data;
+    dumpContentType.value = response.headers["Content-Type"];
+  }
+
+  return { getDump, dump, dumpContentType };
+});
 
 export const useDashboardStore = defineStore({
   id: "root",

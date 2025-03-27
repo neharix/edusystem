@@ -24,7 +24,7 @@ function mouseLeave() {
     <div class="absolute left-1/2 right-1/2 flex justify-center text-white text-xs bottom-transition"
       :class="{ 'bottom-0': !isActive, 'bottom-4': isActive }">
       <div @mouseenter="mouseEnter" @mouseleave="mouseLeave"
-        class="w-max shadow-sm hover:shadow-lg  flex justify-between bg-white dark:bg-[#171131ef] transition-all duration-500 ease-out"
+        class="w-max hover:shadow-lg  flex justify-between bg-white dark:bg-[#171131ef] transition-all duration-500 ease-out"
         :class="{
           'rounded-full': isActive,
           'shadow-black/10': isActive && !mouseOnToolbar,

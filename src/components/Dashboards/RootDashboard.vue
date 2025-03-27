@@ -5,6 +5,7 @@ import DoubleBarChart from "@/components/Charts/DoubleBarChart.vue";
 import GridCell from "@/components/GridCell.vue";
 import useDashboard from "@/use/useDashboard.js";
 
+
 const { data } = useDashboard();
 </script>
 
@@ -12,6 +13,7 @@ const { data } = useDashboard();
   <!--  <div>-->
   <!--    <the-leaflet-map></the-leaflet-map>-->
   <!--  </div>-->
+
   <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
     <grid-cell link="/high-schools" label="Ýokary okuw mekdepler" :data-value="data.high_schools_count"
       icon-bg-class="bg-green-200 dark:bg-green-500/75">
@@ -123,7 +125,6 @@ const { data } = useDashboard();
     </div>
 
   </div>
-
 
 </template>
 
