@@ -1251,11 +1251,12 @@ def import_students_from_excel_api_view(request: HttpRequest):
             elif type(row["Doglan senesi"]) == str:
                 try:
                     birth_date = datetime.datetime.strptime(
-                        row["Doglan senesi"], "%d.%M.%Y"
+                        row["Doglan senesi"].rstrip().lstrip(), "%d.%M.%Y"
                     )
                 except:
+                    print(f'"{row["Doglan senesi"]}"')
                     invalid_fields.append(
-                        f"Setir №{index + 1}: 'Okuwa giren senesi' meýdançasynda ýalňyşlyk goýberildi"
+                        f"Setir №{index + 1}: 'Doglan senesi' meýdançasynda ýalňyşlyk goýberildi"
                     )
                     row_validation = False
             else:
@@ -1269,9 +1270,10 @@ def import_students_from_excel_api_view(request: HttpRequest):
                 )
                 row_validation = False
 
-            if Region.objects.filter(name=row["Welaýaty"]).exists():
-                region = Region.objects.get(name=row["Welaýaty"])
+            if Region.objects.filter(name=row["Welaýaty"].rstrip().lstrip()).exists():
+                region = Region.objects.get(name=row["Welaýaty"].rstrip().lstrip())
             else:
+                print(row["Welaýaty"])
                 invalid_fields.append(
                     f"Setir №{index + 1}: 'Welaýaty' meýdançasynda ýalňyşlyk goýberildi"
                 )
@@ -1380,7 +1382,7 @@ def import_students_from_excel_api_view(request: HttpRequest):
             elif type(row["Okuwa giren senesi"]) == str:
                 try:
                     admission_date = datetime.datetime.strptime(
-                        row["Okuwa giren senesi"], "%d.%M.%Y"
+                        row["Okuwa giren senesi"].rstrip().lstrip(), "%d.%M.%Y"
                     )
                 except:
                     invalid_fields.append(
