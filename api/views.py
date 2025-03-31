@@ -57,6 +57,7 @@ from .serializers import (
     CountrySerializer,
     DegreeSerializer,
     DepartmentSerializer,
+    DepartmentSpecializationAdditionalSerializer,
     DiplomaRequestSerializer,
     ExpelledStudentInfoSerializer,
     ExpulsionReasonSerializer,
@@ -69,6 +70,7 @@ from .serializers import (
     ProfileSerializer,
     RegionSerializer,
     ReinstateRequestSerializer,
+    SpecializationAdditionalAdminSerializer,
     SpecializationSerializer,
     StudentAdditionalSerializer,
     StudentInfoSerializer,
@@ -331,7 +333,7 @@ def dashboard_api_view(request: HttpRequest):
                 ).count(),
                 "nationalities_count": Nationality.objects.all().count(),
                 "students_count": Student.objects.filter(
-                    active=True, is_expelled=False
+                    active=True, is_expelled=False, is_obsolete=False
                 ).count(),
                 "male_students_count": Student.objects.filter(
                     gender="M", active=True, is_expelled=False, is_obsolete=False
@@ -1071,73 +1073,21 @@ class ClassificatorRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 @api_view(http_method_names=["GET"])
 def get_specializations_with_additional_data_api_view(request: HttpRequest):
-    response = []
     if request.user.is_superuser:
         specializations = Specialization.objects.filter(active=True)
-        for specialization in specializations:
-            male_count = Student.objects.filter(
-                specialization__specialization=specialization,
-                gender="M",
-                is_expelled=False,
-                is_obsolete=False,
-            ).count()
-            female_count = Student.objects.filter(
-                specialization__specialization=specialization,
-                gender="F",
-                is_expelled=False,
-                is_obsolete=False,
-            ).count()
-
-            response.append(
-                {
-                    "id": specialization.id,
-                    "name": specialization.name,
-                    "classificator": (
-                        specialization.classificator.name
-                        if specialization.classificator
-                        else "Ýok"
-                    ),
-                    "students_count": male_count + female_count,
-                    "male_count": male_count,
-                    "female_count": female_count,
-                }
-            )
-        return Response(response)
+        return Response(
+            SpecializationAdditionalAdminSerializer(specializations, many=True).data
+        )
     else:
-        response = []
         high_school = HighSchool.objects.get(manager__user=request.user)
         specializations = DepartmentSpecialization.objects.filter(
             faculty_department__high_school_faculty__high_school=high_school
         )
-        for specialization in specializations:
-            male_count = Student.objects.filter(
-                specialization=specialization,
-                gender="M",
-                is_expelled=False,
-                is_obsolete=False,
-            ).count()
-            female_count = Student.objects.filter(
-                specialization=specialization,
-                gender="F",
-                is_expelled=False,
-                is_obsolete=False,
-            ).count()
-            response.append(
-                {
-                    "id": specialization.specialization.id,
-                    "name": specialization.specialization.name,
-                    "department": specialization.faculty_department.department.name,
-                    "classificator": (
-                        specialization.specialization.classificator.name
-                        if specialization.specialization.classificator
-                        else "Ýok"
-                    ),
-                    "students_count": male_count + female_count,
-                    "male_count": male_count,
-                    "female_count": female_count,
-                }
-            )
-        return Response(response)
+        return Response(
+            DepartmentSpecializationAdditionalSerializer(
+                specializations, many=True
+            ).data
+        )
 
 
 @api_view(http_method_names=["POST"])
@@ -1235,7 +1185,7 @@ def import_students_from_excel_api_view(request: HttpRequest):
     if HighSchool.objects.filter(id=request.POST["high_school_id"]).exists():
         high_school = HighSchool.objects.get(id=request.POST["high_school_id"])
     else:
-        return Response({"detail": "High school doesn't exist"})
+        return Response({"detail": "High school doesn't exist"}, status=404)
 
     for index, row in dataframe.iterrows():
         row_validation = True
@@ -1262,16 +1212,16 @@ def import_students_from_excel_api_view(request: HttpRequest):
             else:
                 birth_date = row["Doglan senesi"].to_pydatetime()
 
-            if row["Jynsy"] in ("Oglan", "Gyz"):
-                gender = "M" if row["Jynsy"] == "Oglan" else "F"
+            if row["Jynsy"].lower() in ("oglan", "gyz"):
+                gender = "M" if row["Jynsy"].lower() == "oglan" else "F"
             else:
                 invalid_fields.append(
                     f"Setir №{index + 1}: 'Jynsy' meýdançasynda ýalňyşlyk goýberildi"
                 )
                 row_validation = False
 
-            if Region.objects.filter(name=row["Welaýaty"].rstrip().lstrip()).exists():
-                region = Region.objects.get(name=row["Welaýaty"].rstrip().lstrip())
+            if Region.objects.filter(name__contains=row["Welaýaty"].lower()).exists():
+                region = Region.objects.get(name__contains=row["Welaýaty"].lower())
             else:
                 print(row["Welaýaty"])
                 invalid_fields.append(
@@ -1279,19 +1229,23 @@ def import_students_from_excel_api_view(request: HttpRequest):
                 )
                 row_validation = False
 
-            if Nationality.objects.filter(name=row["Milleti"]).exists():
-                nationality = Nationality.objects.get(name=row["Milleti"])
+            if Nationality.objects.filter(
+                name__contains=row["Milleti"].lower()
+            ).exists():
+                nationality = Nationality.objects.get(
+                    name__contains=row["Milleti"].lower()
+                )
             else:
                 invalid_fields.append(
                     f"Setir №{index + 1}: 'Milleti' meýdançasynda ýalňyşlyk goýberildi"
                 )
                 row_validation = False
 
-            if Country.objects.filter(name=row["Ýurdy"]).exists():
-                country = Country.objects.get(name=row["Ýurdy"])
+            if Country.objects.filter(name__contains=row["Ýurdy"].lower()).exists():
+                country = Country.objects.get(name__contains=row["Ýurdy"].lower())
             else:
                 invalid_fields.append(
-                    f"Setir №{index + 1}: 'Milleti' meýdançasynda ýalňyşlyk goýberildi"
+                    f"Setir №{index + 1}: 'Ýurdy' meýdançasynda ýalňyşlyk goýberildi"
                 )
                 row_validation = False
 
@@ -1324,7 +1278,7 @@ def import_students_from_excel_api_view(request: HttpRequest):
                 )
                 row_validation = False
 
-            if row["Töleg görnüşi"] in ("Tölegli", "Býudjet"):
+            if row["Töleg görnüşi"].lower() in ("tölegli", "býudjet"):
                 payment_type = "P" if row["Töleg görnüşi"] == "Tölegli" else "B"
             else:
                 invalid_fields.append(
@@ -1333,13 +1287,13 @@ def import_students_from_excel_api_view(request: HttpRequest):
                 row_validation = False
 
             family_statuses = {
-                "Hossarly": "FR",
-                "Ýarym ýetim": "HO",
-                "Doly ýetim": "CO",
-                "Ýetimler öýünde ösen": "OE",
+                "hossarly": "FR",
+                "ýarym ýetim": "HO",
+                "doly ýetim": "CO",
+                "ýetimler öýünde ösen": "OE",
             }
-            if row["Maşgala ýagdaýy"] in family_statuses.keys():
-                family_status = family_statuses[row["Maşgala ýagdaýy"]]
+            if row["Maşgala ýagdaýy"].lower() in family_statuses.keys():
+                family_status = family_statuses[row["Maşgala ýagdaýy"].lower()]
             else:
                 invalid_fields.append(
                     f"Setir №{index + 1}: 'Maşgala ýagdaýy' meýdançasynda ýalňyşlyk goýberildi"
@@ -1426,7 +1380,199 @@ def import_students_from_excel_api_view(request: HttpRequest):
                         f"Setir №{index + 1}: '{full_name}' atly talyp eýýäm maglumat goruna girizilen"
                     )
     if len(invalid_fields) > 0:
-        print("its me")
+        return Response(
+            {
+                "detail": "Success, but there are some mistakes",
+                "mistakes": invalid_fields,
+            }
+        )
+    return Response(
+        {
+            "detail": "Success",
+        }
+    )
+
+
+@api_view(http_method_names=["POST"])
+@validate_files(keys=["excel"])
+def validate_students_from_excel_api_view(request: HttpRequest):
+    dataframe = pd.read_excel(request.FILES["excel"])
+    invalid_fields = []
+    if HighSchool.objects.filter(manager__user=request.user).exists():
+        high_school = HighSchool.objects.get(manager__user=request.user)
+    else:
+        return Response({"detail": "High school doesn't exist"}, status=404)
+
+    for index, row in dataframe.iterrows():
+        row_validation = True
+        row_status = validate_not_null_field(row, ["T/B", "Harby borç", "Bellikler"])
+        if not row_status[0]:
+            invalid_fields.append(
+                f"Setir №{index + 1}: '{','.join(row_status[1])}' meýdançasy boş bolup bilmez"
+            )
+        else:
+            full_name = row["F.A.Aa"]
+            if type(row["Doglan senesi"]) == datetime.datetime:
+                birth_date = row["Doglan senesi"]
+            elif type(row["Doglan senesi"]) == str:
+                try:
+                    birth_date = datetime.datetime.strptime(
+                        row["Doglan senesi"].rstrip().lstrip(), "%d.%M.%Y"
+                    )
+                except:
+                    print(f'"{row["Doglan senesi"]}"')
+                    invalid_fields.append(
+                        f"Setir №{index + 1}: 'Doglan senesi' meýdançasynda ýalňyşlyk goýberildi"
+                    )
+                    row_validation = False
+            else:
+                birth_date = row["Doglan senesi"].to_pydatetime()
+
+            if row["Jynsy"].lower() in ("oglan", "gyz"):
+                gender = "M" if row["Jynsy"].lower() == "oglan" else "F"
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Jynsy' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if Region.objects.filter(name__contains=row["Welaýaty"].lower()).exists():
+                region = Region.objects.get(name__contains=row["Welaýaty"].lower())
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Welaýaty' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if Nationality.objects.filter(
+                name__contains=row["Milleti"].lower()
+            ).exists():
+                nationality = Nationality.objects.get(
+                    name__contains=row["Milleti"].lower()
+                )
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Milleti' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if Country.objects.filter(name__contains=row["Ýurdy"].lower()).exists():
+                country = Country.objects.get(name__contains=row["Ýurdy"].lower())
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Ýurdy' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if DepartmentSpecialization.objects.filter(
+                specialization__name=row["Hünari"],
+                faculty_department__high_school_faculty__high_school=high_school,
+            ):
+                specialization = DepartmentSpecialization.objects.get(
+                    specialization__name=row["Hünari"],
+                    faculty_department__high_school_faculty__high_school=high_school,
+                )
+            else:
+                print(f'"{row["Hünari"]}"')
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Hünäri' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+            # FIXME
+            if (
+                type(row["Kursy"]) == int
+                or type(row["Kursy"]) == float
+                or type(row["Kursy"]) == str
+            ):
+                if type(row["Kursy"]) == float:
+                    course = str(int(row["Kursy"]))
+                else:
+                    course = str(row["Kursy"])
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Kursy' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if row["Töleg görnüşi"].lower() in ("tölegli", "býudjet"):
+                payment_type = "P" if row["Töleg görnüşi"].lower() == "tölegli" else "B"
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Töleg görnüşi' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            family_statuses = {
+                "hossarly": "FR",
+                "ýarym ýetim": "HO",
+                "doly ýetim": "CO",
+                "ýetimler öýünde ösen": "OE",
+            }
+            if row["Maşgala ýagdaýy"].lower() in family_statuses.keys():
+                family_status = family_statuses[row["Maşgala ýagdaýy"].lower()]
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Maşgala ýagdaýy' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if type(row["Ýazgyda duran salgysy"]) == str:
+                registered_place = row["Ýazgyda duran salgysy"]
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Ýazgyda duran salgysy' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if (
+                type(row["Öý, iş, mobil telefony"]) == str
+                or type(row["Öý, iş, mobil telefony"]) == int
+                or type(row["Öý, iş, mobil telefony"]) == float
+            ):
+                if type(row["Öý, iş, mobil telefony"]) == float:
+                    phone_number = str(int(row["Öý, iş, mobil telefony"]))
+                else:
+                    phone_number = str(row["Öý, iş, mobil telefony"])
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Öý, iş, mobil telefony' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if type(row["Pasport seriýasy, belgisi"]) == str:
+                passport = row["Pasport seriýasy, belgisi"]
+            else:
+                invalid_fields.append(
+                    f"Setir №{index + 1}: 'Pasport seriýasy, belgisi' meýdançasynda ýalňyşlyk goýberildi"
+                )
+                row_validation = False
+
+            if type(row["Okuwa giren senesi"]) == datetime.datetime:
+                admission_date = row["Okuwa giren senesi"]
+            elif type(row["Okuwa giren senesi"]) == str:
+                try:
+                    admission_date = datetime.datetime.strptime(
+                        row["Okuwa giren senesi"].rstrip().lstrip(), "%d.%M.%Y"
+                    )
+                except:
+                    invalid_fields.append(
+                        f"Setir №{index + 1}: 'Okuwa giren senesi' meýdançasynda ýalňyşlyk goýberildi"
+                    )
+                    row_validation = False
+            else:
+                admission_date = row["Okuwa giren senesi"].to_pydatetime()
+
+            if row_validation:
+                if Student.objects.filter(
+                    high_school=high_school,
+                    full_name=full_name,
+                    specialization=specialization,
+                    passport=passport,
+                ).exists():
+                    invalid_fields.append(
+                        f"Setir №{index + 1}: '{full_name}' atly talyp eýýäm maglumat goruna girizilen"
+                    )
+    if len(invalid_fields) > 0:
         return Response(
             {
                 "detail": "Success, but there are some mistakes",
@@ -2084,8 +2230,8 @@ def update_diploma_request_api_view(request: HttpRequest, diploma_request_id: in
 def get_diplomas_for_table_api_view(request: HttpRequest):
     response = []
     for diploma_request in DiplomaRequest.objects.filter(
-        is_obsolete=False, verdict__in=["C", None]
-    ):
+        is_obsolete=False,
+    ).exclude(verdict="R"):
         response.append(
             {
                 "id": diploma_request.id,

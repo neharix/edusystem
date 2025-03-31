@@ -211,6 +211,113 @@ class DepartmentSpecializationInfoSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class DepartmentSpecializationAdditionalSerializer(serializers.ModelSerializer):
+
+    def get_name(self, instance):
+        return instance.specialization.name
+
+    def get_department(self, instance):
+        return instance.faculty_department.department.name
+
+    def get_classificator(self, instance):
+        return (
+            instance.specialization.classificator.name
+            if instance.specialization.classificator
+            else "Ýok"
+        )
+
+    def get_male_count(self, instance):
+        return Student.objects.filter(
+            specialization=instance,
+            gender="M",
+            is_expelled=False,
+            is_obsolete=False,
+        ).count()
+
+    def get_female_count(self, instance):
+        return Student.objects.filter(
+            specialization=instance,
+            gender="F",
+            is_expelled=False,
+            is_obsolete=False,
+        ).count()
+
+    def get_students_count(self, instance):
+        return Student.objects.filter(
+            specialization=instance,
+            is_expelled=False,
+            is_obsolete=False,
+        ).count()
+
+    name = serializers.SerializerMethodField()
+    department = serializers.SerializerMethodField()
+    classificator = serializers.SerializerMethodField()
+    male_count = serializers.SerializerMethodField()
+    female_count = serializers.SerializerMethodField()
+    students_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DepartmentSpecialization
+        fields = (
+            "id",
+            "name",
+            "department",
+            "classificator",
+            "male_count",
+            "female_count",
+            "students_count",
+        )
+
+
+class SpecializationAdditionalAdminSerializer(serializers.ModelSerializer):
+
+    def get_name(self, instance):
+        return instance.name
+
+    def get_classificator(self, instance):
+        return instance.classificator.name if instance.classificator else "Ýok"
+
+    def get_male_count(self, instance):
+        return Student.objects.filter(
+            specialization__specialization=instance,
+            gender="M",
+            is_expelled=False,
+            is_obsolete=False,
+        ).count()
+
+    def get_female_count(self, instance):
+        return Student.objects.filter(
+            specialization__specialization=instance,
+            gender="F",
+            is_expelled=False,
+            is_obsolete=False,
+        ).count()
+
+    def get_students_count(self, instance):
+        return Student.objects.filter(
+            specialization__specialization=instance,
+            is_expelled=False,
+            is_obsolete=False,
+        ).count()
+
+    name = serializers.SerializerMethodField()
+    classificator = serializers.SerializerMethodField()
+    male_count = serializers.SerializerMethodField()
+    female_count = serializers.SerializerMethodField()
+    students_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DepartmentSpecialization
+        fields = (
+            "id",
+            "name",
+            "classificator",
+            "male_count",
+            "female_count",
+            "students_count",
+        )
+
+
 class StudentInfoSerializer(serializers.ModelSerializer):
     high_school = HighSchoolInfoSerializer()
     nationality = NationalitySerializer()

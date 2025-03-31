@@ -373,7 +373,7 @@ def advanced_quantity_filter(payload: dict):
 
 
 def advanced_filter(payload: dict, key: str = "gender", value: int = 0):
-    students = Student.objects.filter(active=True, is_expelled=False)
+    students = Student.objects.filter(active=True, is_expelled=False, is_obsolete=False)
     query_set = Student.objects.none()
     if len(payload["high_schools"]):
         for high_school_id in payload["high_schools"]:

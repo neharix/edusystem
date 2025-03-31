@@ -186,6 +186,7 @@ urlpatterns = [
     ),
     # Student routes
     path("update-study-year/", update_study_years_api_view),
+    path("validate-student-form/", validate_students_from_excel_api_view),
     path("import-students/", import_students_from_excel_api_view),
     path(
         "students/",
