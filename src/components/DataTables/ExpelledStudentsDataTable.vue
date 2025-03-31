@@ -258,26 +258,32 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.full_name
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.expulsion_date
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.study_year
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-full flex items-center justify-center">
                 <div class="inline-flex rounded-md shadow-xs" role="group">
                   <button type="button" @click="router.push(`/expelled-students/reinstate/${item.id}`)"
+                    title="Dikeltmek"
                     class="px-4 py-2 text-[0.8rem] font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 rounded-lg focus:z-10 focus:ring-2 focus:ring-emerald-500 dark:border-gray-700 select-none">
-                    Dikeltmek
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5" viewBox="-2 0 24 24"
+                      id="meteor-icon-kit__solid-undo" fill="none">
+                      <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M5.62132 7L7.06066 8.43934C7.64645 9.02513 7.64645 9.97487 7.06066 10.5607C6.47487 11.1464 5.52513 11.1464 4.93934 10.5607L0.93934 6.56066C0.35355 5.97487 0.35355 5.02513 0.93934 4.43934L4.93934 0.43934C5.52513 -0.146447 6.47487 -0.146447 7.06066 0.43934C7.64645 1.02513 7.64645 1.97487 7.06066 2.56066L5.62132 4H10C15.5228 4 20 8.47715 20 14C20 19.5228 15.5228 24 10 24C4.47715 24 0 19.5228 0 14C0 13.1716 0.67157 12.5 1.5 12.5C2.32843 12.5 3 13.1716 3 14C3 17.866 6.13401 21 10 21C13.866 21 17 17.866 17 14C17 10.134 13.866 7 10 7H5.62132z"
+                        fill="currentColor" />
+                    </svg>
                   </button>
                 </div>
               </div>

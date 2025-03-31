@@ -934,6 +934,27 @@ export const useStudentsStore = defineStore({
         console.error("Error", error);
       }
     },
+    async validate(data) {
+      try {
+        const response = await axiosInstance.post(
+          "/validate-student-form/",
+          data,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        this.createSessionStatus = response.data.mistakes ? false : true;
+        if (!this.createSessionStatus) {
+          this.createSessionMistakes = response.data.mistakes;
+        }
+        this.createStatus = "success";
+      } catch (error) {
+        this.createStatus = "error";
+        console.error("Error", error);
+      }
+    },
     async delete(id) {
       try {
         const response = await axiosInstance.delete(`/students/${id}/`);

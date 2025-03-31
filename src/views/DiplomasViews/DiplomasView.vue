@@ -8,7 +8,7 @@ import { ref, watch } from "vue";
 import { useDiplomasStore } from "@/stores/api.store";
 
 const authStore = useAuthStore();
-const { role } = storeToRefs(authStore);
+const { user, role } = storeToRefs(authStore);
 const diplomasStore = useDiplomasStore();
 const { diplomaRequestAdvanced } = storeToRefs(diplomasStore);
 

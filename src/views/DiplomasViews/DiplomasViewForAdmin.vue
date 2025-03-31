@@ -7,7 +7,7 @@ import { storeToRefs } from 'pinia';
 import TheSpinner from '@/components/TheSpinner.vue';
 
 const diplomasStore = useDiplomasStore();
-const { diplomaRequests, diplomaActions } = storeToRefs(diplomasStore)
+const { diplomaRequests, diplomaActions } = storeToRefs(diplomasStore);
 const isRequestsLoading = ref(false);
 const isActionsLoading = ref(false);
 

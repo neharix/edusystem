@@ -48,82 +48,115 @@
           </transition>
         </div>
       </div>
-      <button :class="{ 'lg:hidden': isMobile }" v-if="role === 'root'"
-        @click="openModal('Umumy import', 'Maglumat gorundaky ähli maglumatlaryň importyny tassyklaýarsyňyzmy?')">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M16.9999 19C19.209 19 20.9999 17.2091 20.9999 15C20.9999 12.7909 19.209 11 16.9999 11H16.9774C16.9923 10.8353 16.9999 10.6685 16.9999 10.5C16.9999 7.46243 14.5374 5 11.4999 5C8.4623 5 5.99986 7.46243 5.99986 10.5C5.99986 10.5047 5.99987 10.5095 5.99988 10.5142C4.04366 10.9113 2.57129 12.6408 2.57129 14.7142C2.57129 17.0811 4.49007 18.9999 6.857 18.9999"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M12 14L12 19M12 19L14 17M12 19L10 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round" />
-        </svg>
-      </button>
+      <button-with-tooltip v-if="route.name === 'students-list' && role === 'root'" :is-mobile="isMobile"
+        position-classes="right-32" text="Kursy üýtgetme"
+        @clicked="openModalWrap('Kursy üýtgetme', 'Ähli talyplaryň kursunyň üýtgetdilmegini tassyklaýarsyňyzmy?', updateStudyYears)">
+        <template #btn-content>
+          <svg xmlns="http://www.w3.org/2000/svg" id="Layer_2" data-name="Layer 2" viewBox="0 0 788 788" class="w-6">
+            <defs>
+            </defs>
+            <g id="Background">
+              <path class="cls-2" stroke-width="2rem"
+                d="M647.81,373.23h-50.67c-1.44,0-2.61,1.17-2.61,2.61v225.07c0,3.06-2.48,5.53-5.53,5.53h-19c-3.06,0-5.53-2.48-5.53-5.53v-225.07c0-1.44-1.17-2.61-2.61-2.61h-49.95c-5.51,0-9.12-5.78-6.7-10.73l74.65-152.68,74.65,152.68c2.42,4.95-1.18,10.73-6.7,10.73Z" />
+            </g>
+            <g id="Objects">
+              <g>
+                <path class="cls-1" fill="currentColor" stroke-width="0px"
+                  d="M309.79,395.95c-62.41,0-113.19-50.77-113.19-113.19s50.77-113.19,113.19-113.19,113.19,50.78,113.19,113.19-50.77,113.19-113.19,113.19ZM309.79,186.82c-52.91,0-95.95,43.04-95.95,95.95s43.04,95.95,95.95,95.95,95.95-43.04,95.95-95.95-43.04-95.95-95.95-95.95Z" />
+                <path class="cls-1" fill="currentColor" stroke-width="0px"
+                  d="M309.79,649.34c-54.27,0-106.34-16.45-150.59-47.58-11.15-7.84-21.77-16.63-31.57-26.12-1.68-1.62-2.62-3.86-2.62-6.19v-17.99c0-35.61,19.33-71.39,53.03-98.18,35.08-27.89,81.87-43.25,131.75-43.25s97.93,15.37,132.7,43.27c33.11,26.57,52.1,62.35,52.1,98.16v17.98c0,2.34-.95,4.57-2.63,6.2-9.84,9.51-20.47,18.3-31.6,26.13-44.22,31.12-96.29,47.58-150.58,47.58ZM142.24,565.76c8.42,7.91,17.45,15.27,26.88,21.9,41.33,29.07,89.97,44.44,140.67,44.44s99.35-15.37,140.66-44.44c9.42-6.62,18.45-13.99,26.91-21.92v-14.29c0-30.55-16.64-61.43-45.65-84.71-31.72-25.46-75.01-39.48-121.91-39.48-100.22,0-167.55,64.22-167.55,124.19v14.3ZM485.97,569.44h.01-.01Z" />
+              </g>
+              <circle class="cls-3" stroke-width="1rem" fill="none" stroke="currentColor" stroke-miterlimit="10"
+                cx="394" cy="394" r="388" />
+            </g>
+          </svg>
+        </template>
+      </button-with-tooltip>
+      <button-with-tooltip :is-mobile="isMobile" v-if="role === 'root'" text="Umumy import" position-classes="right-30"
+        @clicked="openModalWrap('Umumy import', 'Maglumat gorundaky ähli maglumatlaryň importyny tassyklaýarsyňyzmy?', getDumpFile)">
+        <template #btn-content>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M16.9999 19C19.209 19 20.9999 17.2091 20.9999 15C20.9999 12.7909 19.209 11 16.9999 11H16.9774C16.9923 10.8353 16.9999 10.6685 16.9999 10.5C16.9999 7.46243 14.5374 5 11.4999 5C8.4623 5 5.99986 7.46243 5.99986 10.5C5.99986 10.5047 5.99987 10.5095 5.99988 10.5142C4.04366 10.9113 2.57129 12.6408 2.57129 14.7142C2.57129 17.0811 4.49007 18.9999 6.857 18.9999"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M12 14L12 19M12 19L14 17M12 19L10 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </template>
+      </button-with-tooltip>
 
-      <button id="themeToggle" :class="{ 'lg:hidden': isMobile }" @click="emit('toggle-theme')"
-        class="flex items-center px-4 py-2 dark:text-gray-100 rounded">
-        <svg viewBox="0 0 24 24" class="w-6 h-6 m-0" :class="{ hidden: isDark }" fill="none"
-          xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M11 1C11 0.447715 11.4477 0 12 0C12.5523 0 13 0.447715 13 1V3C13 3.55228 12.5523 4 12 4C11.4477 4 11 3.55228 11 3V1Z"
-            fill="currentColor" />
-          <path fill-rule="evenodd" clip-rule="evenodd"
-            d="M18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12ZM8.06167 12C8.06167 14.1751 9.82492 15.9383 12 15.9383C14.1751 15.9383 15.9383 14.1751 15.9383 12C15.9383 9.82492 14.1751 8.06167 12 8.06167C9.82492 8.06167 8.06167 9.82492 8.06167 12Z"
-            fill="currentColor" />
-          <path
-            d="M20.4853 3.51472C20.0947 3.12419 19.4616 3.12419 19.0711 3.51472L17.6568 4.92893C17.2663 5.31946 17.2663 5.95262 17.6568 6.34315C18.0474 6.73367 18.6805 6.73367 19.0711 6.34315L20.4853 4.92893C20.8758 4.53841 20.8758 3.90524 20.4853 3.51472Z"
-            fill="currentColor" />
-          <path
-            d="M1 13C0.447715 13 0 12.5523 0 12C0 11.4477 0.447715 11 1 11H3C3.55228 11 4 11.4477 4 12C4 12.5523 3.55228 13 3 13H1Z"
-            fill="currentColor" />
-          <path
-            d="M3.51472 3.51472C3.1242 3.90524 3.1242 4.53841 3.51472 4.92893L4.92894 6.34315C5.31946 6.73367 5.95263 6.73367 6.34315 6.34315C6.73368 5.95262 6.73368 5.31946 6.34315 4.92893L4.92894 3.51472C4.53841 3.12419 3.90525 3.12419 3.51472 3.51472Z"
-            fill="currentColor" />
-          <path
-            d="M11 21C11 20.4477 11.4477 20 12 20C12.5523 20 13 20.4477 13 21V23C13 23.5523 12.5523 24 12 24C11.4477 24 11 23.5523 11 23V21Z"
-            fill="currentColor" />
-          <path
-            d="M6.34315 17.6569C5.95263 17.2663 5.31946 17.2663 4.92894 17.6569L3.51473 19.0711C3.1242 19.4616 3.1242 20.0948 3.51473 20.4853C3.90525 20.8758 4.53842 20.8758 4.92894 20.4853L6.34315 19.0711C6.73368 18.6805 6.73368 18.0474 6.34315 17.6569Z"
-            fill="currentColor" />
-          <path
-            d="M21 13C20.4477 13 20 12.5523 20 12C20 11.4477 20.4477 11 21 11H23C23.5523 11 24 11.4477 24 12C24 12.5523 23.5523 13 23 13H21Z"
-            fill="currentColor" />
-          <path
-            d="M17.6568 17.6569C17.2663 18.0474 17.2663 18.6805 17.6568 19.0711L19.0711 20.4853C19.4616 20.8758 20.0947 20.8758 20.4853 20.4853C20.8758 20.0948 20.8758 19.4616 20.4853 19.0711L19.0711 17.6569C18.6805 17.2663 18.0474 17.2663 17.6568 17.6569Z"
-            fill="currentColor" />
-        </svg>
-        <svg viewBox="0 0 24 24" class="w-6 h-6 m-0" :class="{ hidden: !isDark }" fill="none"
-          xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M13 6V3M18.5 12V7M14.5 4.5H11.5M21 9.5H16M15.5548 16.8151C16.7829 16.8151 17.9493 16.5506 19 16.0754C17.6867 18.9794 14.7642 21 11.3698 21C6.74731 21 3 17.2527 3 12.6302C3 9.23576 5.02061 6.31331 7.92462 5C7.44944 6.05072 7.18492 7.21708 7.18492 8.44523C7.18492 13.0678 10.9322 16.8151 15.5548 16.8151Z"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
+      <button-with-tooltip :is-mobile="isMobile" @clicked="emit('toggle-theme')" position-classes="right-20"
+        :text="isDark ? 'Ýagty tema' : 'Garaňky tema'" class="flex items-center p-2 dark:text-gray-100 rounded">
+        <template #btn-content>
+          <svg viewBox="0 0 24 24" class="w-6 h-6 m-0" :class="{ hidden: isDark }" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M11 1C11 0.447715 11.4477 0 12 0C12.5523 0 13 0.447715 13 1V3C13 3.55228 12.5523 4 12 4C11.4477 4 11 3.55228 11 3V1Z"
+              fill="currentColor" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M18 12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12ZM8.06167 12C8.06167 14.1751 9.82492 15.9383 12 15.9383C14.1751 15.9383 15.9383 14.1751 15.9383 12C15.9383 9.82492 14.1751 8.06167 12 8.06167C9.82492 8.06167 8.06167 9.82492 8.06167 12Z"
+              fill="currentColor" />
+            <path
+              d="M20.4853 3.51472C20.0947 3.12419 19.4616 3.12419 19.0711 3.51472L17.6568 4.92893C17.2663 5.31946 17.2663 5.95262 17.6568 6.34315C18.0474 6.73367 18.6805 6.73367 19.0711 6.34315L20.4853 4.92893C20.8758 4.53841 20.8758 3.90524 20.4853 3.51472Z"
+              fill="currentColor" />
+            <path
+              d="M1 13C0.447715 13 0 12.5523 0 12C0 11.4477 0.447715 11 1 11H3C3.55228 11 4 11.4477 4 12C4 12.5523 3.55228 13 3 13H1Z"
+              fill="currentColor" />
+            <path
+              d="M3.51472 3.51472C3.1242 3.90524 3.1242 4.53841 3.51472 4.92893L4.92894 6.34315C5.31946 6.73367 5.95263 6.73367 6.34315 6.34315C6.73368 5.95262 6.73368 5.31946 6.34315 4.92893L4.92894 3.51472C4.53841 3.12419 3.90525 3.12419 3.51472 3.51472Z"
+              fill="currentColor" />
+            <path
+              d="M11 21C11 20.4477 11.4477 20 12 20C12.5523 20 13 20.4477 13 21V23C13 23.5523 12.5523 24 12 24C11.4477 24 11 23.5523 11 23V21Z"
+              fill="currentColor" />
+            <path
+              d="M6.34315 17.6569C5.95263 17.2663 5.31946 17.2663 4.92894 17.6569L3.51473 19.0711C3.1242 19.4616 3.1242 20.0948 3.51473 20.4853C3.90525 20.8758 4.53842 20.8758 4.92894 20.4853L6.34315 19.0711C6.73368 18.6805 6.73368 18.0474 6.34315 17.6569Z"
+              fill="currentColor" />
+            <path
+              d="M21 13C20.4477 13 20 12.5523 20 12C20 11.4477 20.4477 11 21 11H23C23.5523 11 24 11.4477 24 12C24 12.5523 23.5523 13 23 13H21Z"
+              fill="currentColor" />
+            <path
+              d="M17.6568 17.6569C17.2663 18.0474 17.2663 18.6805 17.6568 19.0711L19.0711 20.4853C19.4616 20.8758 20.0947 20.8758 20.4853 20.4853C20.8758 20.0948 20.8758 19.4616 20.4853 19.0711L19.0711 17.6569C18.6805 17.2663 18.0474 17.2663 17.6568 17.6569Z"
+              fill="currentColor" />
+          </svg>
+          <svg viewBox="0 0 24 24" class="w-6 h-6 m-0" :class="{ hidden: !isDark }" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M13 6V3M18.5 12V7M14.5 4.5H11.5M21 9.5H16M15.5548 16.8151C16.7829 16.8151 17.9493 16.5506 19 16.0754C17.6867 18.9794 14.7642 21 11.3698 21C6.74731 21 3 17.2527 3 12.6302C3 9.23576 5.02061 6.31331 7.92462 5C7.44944 6.05072 7.18492 7.21708 7.18492 8.44523C7.18492 13.0678 10.9322 16.8151 15.5548 16.8151Z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </template>
+      </button-with-tooltip>
 
     </div>
 
     <div v-if="role === 'root'">
-      <confirm-modal :is-open="isModalOpen" @close="isModalOpen = false;" @submit="submitModal" :header="header"
-        :context='context'></confirm-modal>
+      <confirm-modal :is-open="isModalOpen" @close="isModalOpen = false;" @submit="submitModal(submitFunction)"
+        :header="header" :context='context'></confirm-modal>
     </div>
   </div>
 </template>
 <script setup>
+import ButtonWithTooltip from "./ButtonWithTooltip.vue";
 import { useAuthStore } from "@/stores/auth.store";
 import DropdownNotification from "./DropdownNotification.vue";
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import useConfirmModal from "@/use/useModalWindow";
 import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
-import { useSpecialFunctionsStore } from "@/stores/api.store";
+import { useSpecialFunctionsStore, useStudentsStore } from "@/stores/api.store";
+import { useRoute } from "vue-router";
 
+
+const submitFunction = ref(() => { console.log('nothing to do') });
 
 const specialFunctionsStore = useSpecialFunctionsStore();
+const studentsStore = useStudentsStore();
 
-
+const route = useRoute();
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
 
-function submitModal() {
+function getDumpFile() {
   specialFunctionsStore.getDump().then(() => {
     const blob = new Blob([specialFunctionsStore.dump], { type: specialFunctionsStore.dumpContentType })
     console.log(blob)
@@ -137,6 +170,21 @@ function submitModal() {
     link.click();
     document.body.removeChild(link);
   })
+}
+
+function updateStudyYears() {
+  studentsStore.updateStudyYears().then(() => {
+    studentsStore.getAllAdditional();
+  });
+}
+
+function openModalWrap(header, content, func) {
+  submitFunction.value = func;
+  openModal(header, content);
+}
+
+function submitModal(func) {
+  func();
   isModalOpen.value = false;
 }
 

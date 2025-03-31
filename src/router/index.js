@@ -1,9 +1,9 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import guards from "@/router/guards.js";
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/login",
@@ -545,7 +545,18 @@ const router = createRouter({
           },
           beforeEnter: guards.authGuard,
         },
-        // FIXME
+        {
+          path: "validate",
+          name: "validate-students",
+          component: () =>
+            import("../views/StudentViews/ValidateStudentView.vue"),
+          meta: {
+            layout: "MainLayout",
+            title: "Formany barlamak",
+            staffRequired: true,
+          },
+          beforeEnter: guards.authGuard,
+        },
         {
           path: "edit/:id",
           name: "edit-student",
