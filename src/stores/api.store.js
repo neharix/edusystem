@@ -815,6 +815,8 @@ export const useStudentsStore = defineStore({
     expelledStudentsAdditional: [],
     excelForm: null,
     excelFormContentType: null,
+    documentation: null,
+    documentationContentType: null,
     createStatus: null,
     createSessionStatus: null,
     createSessionMistakes: [],
@@ -836,6 +838,10 @@ export const useStudentsStore = defineStore({
     resetExcelFormStates() {
       this.excelForm = null;
       this.excelFormContentType = null;
+    },
+    resetDocumentationStates() {
+      this.documentation = null;
+      this.documentationContentType = null;
     },
     async getExpelledStudent(id) {
       try {
@@ -887,6 +893,29 @@ export const useStudentsStore = defineStore({
         );
         this.excelForm = response.data;
         this.excelFormContentType = response.headers["Content-Type"];
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getFormForHighSchool(rowCount) {
+      try {
+        const response = await axiosInstance.get(
+          `get-example/row-count/${rowCount}/`,
+          { responseType: "blob" }
+        );
+        this.excelForm = response.data;
+        this.excelFormContentType = response.headers["Content-Type"];
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getDocumentation() {
+      try {
+        const response = await axiosInstance.get(`get-documentation/`, {
+          responseType: "blob",
+        });
+        this.documentation = response.data;
+        this.documentationContentType = response.headers["Content-Type"];
       } catch (error) {
         console.error("Error", error);
       }
