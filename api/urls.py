@@ -34,6 +34,14 @@ urlpatterns = [
         "get-example/high-school/<int:high_school_id>/row-count/<int:row_count>/",
         get_example,
     ),
+    path(
+        "get-example/row-count/<int:row_count>/",
+        get_example_for_high_school,
+    ),
+    path(
+        "get-documentation/",
+        get_documentation,
+    ),
     path("dashboard/", dashboard_api_view),
     # High school routes
     path("create-high-school/", create_high_school_api_view),

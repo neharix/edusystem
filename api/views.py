@@ -8,6 +8,7 @@ import pytz
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.http import FileResponse
 from django.http import HttpRequest as DjangoHttpRequest
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -16,7 +17,6 @@ from django.utils.text import slugify
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import (
-    DestroyAPIView,
     ListAPIView,
     ListCreateAPIView,
     RetrieveAPIView,
@@ -121,9 +121,7 @@ def dumpdata_view(request: HttpRequest):
                 env=env,
             )
 
-            output = output.encode("utf-8", "ignore").decode(
-                "utf-8"
-            )  # Убираем битые символы
+            output = output.encode("utf-8", "ignore").decode("utf-8")
 
             response = HttpResponse(
                 output, content_type="application/json; charset=utf-8"
@@ -294,6 +292,39 @@ def get_example(request: HttpRequest, high_school_id: int, row_count: int):
     )
     filename = slugify(high_school.abbreviation + " üçin forma") + ".xlsx"
     response["Content-Disposition"] = f'attachment; filename="' + filename + '"'
+    return response
+
+
+@api_view(http_method_names=["GET"])
+def get_example_for_high_school(request: HttpRequest, row_count: int):
+    if HighSchool.objects.filter(manager__user=request.user).exists():
+        high_school = HighSchool.objects.get(manager__user=request.user)
+    else:
+        return HttpResponse({"detail": "High school isn't found"})
+
+    workbook = create_example(row_count, high_school)
+
+    with io.BytesIO() as buffer:
+        workbook.save(buffer)
+        content = buffer.getvalue()
+
+    response = HttpResponse(
+        content=content,
+        content_type="application/xlsx",
+    )
+    filename = slugify(high_school.abbreviation + " üçin forma") + ".xlsx"
+    response["Content-Disposition"] = f'attachment; filename="' + filename + '"'
+    return response
+
+
+@api_view(http_method_names=["GET"])
+def get_documentation(request: HttpRequest):
+    file_path = "examples/bmdu.docx"
+    response = FileResponse(
+        open(file_path, "rb"),
+        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+    response["Content-Disposition"] = 'attachment; filename="bmdu.docx"'
     return response
 
 
