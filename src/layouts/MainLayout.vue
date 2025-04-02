@@ -59,13 +59,10 @@
         <div class="text-xl font-semibold flex items-center"><img class="w-12 h-12 select-none"
             src="/src/assets/svgs/favicon.svg" alt=""><span class="px-2 select-none">BMDU</span></div>
       </router-link>
-
-      <site-tools :is-mobile="true" :is-dark="isDark" :notifications="role === 'root' && user.notifications.length > 0"
-        @toggle-theme="toggleTheme"></site-tools>
-      <div class="hidden lg:flex items-center space-x-4">
-        <the-spinner v-if="uxStore.isLoading"></the-spinner>
-        <site-tools :is-mobile="false" :is-dark="isDark"
-          :notifications="role === 'root' && user.notifications.length > 0" @toggle-theme="toggleTheme"></site-tools>
+      <div class="flex items-center">
+        <the-spinner class="hidden lg:block" v-if="uxStore.isLoading"></the-spinner>
+        <site-tools :is-dark="isDark" :notifications="role === 'root' && user.notifications.length > 0"
+          @toggle-theme="toggleTheme"></site-tools>
         <user-dropdown v-if="user"></user-dropdown>
       </div>
     </div>

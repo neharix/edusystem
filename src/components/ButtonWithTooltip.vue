@@ -4,7 +4,6 @@ import { ref } from 'vue';
 defineEmits(['clicked'])
 defineProps({
   text: String,
-  isMobile: Boolean,
   positionClasses: String
 })
 
@@ -26,7 +25,7 @@ function mouseLeave() {
 
 </script>
 <template>
-  <button :class="{ 'lg:hidden': isMobile }" class="p-2 dark:text-gray-100" @click="$emit('clicked')">
+  <button class="p-2 dark:text-gray-100" @click="$emit('clicked')">
     <div @mouseenter="mouseEnter" @mouseleave="mouseLeave">
       <slot name="btn-content"></slot>
     </div>
