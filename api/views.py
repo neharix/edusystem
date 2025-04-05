@@ -83,6 +83,7 @@ from .utils import (
     advanced_quantity_filter,
     create_example,
     filter_by_query,
+    validate_excel_fields,
     validate_not_null_field,
 )
 
@@ -1222,184 +1223,38 @@ def import_students_from_excel_api_view(request: HttpRequest):
         row_validation = True
         row_status = validate_not_null_field(row, ["T/B", "Harby borç", "Bellikler"])
         if not row_status[0]:
+            row_validation = False
             invalid_fields.append(
                 f"Setir №{index + 1}: '{','.join(row_status[1])}' meýdançasy boş bolup bilmez"
             )
         else:
-            full_name = row["F.A.Aa"]
-            if type(row["Doglan senesi"]) == datetime.datetime:
-                birth_date = row["Doglan senesi"]
-            elif type(row["Doglan senesi"]) == str:
-                try:
-                    birth_date = datetime.datetime.strptime(
-                        row["Doglan senesi"].rstrip().lstrip(), "%d.%M.%Y"
-                    )
-                except:
-                    print(f'"{row["Doglan senesi"]}"')
-                    invalid_fields.append(
-                        f"Setir №{index + 1}: 'Doglan senesi' meýdançasynda ýalňyşlyk goýberildi"
-                    )
-                    row_validation = False
-            else:
-                birth_date = row["Doglan senesi"].to_pydatetime()
-
-            if row["Jynsy"].lower() in ("oglan", "gyz"):
-                gender = "M" if row["Jynsy"].lower() == "oglan" else "F"
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Jynsy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if Region.objects.filter(name__contains=row["Welaýaty"].lower()).exists():
-                region = Region.objects.get(name__contains=row["Welaýaty"].lower())
-            else:
-                print(row["Welaýaty"])
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Welaýaty' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if Nationality.objects.filter(
-                name__contains=row["Milleti"].lower()
-            ).exists():
-                nationality = Nationality.objects.get(
-                    name__contains=row["Milleti"].lower()
-                )
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Milleti' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if Country.objects.filter(name__contains=row["Ýurdy"].lower()).exists():
-                country = Country.objects.get(name__contains=row["Ýurdy"].lower())
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Ýurdy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if DepartmentSpecialization.objects.filter(
-                specialization__name=row["Hünari"],
-                faculty_department__high_school_faculty__high_school=high_school,
-            ):
-                specialization = DepartmentSpecialization.objects.get(
-                    specialization__name=row["Hünari"],
-                    faculty_department__high_school_faculty__high_school=high_school,
-                )
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Hünäri' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-            # FIXME
-            if (
-                type(row["Kursy"]) == int
-                or type(row["Kursy"]) == float
-                or type(row["Kursy"]) == str
-            ):
-                if type(row["Kursy"]) == float:
-                    course = str(int(row["Kursy"]))
-                else:
-                    course = str(row["Kursy"])
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Kursy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if row["Töleg görnüşi"].lower() in ("tölegli", "býudjet"):
-                payment_type = "P" if row["Töleg görnüşi"] == "Tölegli" else "B"
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Töleg görnüşi' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            family_statuses = {
-                "hossarly": "FR",
-                "ýarym ýetim": "HO",
-                "doly ýetim": "CO",
-                "ýetimler öýünde ösen": "OE",
-            }
-            if row["Maşgala ýagdaýy"].lower() in family_statuses.keys():
-                family_status = family_statuses[row["Maşgala ýagdaýy"].lower()]
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Maşgala ýagdaýy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if type(row["Ýazgyda duran salgysy"]) == str:
-                registered_place = row["Ýazgyda duran salgysy"]
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Ýazgyda duran salgysy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if (
-                type(row["Öý, iş, mobil telefony"]) == str
-                or type(row["Öý, iş, mobil telefony"]) == int
-                or type(row["Öý, iş, mobil telefony"]) == float
-            ):
-                if type(row["Öý, iş, mobil telefony"]) == float:
-                    phone_number = str(int(row["Öý, iş, mobil telefony"]))
-                else:
-                    phone_number = str(row["Öý, iş, mobil telefony"])
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Öý, iş, mobil telefony' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if type(row["Pasport seriýasy, belgisi"]) == str:
-                passport = row["Pasport seriýasy, belgisi"]
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Pasport seriýasy, belgisi' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if type(row["Okuwa giren senesi"]) == datetime.datetime:
-                admission_date = row["Okuwa giren senesi"]
-            elif type(row["Okuwa giren senesi"]) == str:
-                try:
-                    admission_date = datetime.datetime.strptime(
-                        row["Okuwa giren senesi"].rstrip().lstrip(), "%d.%M.%Y"
-                    )
-                except:
-                    invalid_fields.append(
-                        f"Setir №{index + 1}: 'Okuwa giren senesi' meýdançasynda ýalňyşlyk goýberildi"
-                    )
-                    row_validation = False
-            else:
-                admission_date = row["Okuwa giren senesi"].to_pydatetime()
-
+            row_validation, inv_fields, data = validate_excel_fields(
+                row, index, high_school, row_validation
+            )
+            [invalid_fields.append(invalid_field) for invalid_field in inv_fields]
             if row_validation:
                 if not Student.objects.filter(
                     high_school=high_school,
-                    full_name=full_name,
-                    specialization=specialization,
-                    passport=passport,
+                    full_name=data["full_name"],
+                    specialization=data["specialization"],
+                    passport=data["passport"],
                 ).exists():
                     student = Student.objects.create(
-                        full_name=full_name,
-                        gender=gender,
-                        family_status=family_status,
-                        payment_type=payment_type,
-                        nationality=nationality,
-                        country=country,
-                        region=region,
-                        study_year=course,
-                        high_school=high_school,
-                        specialization=specialization,
-                        birth_date=birth_date,
-                        admission_date=admission_date,
-                        registered_place=registered_place,
-                        phone_number=phone_number,
-                        passport=passport,
+                        full_name=data["full_name"],
+                        gender=data["gender"],
+                        family_status=data["family_status"],
+                        payment_type=data["payment_type"],
+                        nationality=data["nationality"],
+                        country=data["country"],
+                        region=data["region"],
+                        study_year=data["course"],
+                        high_school=data["high_school"],
+                        specialization=data["specialization"],
+                        birth_date=data["birth_date"],
+                        admission_date=data["admission_date"],
+                        registered_place=data["registered_place"],
+                        phone_number=data["phone_number"],
+                        passport=data["passport"],
                     )
                     if not row.isnull()["Bellikler"]:
                         student.label = row["Bellikler"]
@@ -1408,7 +1263,7 @@ def import_students_from_excel_api_view(request: HttpRequest):
                     student.save()
                 else:
                     invalid_fields.append(
-                        f"Setir №{index + 1}: '{full_name}' atly talyp eýýäm maglumat goruna girizilen"
+                        f"Setir №{index + 1}: '{data['full_name']}' atly talyp eýýäm maglumat goruna girizilen"
                     )
     if len(invalid_fields) > 0:
         return Response(
@@ -1442,166 +1297,20 @@ def validate_students_from_excel_api_view(request: HttpRequest):
                 f"Setir №{index + 1}: '{','.join(row_status[1])}' meýdançasy boş bolup bilmez"
             )
         else:
-            full_name = row["F.A.Aa"]
-            if type(row["Doglan senesi"]) == datetime.datetime:
-                birth_date = row["Doglan senesi"]
-            elif type(row["Doglan senesi"]) == str:
-                try:
-                    birth_date = datetime.datetime.strptime(
-                        row["Doglan senesi"].rstrip().lstrip(), "%d.%M.%Y"
-                    )
-                except:
-                    print(f'"{row["Doglan senesi"]}"')
-                    invalid_fields.append(
-                        f"Setir №{index + 1}: 'Doglan senesi' meýdançasynda ýalňyşlyk goýberildi"
-                    )
-                    row_validation = False
-            else:
-                birth_date = row["Doglan senesi"].to_pydatetime()
-
-            if row["Jynsy"].lower() in ("oglan", "gyz"):
-                gender = "M" if row["Jynsy"].lower() == "oglan" else "F"
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Jynsy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if Region.objects.filter(name__contains=row["Welaýaty"].lower()).exists():
-                region = Region.objects.get(name__contains=row["Welaýaty"].lower())
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Welaýaty' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if Nationality.objects.filter(
-                name__contains=row["Milleti"].lower()
-            ).exists():
-                nationality = Nationality.objects.get(
-                    name__contains=row["Milleti"].lower()
-                )
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Milleti' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if Country.objects.filter(name__contains=row["Ýurdy"].lower()).exists():
-                country = Country.objects.get(name__contains=row["Ýurdy"].lower())
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Ýurdy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if DepartmentSpecialization.objects.filter(
-                specialization__name=row["Hünari"],
-                faculty_department__high_school_faculty__high_school=high_school,
-            ):
-                specialization = DepartmentSpecialization.objects.get(
-                    specialization__name=row["Hünari"],
-                    faculty_department__high_school_faculty__high_school=high_school,
-                )
-            else:
-                print(f'"{row["Hünari"]}"')
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Hünäri' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-            # FIXME
-            if (
-                type(row["Kursy"]) == int
-                or type(row["Kursy"]) == float
-                or type(row["Kursy"]) == str
-            ):
-                if type(row["Kursy"]) == float:
-                    course = str(int(row["Kursy"]))
-                else:
-                    course = str(row["Kursy"])
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Kursy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if row["Töleg görnüşi"].lower() in ("tölegli", "býudjet"):
-                payment_type = "P" if row["Töleg görnüşi"].lower() == "tölegli" else "B"
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Töleg görnüşi' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            family_statuses = {
-                "hossarly": "FR",
-                "ýarym ýetim": "HO",
-                "doly ýetim": "CO",
-                "ýetimler öýünde ösen": "OE",
-            }
-            if row["Maşgala ýagdaýy"].lower() in family_statuses.keys():
-                family_status = family_statuses[row["Maşgala ýagdaýy"].lower()]
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Maşgala ýagdaýy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if type(row["Ýazgyda duran salgysy"]) == str:
-                registered_place = row["Ýazgyda duran salgysy"]
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Ýazgyda duran salgysy' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if (
-                type(row["Öý, iş, mobil telefony"]) == str
-                or type(row["Öý, iş, mobil telefony"]) == int
-                or type(row["Öý, iş, mobil telefony"]) == float
-            ):
-                if type(row["Öý, iş, mobil telefony"]) == float:
-                    phone_number = str(int(row["Öý, iş, mobil telefony"]))
-                else:
-                    phone_number = str(row["Öý, iş, mobil telefony"])
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Öý, iş, mobil telefony' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if type(row["Pasport seriýasy, belgisi"]) == str:
-                passport = row["Pasport seriýasy, belgisi"]
-            else:
-                invalid_fields.append(
-                    f"Setir №{index + 1}: 'Pasport seriýasy, belgisi' meýdançasynda ýalňyşlyk goýberildi"
-                )
-                row_validation = False
-
-            if type(row["Okuwa giren senesi"]) == datetime.datetime:
-                admission_date = row["Okuwa giren senesi"]
-            elif type(row["Okuwa giren senesi"]) == str:
-                try:
-                    admission_date = datetime.datetime.strptime(
-                        row["Okuwa giren senesi"].rstrip().lstrip(), "%d.%M.%Y"
-                    )
-                except:
-                    invalid_fields.append(
-                        f"Setir №{index + 1}: 'Okuwa giren senesi' meýdançasynda ýalňyşlyk goýberildi"
-                    )
-                    row_validation = False
-            else:
-                admission_date = row["Okuwa giren senesi"].to_pydatetime()
+            row_validation, inv_fields, data = validate_excel_fields(
+                row, index, high_school, row_validation
+            )
+            [invalid_fields.append(invalid_field) for invalid_field in inv_fields]
 
             if row_validation:
                 if Student.objects.filter(
                     high_school=high_school,
-                    full_name=full_name,
-                    specialization=specialization,
-                    passport=passport,
+                    full_name=data["full_name"],
+                    specialization=data["specialization"],
+                    passport=data["passport"],
                 ).exists():
                     invalid_fields.append(
-                        f"Setir №{index + 1}: '{full_name}' atly talyp eýýäm maglumat goruna girizilen"
+                        f"Setir №{index + 1}: '{data['full_name']}' atly talyp eýýäm maglumat goruna girizilen"
                     )
     if len(invalid_fields) > 0:
         return Response(
