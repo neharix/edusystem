@@ -15,7 +15,7 @@ const uxStore = useUxStore();
 const route = useRoute()
 const authStore = useAuthStore()
 const studentsStore = useStudentsStore()
-const { studentsAdditional } = storeToRefs(studentsStore);
+const { studentsAdditional, createStatus } = storeToRefs(studentsStore);
 const { role } = storeToRefs(authStore);
 
 onMounted(() => {
@@ -26,10 +26,21 @@ onMounted(() => {
       uxStore.isLoading = false;
     })
   } else {
-    studentsStore.getAllAdditional().then(() => {
+    if (studentsAdditional.value.length === 0) {
+      studentsStore.getAllAdditional().then(() => {
+        uxStore.isLoading = false;
+      })
+    } else {
       uxStore.isLoading = false;
-    })
+    }
   }
+
+  if (createStatus.value) {
+    if (createStatus.value === 'success') {
+      studentsStore.getAllAdditional();
+    }
+  }
+  createStatus.value = null;
 })
 
 const breadcrumbPathsForAdmin = [
