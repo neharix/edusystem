@@ -11,6 +11,15 @@ from django.utils import timezone
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     password = models.CharField(max_length=200, null=True, blank=True)
+    ALLOWED_SERVICES = [
+        ("bmdu", "BMDU"),
+        ("mmu", "MMU"),
+        ("both", "Both Services"),
+        ("none", "None of them"),
+    ]
+    allowed_service = models.CharField(
+        max_length=20, choices=ALLOWED_SERVICES, default="none"
+    )
 
     def __str__(self):
         return self.user.username

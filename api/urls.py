@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from main.views import CustomTokenObtainPairView
 
 from .views import *
 
@@ -9,23 +9,12 @@ urlpatterns = [
     # Login/logout routes
     # path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
-    # Documentation routes
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),
-    path(
-        "redoc/",
-        SpectacularRedocView.as_view(
-            url_name="schema",
-        ),
-        name="redoc",
-    ),
     # Echo routes
     path("", echo),
     # Authentication routes
-    path("token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path("token/", CustomTokenObtainPairView.as_view(), name="token-obtain-pair"),
     path("user/", get_user_data, name="user-data"),
     # Special routes
-    path("admin/", admin.site.urls),
     path("dumpdata/", dumpdata_view),
     path(
         "profiles/<int:id>/", ProfileRetrieveApiView.as_view(), name="profile-retrieve"

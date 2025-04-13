@@ -2,12 +2,14 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-s2l-7eu!5s)n50pc&2)ya(-e=tehko1tp*(ol4s-x)8_0jub%*"
 
-DEBUG = False
-# DEBUG = True
+# DEBUG = False
+DEBUG = True
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 
@@ -68,12 +70,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "api.apps.ApiConfig",
+    "debug_toolbar",
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "main.apps.MainConfig",
+    "api.apps.ApiConfig",
+    "mmu_api.apps.MmuApiConfig",
 ]
 
 MIDDLEWARE = [
@@ -85,8 +90,13 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "api.middleware.RequestLoggerMiddleware",
     "api.middleware.DrfTitleMiddleware",
+]
+
+INTERNAL_IPS = [
+    "127.0.0.1",
 ]
 
 ROOT_URLCONF = "server.urls"
@@ -132,23 +142,23 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
 }
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "bmdu",
-        "USER": "neharix",
-        "PASSWORD": "ghost2928",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "bmdu",
+#         "USER": "neharix",
+#         "PASSWORD": "ghost2928",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -167,6 +177,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_HEADERS = list(default_headers) + ["x-service"]
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [

@@ -14,7 +14,6 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.text import slugify
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import (
     ListAPIView,
@@ -27,7 +26,8 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
-from .decorators import validate_files, validate_payload
+from main.decorators import validate_files, validate_payload
+
 from .models import (
     AnnualUpdateReport,
     Classificator,
@@ -109,6 +109,10 @@ def dumpdata_view(request: HttpRequest):
                     sys.executable,
                     "manage.py",
                     "dumpdata",
+                    "--natural-foreign",
+                    "--natural-primary",
+                    "-e",
+                    "contenttypes",
                     "--exclude",
                     "admin.logentry",
                     "--exclude",
@@ -1248,7 +1252,7 @@ def import_students_from_excel_api_view(request: HttpRequest):
                         country=data["country"],
                         region=data["region"],
                         study_year=data["course"],
-                        high_school=data["high_school"],
+                        high_school=high_school,
                         specialization=data["specialization"],
                         birth_date=data["birth_date"],
                         admission_date=data["admission_date"],
