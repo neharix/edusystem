@@ -176,6 +176,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-service"]
 
@@ -184,10 +185,10 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        # "rest_framework.permissions.AllowAny",
-        "rest_framework.permissions.IsAuthenticated",
-    ],
+    # "DEFAULT_PERMISSION_CLASSES": [
+    #     "rest_framework.permissions.AllowAny",
+    #     # "rest_framework.permissions.IsAuthenticated",
+    # ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),

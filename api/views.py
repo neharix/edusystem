@@ -22,7 +22,7 @@ from rest_framework.generics import (
     RetrieveDestroyAPIView,
     RetrieveUpdateDestroyAPIView,
 )
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
@@ -98,6 +98,7 @@ import sys
 from django.http import HttpResponse
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def dumpdata_view(request: HttpRequest):
     if request.user.is_superuser:
@@ -165,6 +166,7 @@ def logout_view(request: DjangoHttpRequest):
 # Special API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def update_study_years_api_view(request: HttpRequest):
     if request.user.is_superuser:
@@ -193,15 +195,18 @@ def update_study_years_api_view(request: HttpRequest):
 
 class ProfileRetrieveApiView(RetrieveAPIView):
     queryset = Profile.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
     lookup_field = "id"
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET", "POST", "PATCH", "DELETE", "PUT"])
 def echo(request: HttpRequest):
     return Response({"detail": "The API works correctly"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_user_data(request: HttpRequest):
     if request.user.is_superuser:
@@ -278,6 +283,7 @@ def get_user_data(request: HttpRequest):
         )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_example(request: HttpRequest, high_school_id: int, row_count: int):
     if HighSchool.objects.filter(id=high_school_id).exists():
@@ -300,6 +306,7 @@ def get_example(request: HttpRequest, high_school_id: int, row_count: int):
     return response
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_example_for_high_school(request: HttpRequest, row_count: int):
     if HighSchool.objects.filter(manager__user=request.user).exists():
@@ -322,6 +329,7 @@ def get_example_for_high_school(request: HttpRequest, row_count: int):
     return response
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_documentation(request: HttpRequest):
     file_path = "examples/bmdu.docx"
@@ -333,6 +341,7 @@ def get_documentation(request: HttpRequest):
     return response
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser:
@@ -462,6 +471,7 @@ def dashboard_api_view(request: HttpRequest):
 # High school API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(keys=["high_school_name", "abbreviation", "username", "password"])
 def create_high_school_api_view(request: HttpRequest):
@@ -482,6 +492,7 @@ def create_high_school_api_view(request: HttpRequest):
     return Response({"detail": "Success", "id": high_school.id})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["PUT"])
 @validate_payload(keys=["high_school_name", "abbreviation", "username", "password"])
 def put_high_school_api_view(request: HttpRequest, high_school_id: int):
@@ -506,6 +517,7 @@ def put_high_school_api_view(request: HttpRequest, high_school_id: int):
     return Response({"detail": "Success", "id": high_school.id})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_high_school_with_additional_data_api_view(request: HttpRequest):
     if request.user.is_superuser:
@@ -537,6 +549,7 @@ def get_high_school_with_additional_data_api_view(request: HttpRequest):
     return Response({"detail": "Permission denied"}, status=403)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_high_school_about_api_view(request: HttpRequest, high_school_id: int):
     if HighSchool.objects.filter(id=high_school_id).exists():
@@ -587,6 +600,7 @@ def get_high_school_about_api_view(request: HttpRequest, high_school_id: int):
     )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_high_school_faculties_api_view(
     request: HttpRequest, high_school_id: int, mode: str
@@ -621,6 +635,7 @@ def get_high_school_faculties_api_view(
         )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_high_school_departments_api_view(
     request: HttpRequest, high_school_id: int, mode: str
@@ -666,6 +681,7 @@ def get_high_school_departments_api_view(
         )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_high_school_specializations_api_view(
     request: HttpRequest, high_school_id: int, mode: str
@@ -716,6 +732,7 @@ def get_high_school_specializations_api_view(
         )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def remove_faculty_from_high_school_api_view(
     request: HttpRequest, high_school_id: int, faculty_id: int
@@ -734,11 +751,13 @@ def remove_faculty_from_high_school_api_view(
 
 class HighSchoolListAPIView(ListAPIView):
     queryset = HighSchool.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = HighSchoolSerializer
 
 
 class HighSchoolRetrieveDestroyAPIView(RetrieveDestroyAPIView):
     queryset = HighSchool.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = HighSchoolSerializer
     lookup_field = "id"
 
@@ -752,6 +771,7 @@ class HighSchoolRetrieveDestroyAPIView(RetrieveDestroyAPIView):
 # Faculty API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_faculties_with_additional_data_api_view(request: HttpRequest):
     response = []
@@ -821,6 +841,7 @@ def get_faculties_with_additional_data_api_view(request: HttpRequest):
         return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(keys=["high_school", "faculties"])
 def create_high_school_faculty_api_view(request: HttpRequest):
@@ -841,6 +862,7 @@ def create_high_school_faculty_api_view(request: HttpRequest):
     return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def remove_department_from_faculty_api_view(
     request: HttpRequest, faculty_department_id: int
@@ -854,12 +876,14 @@ def remove_department_from_faculty_api_view(
 
 class FacultyListCreateAPIView(ListCreateAPIView):
     queryset = Faculty.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = FacultySerializer
     lookup_field = "id"
 
 
 class FacultyRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Faculty.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = FacultySerializer
     lookup_field = "id"
 
@@ -873,6 +897,7 @@ class FacultyRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 # Department API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_departments_with_additional_data_api_view(request: HttpRequest):
     response = []
@@ -938,6 +963,7 @@ def get_departments_with_additional_data_api_view(request: HttpRequest):
         return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def remove_specialization_from_department_api_view(
     request: HttpRequest, department_specialization_id: int
@@ -953,6 +979,7 @@ def remove_specialization_from_department_api_view(
     return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(keys=["high_school", "faculty", "departments"])
 def create_faculty_departments_api_view(request: HttpRequest):
@@ -987,12 +1014,14 @@ def create_faculty_departments_api_view(request: HttpRequest):
 
 class DepartmentListCreateAPIView(ListCreateAPIView):
     queryset = Department.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = DepartmentSerializer
     lookup_field = "id"
 
 
 class DepartmentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = DepartmentSerializer
     lookup_field = "id"
 
@@ -1006,6 +1035,7 @@ class DepartmentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 # Degree API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_degrees_with_additional_data_api_view(request: HttpRequest):
     response = []
@@ -1044,12 +1074,14 @@ def get_degrees_with_additional_data_api_view(request: HttpRequest):
 
 class DegreeListCreateAPIView(ListCreateAPIView):
     queryset = Degree.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = DegreeSerializer
     lookup_field = "id"
 
 
 class DegreeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Degree.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = DegreeSerializer
     lookup_field = "id"
 
@@ -1057,6 +1089,7 @@ class DegreeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 # Classificator API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_classificators_with_additional_data_api_view(request: HttpRequest):
     response = []
@@ -1094,12 +1127,14 @@ def get_classificators_with_additional_data_api_view(request: HttpRequest):
 
 class ClassificatorListCreateAPIView(ListCreateAPIView):
     queryset = Classificator.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ClassificatorSerializer
     lookup_field = "id"
 
 
 class ClassificatorRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Classificator.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ClassificatorSerializer
     lookup_field = "id"
 
@@ -1107,6 +1142,7 @@ class ClassificatorRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 # Specialization API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_specializations_with_additional_data_api_view(request: HttpRequest):
     if request.user.is_superuser:
@@ -1126,6 +1162,7 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
         )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(keys=["high_school", "department", "specializations"])
 def create_department_specializations_api_view(request: HttpRequest):
@@ -1160,6 +1197,7 @@ def create_department_specializations_api_view(request: HttpRequest):
     return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["PUT"])
 @validate_payload(keys=["name", "abbreviation", "degree"])
 def put_specialization_api_view(request: HttpRequest, id: int):
@@ -1193,12 +1231,14 @@ def put_specialization_api_view(request: HttpRequest, id: int):
 
 class SpecializationListCreateAPIView(ListCreateAPIView):
     queryset = Specialization.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = SpecializationSerializer
     lookup_field = "id"
 
 
 class SpecializationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Specialization.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = SpecializationSerializer
     lookup_field = "id"
 
@@ -1212,6 +1252,7 @@ class SpecializationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 # Student API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(keys=["high_school_id"])
 @validate_files(keys=["excel"])
@@ -1283,6 +1324,7 @@ def import_students_from_excel_api_view(request: HttpRequest):
     )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_files(keys=["excel"])
 def validate_students_from_excel_api_view(request: HttpRequest):
@@ -1330,6 +1372,7 @@ def validate_students_from_excel_api_view(request: HttpRequest):
     )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_students_with_additional_data_api_view(request: HttpRequest):
 
@@ -1359,6 +1402,7 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
         )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_graduates_with_additional_data_api_view(request: HttpRequest):
     if request.user.is_superuser:
@@ -1372,30 +1416,35 @@ def get_graduates_with_additional_data_api_view(request: HttpRequest):
 
 class StudentListAPIView(ListAPIView):
     queryset = Student.objects.filter(is_expelled=False)
+    permission_classes = [IsAuthenticated]
     serializer_class = StudentSerializer
     lookup_field = "id"
 
 
 class StudentInfoAPIView(RetrieveAPIView):
     queryset = Student.objects.filter(is_expelled=False)
+    permission_classes = [IsAuthenticated]
     serializer_class = StudentInfoSerializer
     lookup_field = "id"
 
 
 class GraduateInfoAPIView(RetrieveAPIView):
     queryset = Student.objects.filter(is_obsolete=True)
+    permission_classes = [IsAuthenticated]
     serializer_class = GraduateInfoSerializer
     lookup_field = "id"
 
 
 class NeutralStudentInfoAPIView(RetrieveAPIView):
     queryset = Student.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = StudentInfoSerializer
     lookup_field = "id"
 
 
 class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Student.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = StudentSerializer
     lookup_field = "id"
 
@@ -1411,16 +1460,19 @@ class StudentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 class NationalityListCreateAPIView(ListCreateAPIView):
     queryset = Nationality.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = NationalitySerializer
     lookup_field = "id"
 
 
 class NationalityRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Nationality.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = NationalitySerializer
     lookup_field = "id"
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_nationalizations_with_additional_data_api_view(request: HttpRequest):
     response = []
@@ -1476,16 +1528,19 @@ def get_nationalizations_with_additional_data_api_view(request: HttpRequest):
 
 class CountryListCreateAPIView(ListCreateAPIView):
     queryset = Country.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = CountrySerializer
     lookup_field = "id"
 
 
 class CountryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Country.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = CountrySerializer
     lookup_field = "id"
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_countries_with_additional_data_api_view(request: HttpRequest):
     response = []
@@ -1544,16 +1599,19 @@ def get_countries_with_additional_data_api_view(request: HttpRequest):
 
 class RegionListCreateAPIView(ListCreateAPIView):
     queryset = Region.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = RegionSerializer
     lookup_field = "id"
 
 
 class RegionRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Region.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = RegionSerializer
     lookup_field = "id"
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_regions_with_additional_data_api_view(request: HttpRequest):
     response = []
@@ -1612,12 +1670,14 @@ def get_regions_with_additional_data_api_view(request: HttpRequest):
 
 class ExpulsionReasonListCreateAPIView(ListCreateAPIView):
     queryset = ExpulsionReason.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ExpulsionReasonSerializer
     lookup_field = "id"
 
 
 class ExpulsionReasonRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = ExpulsionReason.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ExpulsionReasonSerializer
     lookup_field = "id"
 
@@ -1627,16 +1687,19 @@ class ExpulsionReasonRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 class ExpulsionRequestListCreateAPIView(ListCreateAPIView):
     queryset = ExpulsionRequest.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ExpulsionRequestSerializer
     lookup_field = "id"
 
 
 class ExpulsionRequestRetrieveAPIView(RetrieveAPIView):
     queryset = ExpulsionRequest.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ExpulsionRequestSerializer
     lookup_field = "id"
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_expelled_students_api_view(request: HttpRequest):
     response = []
@@ -1668,6 +1731,7 @@ def get_expelled_students_api_view(request: HttpRequest):
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_expelled_student_api_view(request: HttpRequest, student_id: int):
     if Student.objects.filter(
@@ -1702,12 +1766,14 @@ def get_expelled_student_api_view(request: HttpRequest, student_id: int):
 
 class ReinstateRequestListCreateAPIView(ListCreateAPIView):
     queryset = ReinstateRequest.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ReinstateRequestSerializer
     lookup_field = "id"
 
 
 class ReinstateRequestRetrieveAPIView(RetrieveAPIView):
     queryset = ReinstateRequest.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = ReinstateRequestSerializer
     lookup_field = "id"
 
@@ -1715,6 +1781,7 @@ class ReinstateRequestRetrieveAPIView(RetrieveAPIView):
 # Statement special API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_statements_api_view(request: HttpRequest):
     response = []
@@ -1768,6 +1835,7 @@ def get_statements_api_view(request: HttpRequest):
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_statement_api_view(
     request: HttpRequest, statement_id: int, statement_type: str
@@ -1823,6 +1891,7 @@ def get_statement_api_view(
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def verdict_statement_api_view(
     request: HttpRequest, statement_id: int, statement_type: str, verdict: str
@@ -1850,6 +1919,7 @@ def verdict_statement_api_view(
     return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(["obj_name"])
 def mark_as_viewed_api_view(request: HttpRequest, obj_id: int):
@@ -1872,6 +1942,7 @@ def mark_as_viewed_api_view(request: HttpRequest, obj_id: int):
 # Diploma API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_diploma_request_by_user_api_view(request: HttpRequest):
     if DiplomaRequest.objects.filter(sender=request.user, is_obsolete=False).exists():
@@ -1887,6 +1958,7 @@ def get_diploma_request_by_user_api_view(request: HttpRequest):
     return Response(advanced_diploma_serializer(diploma_request))
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_diploma_request_by_id_api_view(request: HttpRequest, diploma_request_id: int):
     if DiplomaRequest.objects.filter(is_obsolete=False, id=diploma_request_id).exists():
@@ -1896,6 +1968,7 @@ def get_diploma_request_by_id_api_view(request: HttpRequest, diploma_request_id:
     return Response(advanced_diploma_serializer(diploma_request))
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_diploma_request_by_high_school_api_view(
     request: HttpRequest, high_school_id: int
@@ -1916,6 +1989,7 @@ def get_diploma_request_by_high_school_api_view(
     return Response(advanced_diploma_serializer(diploma_request))
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(keys=["simple_diploma_count", "honor_diploma_count"])
 def create_diploma_request_api_view(request: HttpRequest):
@@ -1928,6 +2002,7 @@ def create_diploma_request_api_view(request: HttpRequest):
     return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(
     keys=[
@@ -1970,6 +2045,7 @@ def update_diploma_request_api_view(request: HttpRequest, diploma_request_id: in
     return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_diplomas_for_table_api_view(request: HttpRequest):
     response = []
@@ -1987,6 +2063,7 @@ def get_diplomas_for_table_api_view(request: HttpRequest):
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_diploma_request_actions_api_view(request: HttpRequest):
     response = []
@@ -2041,6 +2118,7 @@ def get_diploma_request_actions_api_view(request: HttpRequest):
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_high_school_diploma_request_actions_api_view(
     request: HttpRequest, diploma_request_id: int
@@ -2110,6 +2188,7 @@ def get_high_school_diploma_request_actions_api_view(
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def submit_diploma_report_api_view(request: HttpRequest, diploma_report_id: int):
     response = {"actions": [], "reports": []}
@@ -2125,6 +2204,7 @@ def submit_diploma_report_api_view(request: HttpRequest, diploma_report_id: int)
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def submit_diploma_action_api_view(request: HttpRequest, diploma_action_id: int):
     response = {"actions": [], "reports": []}
@@ -2140,6 +2220,7 @@ def submit_diploma_action_api_view(request: HttpRequest, diploma_action_id: int)
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def verdict_diploma_request_api_view(
     request: HttpRequest, diploma_request_id: int, verdict: str
@@ -2160,6 +2241,7 @@ def verdict_diploma_request_api_view(
 
 class DiplomaRequestsAPIView(RetrieveUpdateDestroyAPIView):
     queryset = DiplomaRequest.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = DiplomaRequestSerializer
     lookup_field = "id"
 
@@ -2173,6 +2255,7 @@ class DiplomaRequestsAPIView(RetrieveUpdateDestroyAPIView):
 # Teacher Statement
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_teacher_statement_by_user_api_view(request: HttpRequest):
     if TeacherStatement.objects.filter(sender=request.user, is_obsolete=False).exists():
@@ -2188,6 +2271,7 @@ def get_teacher_statement_by_user_api_view(request: HttpRequest):
     return Response(TeacherStatementSerializer(teacher_statement).data)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_teacher_statement_by_id_api_view(
     request: HttpRequest, teacher_statement_id: int
@@ -2204,6 +2288,7 @@ def get_teacher_statement_by_id_api_view(
     return Response(TeacherStatementSerializer(teacher_statement).data)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(
     keys=[
@@ -2245,6 +2330,7 @@ def create_teacher_statement_api_view(request: HttpRequest):
     return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_teacher_statements_for_table_api_view(request: HttpRequest):
     response = []
@@ -2302,6 +2388,7 @@ def get_teacher_statements_for_table_api_view(request: HttpRequest):
 
 class TeacherStatementsAPIView(RetrieveUpdateDestroyAPIView):
     queryset = TeacherStatement.objects.all()
+    permission_classes = [IsAuthenticated]
     serializer_class = TeacherStatementSerializer
     lookup_field = "id"
 
@@ -2312,6 +2399,7 @@ class TeacherStatementsAPIView(RetrieveUpdateDestroyAPIView):
         return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def verdict_teacher_statement_api_view(
     request: HttpRequest, teacher_statement_id: int, verdict: str
@@ -2333,6 +2421,7 @@ def verdict_teacher_statement_api_view(
 # Filter API views
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET", "POST"])
 @validate_payload(
     keys=[
@@ -2537,6 +2626,7 @@ def filter_api_view(request: HttpRequest):
     return Response(response)
 
 
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["POST"])
 @validate_payload(
     keys=[

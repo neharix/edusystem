@@ -1,4 +1,5 @@
 import datetime
+import random
 
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -20,6 +21,11 @@ class Profile(models.Model):
     allowed_service = models.CharField(
         max_length=20, choices=ALLOWED_SERVICES, default="none"
     )
+    otp = models.CharField(max_length=5, null=True, blank=True, default=None)
+
+    def generate_otp(self, *args, **kwargs):
+        self.otp = str(random.randint(10000, 99999))
+        self.save()
 
     def __str__(self):
         return self.user.username
