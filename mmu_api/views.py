@@ -61,6 +61,38 @@ def try_otp_api_view(request: HttpRequest, username: str):
         return Response({"detail": "Parameter invalid"}, status=400)
 
 
+@permission_classes([AllowAny])
+@api_view(http_method_names=["GET"])
+def check_otp_api_view(request: HttpRequest, username: str, otp_code: str):
+    if len(username) > 0:
+        if Profile.objects.filter(user__username=username).exists():
+            profile = Profile.objects.get(user__username=username)
+            if otp_code == profile.otp:
+                return Response({"is_successfully": True})
+            else:
+                return Response({"is_successfully": False})
+        else:
+            return Response({"detail": "User not found"}, status=404)
+    else:
+        return Response({"detail": "Parameter invalid"}, status=400)
+
+
+@permission_classes([AllowAny])
+@api_view(http_method_names=["POST"])
+@validate_payload(["username", "password"])
+def change_password_api_view(request: HttpRequest):
+    if Profile.objects.filter(user__username=request.data["username"]).exists():
+        profile = Profile.objects.get(user__username=request.data["username"])
+        user = profile.user
+        user.set_password(request.data["password"])
+        user.save()
+        profile.password = request.data["password"]
+        profile.save()
+        return Response({"detail": "Success"})
+    else:
+        return Response({"detail": "User not found"}, status=404)
+
+
 @permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_user_data(request: HttpRequest):

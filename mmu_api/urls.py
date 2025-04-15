@@ -11,6 +11,14 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("user/", get_user_data, name="user-data"),
     path("try-otp/<str:username>/", try_otp_api_view, name="otp"),
+    path(
+        "check-otp/<str:username>/<str:otp_code>/", check_otp_api_view, name="check-otp"
+    ),
+    path(
+        "change-password/",
+        change_password_api_view,
+        name="change-password-api-view",
+    ),
     # Special routes
     path("dashboard/", dashboard_api_view),
 ]

@@ -6,7 +6,14 @@ from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Docker properties
+# SECRET_KEY = os.environ.get("SECRET_KEY")
+# DEBUG = os.environ.get("DEBUG")
+# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split()
+
+
 SECRET_KEY = "django-insecure-s2l-7eu!5s)n50pc&2)ya(-e=tehko1tp*(ol4s-x)8_0jub%*"
+
 
 # DEBUG = False
 DEBUG = True
@@ -157,6 +164,19 @@ DATABASES = {
 #         "PASSWORD": "ghost2928",
 #         "HOST": "localhost",
 #         "PORT": "5432",
+#     }
+# }
+
+# For Docker
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.environ.get("POSTGRES_DB"),
+#         "USER": os.environ.get("POSTGRES_USER"),
+#         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+#         "HOST": "db",
+#         "PORT": 5432,
 #     }
 # }
 

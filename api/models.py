@@ -22,6 +22,7 @@ class Profile(models.Model):
         max_length=20, choices=ALLOWED_SERVICES, default="none"
     )
     otp = models.CharField(max_length=5, null=True, blank=True, default=None)
+    role = models.CharField(max_length=100, default="default")
 
     def generate_otp(self, *args, **kwargs):
         self.otp = str(random.randint(10000, 99999))
