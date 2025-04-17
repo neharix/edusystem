@@ -13,7 +13,7 @@ class RequestLoggerMiddleware:
 
     def __call__(self, request):
         logger.info(
-            f"Method: {request.method} | Path: {request.path} | IP: {self.get_client_ip(request)} | Headers: {dict(request.headers)}"
+            f"Method: {request.method} | Path: {request.path} | IP: {self.get_client_ip(request)} | Headers: {dict(request.headers)}\n"
         )
         # if request.method == "POST":
         #     logger.info(f"Request Body: {request.body.decode('utf-8')}")
