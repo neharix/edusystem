@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
   baseURL: baseUrl,
   headers: {
     "Content-Type": "application/json",
+    "X-Service": "bmdu",
   },
 });
 
@@ -14,7 +15,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
     if (token) {
-      config.headers["Authorization"] = `BMDU ${token}`;
+      config.headers["Authorization"] = `EDUSYSTEM ${token}`;
     }
     return config;
   },
