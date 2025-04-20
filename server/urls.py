@@ -24,4 +24,5 @@ from api.views import echo
 urlpatterns = [
     path("api/", include("main.urls")),
     path("", echo),
+    path("silk/", include("silk.urls", namespace="silk")),
 ] + debug_toolbar_urls()

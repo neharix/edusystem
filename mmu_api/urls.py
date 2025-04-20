@@ -10,10 +10,8 @@ urlpatterns = [
     path("token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("user/", get_user_data, name="user-data"),
-    path("try-otp/<str:username>/", try_otp_api_view, name="otp"),
-    path(
-        "check-otp/<str:username>/<str:otp_code>/", check_otp_api_view, name="check-otp"
-    ),
+    path("try-otp/", try_otp_api_view, name="otp"),
+    path("check-otp/", check_otp_api_view, name="check-otp"),
     path(
         "change-password/",
         change_password_api_view,

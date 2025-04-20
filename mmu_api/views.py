@@ -2,86 +2,88 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
+from silk.profiling.profiler import silk_profile
 
 from api.models import Profile
-from main.decorators import validate_payload
+from main.decorators import login_required, validate_payload
+
 
 # Create your views here.
-
-
-@api_view(http_method_names=["GET"])
-def try_otp_api_view(request: HttpRequest, username: str):
-    if len(username) > 0:
-        if Profile.objects.filter(user__username=username).exists():
-            profile = Profile.objects.get(user__username=username)
-            profile.generate_otp()
-            if profile.user.email:
-                # TODO add smtp service
-                email_splitted = profile.user.email.split("@")
-                email_useful_part = email_splitted[0]
-                if len(email_useful_part) >= 3:
-                    email = (
-                        "".join(
-                            [
-                                email_useful_part[char_id] if char_id < 3 else "*"
-                                for char_id in range(len(email_useful_part))
-                            ]
-                        )
-                        + "@"
-                        + "".join(
-                            [
-                                email_splitted[part_id] if part_id != 0 else ""
-                                for part_id in range(len(email_splitted))
-                            ]
-                        )
+@api_view(http_method_names=["POST"])
+@validate_payload(["username"])
+def try_otp_api_view(request: HttpRequest):
+    if Profile.objects.filter(user__username=request.data["username"]).exists():
+        profile = Profile.objects.get(user__username=request.data["username"])
+        profile.generate_otp()
+        if profile.user.email:
+            # TODO add smtp service
+            email_splitted = profile.user.email.split("@")
+            email_useful_part = email_splitted[0]
+            if len(email_useful_part) >= 3:
+                email = (
+                    "".join(
+                        [
+                            email_useful_part[char_id] if char_id < 3 else "*"
+                            for char_id in range(len(email_useful_part))
+                        ]
                     )
-                else:
-                    email = (
-                        email_useful_part[0]
-                        + email_useful_part[1]
-                        + "**"
-                        + "@"
-                        + "".join(
-                            [
-                                email_splitted[part_id] if part_id != 0 else ""
-                                for part_id in range(len(email_splitted))
-                            ]
-                        )
+                    + "@"
+                    + "".join(
+                        [
+                            email_splitted[part_id] if part_id != 0 else ""
+                            for part_id in range(len(email_splitted))
+                        ]
                     )
-
-                return Response({"email": email, "username": profile.user.username})
+                )
             else:
-                return Response(
-                    {"detail": "This account have not available email"}, status=400
+                email = (
+                    email_useful_part[0]
+                    + email_useful_part[1]
+                    + "**"
+                    + "@"
+                    + "".join(
+                        [
+                            email_splitted[part_id] if part_id != 0 else ""
+                            for part_id in range(len(email_splitted))
+                        ]
+                    )
                 )
 
+            return Response(
+                {
+                    "email": email,
+                    "username": profile.user.username,
+                    "temp_key": profile.temp_key,
+                }
+            )
         else:
-            return Response({"detail": "User not found"}, status=404)
+            return Response(
+                {"detail": "This account have not available email"}, status=400
+            )
+
     else:
-        return Response({"detail": "Parameter invalid"}, status=400)
+        return Response({"detail": "User not found"}, status=404)
 
 
-@permission_classes([AllowAny])
-@api_view(http_method_names=["GET"])
-def check_otp_api_view(request: HttpRequest, username: str, otp_code: str):
-    if len(username) > 0:
-        if Profile.objects.filter(user__username=username).exists():
-            profile = Profile.objects.get(user__username=username)
-            if otp_code == profile.otp:
-                return Response({"is_successfully": True})
-            else:
-                return Response({"is_successfully": False})
-        else:
-            return Response({"detail": "User not found"}, status=404)
-    else:
-        return Response({"detail": "Parameter invalid"}, status=400)
-
-
-@permission_classes([AllowAny])
 @api_view(http_method_names=["POST"])
-@validate_payload(["username", "password"])
+@validate_payload(["user", "otp"])
+def check_otp_api_view(request: HttpRequest):
+    if Profile.objects.filter(user__username=request.data["user"]).exists():
+        profile = Profile.objects.get(user__username=request.data["user"])
+        if request.data["otp"] == profile.otp:
+            return Response({"is_successfully": True, "temp_key": profile.temp_key})
+        else:
+            return Response({"is_successfully": False})
+    else:
+        return Response({"detail": "User not found"}, status=404)
+
+
+@api_view(http_method_names=["POST"])
+@validate_payload(["username", "password", "secure_key"])
 def change_password_api_view(request: HttpRequest):
-    if Profile.objects.filter(user__username=request.data["username"]).exists():
+    if Profile.objects.filter(
+        user__username=request.data["username"], temp_key=request.data["secure_key"]
+    ).exists():
         profile = Profile.objects.get(user__username=request.data["username"])
         user = profile.user
         user.set_password(request.data["password"])
@@ -93,15 +95,14 @@ def change_password_api_view(request: HttpRequest):
         return Response({"detail": "User not found"}, status=404)
 
 
-@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
+@login_required()
 def get_user_data(request: HttpRequest):
     if request.user.is_superuser:
         notifications = []
         return Response(
             {
                 "id": request.user.id,
-                "email": request.user.email,
                 "is_superuser": request.user.is_superuser,
                 "notifications": notifications,
             }
@@ -111,14 +112,14 @@ def get_user_data(request: HttpRequest):
             {
                 "id": request.user.id,
                 "manager_of": "hello",
-                "email": request.user.email,
                 "is_superuser": request.user.is_superuser,
             }
         )
 
 
-@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
+@login_required()
+@silk_profile(name="MMU Dashboard Profiler")
 def dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser:
         return Response(
@@ -155,4 +156,3 @@ def dashboard_api_view(request: HttpRequest):
                 ],
             }
         )
-    return Response({"detail": "Permission denied."})

@@ -15,8 +15,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-s2l-7eu!5s)n50pc&2)ya(-e=tehko1tp*(ol4s-x)8_0jub%*"
 
 
-DEBUG = False
-# DEBUG = True
+# DEBUG = False
+DEBUG = True
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 
@@ -77,7 +77,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "silk",
+    "import_export",
     "debug_toolbar",
+    "django_filters",
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
@@ -97,6 +100,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "silk.middleware.SilkyMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "main.middleware.RequestLoggerMiddleware",
     "main.middleware.DrfTitleMiddleware",
@@ -222,6 +226,10 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+SILKY_PYTHON_PROFILER = True
+SILKY_AUTHENTICATION = True
+SILKY_AUTHORISATION = True
 
 LANGUAGE_CODE = "en"
 

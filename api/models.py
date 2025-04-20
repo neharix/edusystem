@@ -1,5 +1,6 @@
 import datetime
 import random
+from string import ascii_lowercase
 
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -23,8 +24,13 @@ class Profile(models.Model):
     )
     otp = models.CharField(max_length=5, null=True, blank=True, default=None)
     role = models.CharField(max_length=100, default="default")
+    temp_key = models.CharField(max_length=50, null=True, blank=True)
 
     def generate_otp(self, *args, **kwargs):
+        characters = ascii_lowercase + "1234567890"
+        self.temp_key = "".join(
+            [random.choice(characters) for i in range(random.randint(10, 49))]
+        )
         self.otp = str(random.randint(10000, 99999))
         self.save()
 

@@ -568,7 +568,7 @@ def validate_excel_fields(
     if DepartmentSpecialization.objects.filter(
         specialization__name=row["Hünari"],
         faculty_department__high_school_faculty__high_school=high_school,
-    ):
+    ).exists():
         data["specialization"] = DepartmentSpecialization.objects.get(
             specialization__name=row["Hünari"],
             faculty_department__high_school_faculty__high_school=high_school,
