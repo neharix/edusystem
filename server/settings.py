@@ -66,7 +66,7 @@ LOGGING = {
     },
 }
 
-REST_TITLE = "BMDU API"
+REST_TITLE = "EDUSYSTEM API"
 
 ALLOWED_HOSTS = ["*"]
 
@@ -218,7 +218,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "user": "5000/day",
+        "user": "1000/minute",
         "anon": "100/hour",
     },
     "DEFAULT_AUTHENTICATION_CLASSES": (

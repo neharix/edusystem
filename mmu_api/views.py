@@ -1,3 +1,7 @@
+import json
+import os
+
+from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import HttpRequest
@@ -6,6 +10,8 @@ from silk.profiling.profiler import silk_profile
 
 from api.models import Profile
 from main.decorators import login_required, validate_payload
+
+from .decorators import check_service_status
 
 
 # Create your views here.
@@ -99,12 +105,18 @@ def change_password_api_view(request: HttpRequest):
 @login_required()
 def get_user_data(request: HttpRequest):
     if request.user.is_superuser:
+        with open(
+            os.path.join(settings.BASE_DIR / "conf/mmu.json"), "r", encoding="utf-8"
+        ) as cfg_file:
+            service_status = json.loads(cfg_file.read())["is_enabled"]
+
         notifications = []
         return Response(
             {
                 "id": request.user.id,
                 "is_superuser": request.user.is_superuser,
                 "notifications": notifications,
+                "is_service_enabled": service_status,
             }
         )
     else:
@@ -120,6 +132,7 @@ def get_user_data(request: HttpRequest):
 @api_view(http_method_names=["GET"])
 @login_required()
 @silk_profile(name="MMU Dashboard Profiler")
+@check_service_status()
 def dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser:
         return Response(
@@ -156,3 +169,19 @@ def dashboard_api_view(request: HttpRequest):
                 ],
             }
         )
+
+
+@api_view(http_method_names=["GET"])
+@login_required(is_admin=True)
+@silk_profile(name="MMU Service Status Toggle Profiler")
+def toggle_service_status(request: HttpRequest):
+    with open(
+        os.path.join(settings.BASE_DIR / "conf/mmu.json"), "r", encoding="utf-8"
+    ) as cfg_file:
+        cfg = json.loads(cfg_file.read())
+    cfg["is_enabled"] = not cfg["is_enabled"]
+    with open(
+        os.path.join(settings.BASE_DIR / "conf/mmu.json"), "w", encoding="utf-8"
+    ) as cfg_file:
+        cfg_file.write(json.dumps(cfg))
+    return Response({"detail": "Success", "is_enabled": cfg["is_enabled"]})

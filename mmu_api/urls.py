@@ -19,4 +19,5 @@ urlpatterns = [
     ),
     # Special routes
     path("dashboard/", dashboard_api_view),
+    path("service-toggler/", toggle_service_status),
 ]
