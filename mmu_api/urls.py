@@ -20,4 +20,6 @@ urlpatterns = [
     # Special routes
     path("dashboard/", dashboard_api_view),
     path("service-toggler/", toggle_service_status),
+    # Profile routes
+    path("profiles/", profile_list_view, name="profile-list"),
 ]

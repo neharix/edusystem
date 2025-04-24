@@ -9,9 +9,10 @@ from rest_framework.response import Response
 from silk.profiling.profiler import silk_profile
 
 from api.models import Profile
-from main.decorators import login_required, validate_payload
+from main.decorators import validate_payload
 
-from .decorators import check_service_status
+from .decorators import check_service_status, login_required
+from .utils import action_logger, is_admin
 
 
 # Create your views here.
@@ -134,7 +135,7 @@ def get_user_data(request: HttpRequest):
 @silk_profile(name="MMU Dashboard Profiler")
 @check_service_status()
 def dashboard_api_view(request: HttpRequest):
-    if request.user.is_superuser:
+    if is_admin(request):
         return Response(
             {
                 "education_centers_count": 1,
@@ -151,7 +152,7 @@ def dashboard_api_view(request: HttpRequest):
                 ],
             }
         )
-    elif request.user.is_authenticated:
+    else:
         # high_school = HighSchool.objects.get(manager__user=request.user)
         return Response(
             {
@@ -179,9 +180,54 @@ def toggle_service_status(request: HttpRequest):
         os.path.join(settings.BASE_DIR / "conf/mmu.json"), "r", encoding="utf-8"
     ) as cfg_file:
         cfg = json.loads(cfg_file.read())
-    cfg["is_enabled"] = not cfg["is_enabled"]
+    if cfg["is_enabled"]:
+        cfg["is_enabled"] = False
+        action_logger(request, "")
+    else:
+        cfg["is_enabled"] = True
+
     with open(
         os.path.join(settings.BASE_DIR / "conf/mmu.json"), "w", encoding="utf-8"
     ) as cfg_file:
         cfg_file.write(json.dumps(cfg))
     return Response({"detail": "Success", "is_enabled": cfg["is_enabled"]})
+
+
+@api_view(http_method_names=["GET"])
+@login_required()
+@silk_profile(name="MMU Dashboard Profiler")
+@check_service_status()
+def profile_list_view(request: HttpRequest):
+    if is_admin(request):
+
+        profiles = Profile.objects.filter(allowed_service="mmu").select_related("user")
+
+        print(profiles)
+        return Response(
+            [
+                {
+                    "username": profile.user.username,
+                    "email": profile.user.email,
+                    "role": profile.role,
+                }
+                for profile in profiles
+            ]
+        )
+    else:
+        # high_school = HighSchool.objects.get(manager__user=request.user)
+        return Response(
+            {
+                # FIXME
+                "nationalities_count": 30,
+                "students_count": 70,
+                "male_students_count": 30,
+                "female_students_count": 40,
+                "admissions": [
+                    {
+                        "year": 2022,
+                        "male_students_count": 30,
+                        "female_students_count": 40,
+                    }
+                ],
+            }
+        )
