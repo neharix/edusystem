@@ -1,9 +1,12 @@
+import datetime
+import io
 import json
 import os
 
 from django.conf import settings
+from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 from silk.profiling.profiler import silk_profile
@@ -12,7 +15,7 @@ from api.models import Profile
 from main.decorators import validate_payload
 
 from .decorators import check_service_status, login_required
-from .utils import action_logger, is_admin
+from .utils import action_logger, is_admin, xlsx_exporter
 
 
 # Create your views here.
@@ -206,6 +209,7 @@ def profile_list_view(request: HttpRequest):
         return Response(
             [
                 {
+                    "id": profile.id,
                     "username": profile.user.username,
                     "email": profile.user.email,
                     "role": profile.role,
@@ -231,3 +235,24 @@ def profile_list_view(request: HttpRequest):
                 ],
             }
         )
+
+
+@api_view(http_method_names=["POST"])
+@login_required()
+@validate_payload(["model", "identificators"])
+@silk_profile(name="MMU Excel Exporter")
+@check_service_status()
+def export_data(request: HttpRequest):
+    workbook = xlsx_exporter(request.data["model"], request.data["identificators"])
+
+    with io.BytesIO() as buffer:
+        workbook.save(buffer)
+        content = buffer.getvalue()
+
+    response = HttpResponse(
+        content=content,
+        content_type="application/xlsx",
+    )
+    filename = f"profile-{timezone.now().strftime('%d-%m-%Y')}.xlsx"
+    response["Content-Disposition"] = f'attachment; filename="' + filename + '"'
+    return response
