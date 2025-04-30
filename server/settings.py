@@ -204,6 +204,9 @@ AUTH_PASSWORD_VALIDATORS = [
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-service"]
 
+CSRF_TRUSTED_ORIGINS = ["https://bmdu.depder.com"]
+
+
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
