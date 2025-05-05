@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import axiosInstance from "@/api/axiosInstance.js";
-import { ref } from "vue";
+import { reactive, ref } from "vue";
+import { useRoute } from "vue-router";
 
 export const useSpecialFunctionsStore = defineStore("special-functions", () => {
   const dump = ref(null);
@@ -335,145 +336,184 @@ export const useDepartmentsStore = defineStore({
   },
 });
 
-export const useSpecializationsStore = defineStore({
-  id: "specializations",
-  state: () => ({
-    specialization: {},
-    specializationsAdditional: [],
-    createStatus: null,
-    deleteStatus: null,
-    removeStatus: null,
-    updateStatus: null,
-    createDepartmentSpecializationsStatus: null,
-    highSchoolSpecializations: [],
-    highSchoolExcSpecializations: [],
-  }),
-  actions: {
-    async get(id) {
-      try {
-        const response = await axiosInstance.get(`/specializations/${id}/`);
-        this.specialization = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getAllAdditional() {
-      try {
-        const response = await axiosInstance.get(
-          "/specializations-with-additional/"
+export const useSpecializationsStore = defineStore("specializations", () => {
+  const route = useRoute();
+
+  const specialization = ref({});
+  const specializationsAdditional = ref([]);
+  const createStatus = ref(null);
+  const deleteStatus = ref(null);
+  const removeStatus = ref(null);
+  const updateStatus = ref(null);
+  const dataTablePageCount = ref(1);
+  const createDepartmentSpecializationsStatus = ref(null);
+  const highSchoolSpecializations = ref([]);
+  const highSchoolExcSpecializations = ref([]);
+
+  async function get(id) {
+    try {
+      const response = await axiosInstance.get(`/specializations/${id}/`);
+      specialization.value = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getAllAdditional() {
+    try {
+      let order = route.query.order ? route.query.order : "asc";
+      let column = route.query.column ? route.query.column : "name";
+      let search = route.query.search ? route.query.search : false;
+
+      let page = route.query.page ? route.query.page : 1;
+      let pageSize = localStorage.getItem("rowsPerPage");
+      let response = null;
+      if (search) {
+        response = await axiosInstance.get(
+          "/specializations-with-additional/",
+          {
+            params: { page, page_size: pageSize, order, column, search },
+          }
         );
-        this.specializationsAdditional = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async create(data) {
-      let formData = {};
-      if (data.classificator === 0) {
-        formData = {
-          name: data.name,
-          abbreviation: data.abbreviation,
-          classificator: null,
-          degree: data.degree,
-        };
       } else {
-        formData = {
-          name: data.name,
-          abbreviation: data.abbreviation,
-          classificator: data.classificator,
-          degree: data.degree,
-        };
-      }
-      try {
-        const response = await axiosInstance.post(
-          "/specializations/",
-          formData
+        response = await axiosInstance.get(
+          "/specializations-with-additional/",
+          {
+            params: { page, page_size: pageSize, order, column },
+          }
         );
-        this.createStatus = "success";
-      } catch (error) {
-        this.createStatus = "error";
-        console.error("Error", error);
-      }
-    },
-    async delete(id) {
-      try {
-        const response = await axiosInstance.delete(`/specializations/${id}/`);
-        this.deleteStatus = "success";
-      } catch (error) {
-        this.deleteStatus = "error";
-      }
-    },
-    async put(id, data) {
-      let formData = {};
-      if (data.classificator === 0) {
-        formData = {
-          name: data.name,
-          abbreviation: data.abbreviation,
-          degree: data.degree,
-        };
-      } else {
-        formData = {
-          name: data.name,
-          abbreviation: data.abbreviation,
-          classificator: data.classificator,
-          degree: data.degree,
-        };
       }
 
-      try {
-        const response = await axiosInstance.put(
-          `/update-specialization/${id}/`,
-          formData
-        );
-        this.updateStatus = "success";
-      } catch (error) {
-        console.error("Error", error);
-        this.updateStatus = "error";
-      }
-    },
-    async getHighSchoolSpecializations(highSchoolId) {
-      try {
-        const response = await axiosInstance.get(
-          `/high-school-specializations/${highSchoolId}/inc/`
-        );
-        this.highSchoolSpecializations = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getHighSchoolExcSpecializations(highSchoolId) {
-      try {
-        const response = await axiosInstance.get(
-          `/high-school-specializations/${highSchoolId}/exc/`
-        );
-        this.highSchoolExcSpecializations = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async createDepartmentSpecialization(data) {
-      try {
-        const response = await axiosInstance.post(
-          "/create-department-specializations/",
-          data
-        );
-        this.createDepartmentSpecializationsStatus = "success";
-      } catch (error) {
-        this.createDepartmentSpecializationsStatus = "error";
-      }
-    },
-    async removeSpecialization(departmentSpecializationId) {
-      try {
-        const response = await axiosInstance.get(
-          `/remove/department-specialization/${departmentSpecializationId}/`
-        );
-        this.removeStatus = "success";
-      } catch (error) {
-        console.error("Error", error);
-        this.removeStatus = "error";
-      }
-    },
-  },
+      specializationsAdditional.value = response.data.results.data;
+      dataTablePageCount.value = response.data.results.total_pages;
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function create(data) {
+    let formData = {};
+    if (data.classificator === 0) {
+      formData = {
+        name: data.name,
+        abbreviation: data.abbreviation,
+        classificator: null,
+        degree: data.degree,
+      };
+    } else {
+      formData = {
+        name: data.name,
+        abbreviation: data.abbreviation,
+        classificator: data.classificator,
+        degree: data.degree,
+      };
+    }
+    try {
+      const response = await axiosInstance.post("/specializations/", formData);
+      createStatus.value = "success";
+    } catch (error) {
+      createStatus.value = "error";
+      console.error("Error", error);
+    }
+  }
+  async function _delete(id) {
+    try {
+      const response = await axiosInstance.delete(`/specializations/${id}/`);
+      deleteStatus.value = "success";
+    } catch (error) {
+      deleteStatus.value = "error";
+    }
+  }
+  async function put(id, data) {
+    let formData = {};
+    if (data.classificator === 0) {
+      formData = {
+        name: data.name,
+        abbreviation: data.abbreviation,
+        degree: data.degree,
+      };
+    } else {
+      formData = {
+        name: data.name,
+        abbreviation: data.abbreviation,
+        classificator: data.classificator,
+        degree: data.degree,
+      };
+    }
+
+    try {
+      const response = await axiosInstance.put(
+        `/update-specialization/${id}/`,
+        formData
+      );
+      updateStatus.value = "success";
+    } catch (error) {
+      console.error("Error", error);
+      updateStatus.value = "error";
+    }
+  }
+  async function getHighSchoolSpecializations(highSchoolId) {
+    try {
+      const response = await axiosInstance.get(
+        `/high-school-specializations/${highSchoolId}/inc/`
+      );
+      highSchoolSpecializations.value = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getHighSchoolExcSpecializations(highSchoolId) {
+    try {
+      const response = await axiosInstance.get(
+        `/high-school-specializations/${highSchoolId}/exc/`
+      );
+      highSchoolExcSpecializations.value = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function createDepartmentSpecialization(data) {
+    try {
+      const response = await axiosInstance.post(
+        "/create-department-specializations/",
+        data
+      );
+      createDepartmentSpecializationsStatus.value = "success";
+    } catch (error) {
+      createDepartmentSpecializationsStatus.value = "error";
+    }
+  }
+  async function removeSpecialization(departmentSpecializationId) {
+    try {
+      const response = await axiosInstance.get(
+        `/remove/department-specialization/${departmentSpecializationId}/`
+      );
+      removeStatus.value = "success";
+    } catch (error) {
+      console.error("Error", error);
+      removeStatus.value = "error";
+    }
+  }
+  return {
+    specialization,
+    specializationsAdditional,
+    createStatus,
+    deleteStatus,
+    removeStatus,
+    updateStatus,
+    createDepartmentSpecializationsStatus,
+    highSchoolSpecializations,
+    highSchoolExcSpecializations,
+    dataTablePageCount,
+    get,
+    getAllAdditional,
+    create,
+    _delete,
+    put,
+    getHighSchoolSpecializations,
+    getHighSchoolExcSpecializations,
+    createDepartmentSpecialization,
+    removeSpecialization,
+  };
 });
 
 export const useNationalizationsStore = defineStore({
@@ -803,205 +843,258 @@ export const useDegreesStore = defineStore({
   },
 });
 
-export const useStudentsStore = defineStore({
-  id: "students",
-  state: () => ({
-    students: [],
-    studentsAdditional: [],
-    student: {},
-    studentInfo: {},
-    expelledStudent: {},
-    neutralStudent: {},
-    expelledStudentsAdditional: [],
-    excelForm: null,
-    excelFormContentType: null,
-    documentation: null,
-    documentationContentType: null,
-    createStatus: null,
-    createSessionStatus: null,
-    createSessionMistakes: [],
-    deleteStatus: null,
-    updateStatus: null,
-  }),
-  actions: {
-    async updateStudyYears() {
-      try {
-        const response = await axiosInstance.get(`/update-study-year/`);
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    resetMistakeVariables() {
-      this.createSessionStatus = null;
-      this.createSessionMistakes = [];
-    },
-    resetExcelFormStates() {
-      this.excelForm = null;
-      this.excelFormContentType = null;
-    },
-    resetDocumentationStates() {
-      this.documentation = null;
-      this.documentationContentType = null;
-    },
-    async getExpelledStudent(id) {
-      try {
-        const response = await axiosInstance.get(`/expelled-students/${id}/`);
-        this.expelledStudent = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getNeutralInfo(id) {
-      try {
-        const response = await axiosInstance.get(
-          `/neutral-students-info/${id}/`
-        );
-        this.studentInfo = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getAllExpelledStudents() {
-      try {
-        const response = await axiosInstance.get(`/expelled-students/`);
-        this.expelledStudentsAdditional = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async get(id) {
-      try {
-        const response = await axiosInstance.get(`/students/${id}/`);
-        this.student = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getInfo(id) {
-      try {
-        const response = await axiosInstance.get(`/students-info/${id}/`);
-        this.studentInfo = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getForm(highSchoolId, rowCount) {
-      try {
-        const response = await axiosInstance.get(
-          `get-example/high-school/${highSchoolId}/row-count/${rowCount}/`,
-          { responseType: "blob" }
-        );
-        this.excelForm = response.data;
-        this.excelFormContentType = response.headers["Content-Type"];
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getFormForHighSchool(rowCount) {
-      try {
-        const response = await axiosInstance.get(
-          `get-example/row-count/${rowCount}/`,
-          { responseType: "blob" }
-        );
-        this.excelForm = response.data;
-        this.excelFormContentType = response.headers["Content-Type"];
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getDocumentation() {
-      try {
-        const response = await axiosInstance.get(`get-documentation/`, {
-          responseType: "blob",
+export const useStudentsStore = defineStore("students", () => {
+  const students = ref([]);
+  const studentsAdditional = ref([]);
+  const student = reactive({});
+  let studentInfo = ref({});
+  const expelledStudent = reactive({});
+  const neutralStudent = reactive({});
+  const expelledStudentsAdditional = ref([]);
+
+  const dataTablePageCount = ref(1);
+  const excelForm = ref(null);
+  const excelFormContentType = ref(null);
+  const documentation = ref(null);
+  const documentationContentType = ref(null);
+  const createStatus = ref(null);
+  const createSessionStatus = ref(null);
+  const createSessionMistakes = ref([]);
+  const deleteStatus = ref(null);
+  const updateStatus = ref(null);
+
+  const route = useRoute();
+
+  async function updateStudyYears() {
+    try {
+      const response = await axiosInstance.get(`/update-study-year/`);
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  function resetMistakeVariables() {
+    createSessionStatus.value = null;
+    createSessionMistakes.value = [];
+  }
+  function resetExcelFormStates() {
+    excelForm.value = null;
+    excelFormContentType.value = null;
+  }
+  function resetDocumentationStates() {
+    documentation.value = null;
+    documentationContentType.value = null;
+  }
+  async function getExpelledStudent(id) {
+    try {
+      const response = await axiosInstance.get(`/expelled-students/${id}/`);
+      expelledStudent.value = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getNeutralInfo(id) {
+    try {
+      const response = await axiosInstance.get(`/neutral-students-info/${id}/`);
+      studentInfo = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getAllExpelledStudents() {
+    try {
+      const response = await axiosInstance.get(`/expelled-students/`);
+      expelledStudentsAdditional.value = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function get(id) {
+    try {
+      const response = await axiosInstance.get(`/students/${id}/`);
+      student = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getInfo(id) {
+    try {
+      const response = await axiosInstance.get(`/students-info/${id}/`);
+      studentInfo.value = response.data;
+      console.log(studentInfo.value);
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getForm(highSchoolId, rowCount) {
+    try {
+      const response = await axiosInstance.get(
+        `get-example/high-school/${highSchoolId}/row-count/${rowCount}/`,
+        { responseType: "blob" }
+      );
+      excelForm.value = response.data;
+      excelFormContentType.value = response.headers["Content-Type"];
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getFormForHighSchool(rowCount) {
+    try {
+      const response = await axiosInstance.get(
+        `get-example/row-count/${rowCount}/`,
+        { responseType: "blob" }
+      );
+      excelForm.value = response.data;
+      excelFormContentType.value = response.headers["Content-Type"];
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getDocumentation() {
+    try {
+      const response = await axiosInstance.get(`get-documentation/`, {
+        responseType: "blob",
+      });
+      documentation.value = response.data;
+      documentationContentType.value = response.headers["Content-Type"];
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getAll() {
+    try {
+      const response = await axiosInstance.get(`/students/`);
+      students.value = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getAllAdditional() {
+    try {
+      let order = route.query.order ? route.query.order : "asc";
+      let column = route.query.column ? route.query.column : "full_name";
+      let search = route.query.search ? route.query.search : false;
+
+      let page = route.query.page ? route.query.page : 1;
+      let pageSize = localStorage.getItem("rowsPerPage");
+      let response = null;
+      if (search) {
+        response = await axiosInstance.get("/students-with-additional/", {
+          params: { page, page_size: pageSize, order, column, search },
         });
-        this.documentation = response.data;
-        this.documentationContentType = response.headers["Content-Type"];
-      } catch (error) {
-        console.error("Error", error);
+      } else {
+        response = await axiosInstance.get("/students-with-additional/", {
+          params: { page, page_size: pageSize, order, column },
+        });
       }
-    },
-    async getAll() {
-      try {
-        const response = await axiosInstance.get(`/students/`);
-        this.students = response.data;
-      } catch (error) {
-        console.error("Error", error);
+      studentsAdditional.value = response.data.results.data;
+      dataTablePageCount.value = response.data.results.total_pages;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getAllAdditionalWithQuery(key, value) {
+    try {
+      const response = await axiosInstance.get(
+        `/students-with-additional/?${key}=${value}`
+      );
+      studentsAdditional.value = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function create(data) {
+    try {
+      const response = await axiosInstance.post("/import-students/", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      createSessionStatus.value = response.data.mistakes ? false : true;
+      if (!createSessionStatus.value) {
+        createSessionMistakes.value = response.data.mistakes;
       }
-    },
-    async getAllAdditional() {
-      try {
-        const response = await axiosInstance.get("/students-with-additional/");
-        this.studentsAdditional = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async getAllAdditionalWithQuery(key, value) {
-      try {
-        const response = await axiosInstance.get(
-          `/students-with-additional/?${key}=${value}`
-        );
-        this.studentsAdditional = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
-    async create(data) {
-      try {
-        const response = await axiosInstance.post("/import-students/", data, {
+      createStatus.value = "success";
+    } catch (error) {
+      createStatus.value = "error";
+      console.error("Error", error);
+    }
+  }
+  async function validate(data) {
+    try {
+      const response = await axiosInstance.post(
+        "/validate-student-form/",
+        data,
+        {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        });
-        this.createSessionStatus = response.data.mistakes ? false : true;
-        if (!this.createSessionStatus) {
-          this.createSessionMistakes = response.data.mistakes;
         }
-        this.createStatus = "success";
-      } catch (error) {
-        this.createStatus = "error";
-        console.error("Error", error);
+      );
+      createSessionStatus.value = response.data.mistakes ? false : true;
+      if (!createSessionStatus.value) {
+        createSessionMistakes.value = response.data.mistakes;
       }
-    },
-    async validate(data) {
-      try {
-        const response = await axiosInstance.post(
-          "/validate-student-form/",
-          data,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        this.createSessionStatus = response.data.mistakes ? false : true;
-        if (!this.createSessionStatus) {
-          this.createSessionMistakes = response.data.mistakes;
-        }
-        this.createStatus = "success";
-      } catch (error) {
-        this.createStatus = "error";
-        console.error("Error", error);
-      }
-    },
-    async delete(id) {
-      try {
-        const response = await axiosInstance.delete(`/students/${id}/`);
-        this.deleteStatus = "success";
-      } catch (error) {
-        this.deleteStatus = "error";
-      }
-    },
-    async put(id, data) {
-      try {
-        const response = await axiosInstance.put(`/students/${id}/`, data);
-        this.updateStatus = "success";
-      } catch (error) {
-        console.error("Error", error);
-        this.updateStatus = "error";
-      }
-    },
-  },
+      createStatus.value = "success";
+    } catch (error) {
+      createStatus.value = "error";
+      console.error("Error", error);
+    }
+  }
+  async function _delete(id) {
+    try {
+      const response = await axiosInstance.delete(`/students/${id}/`);
+      deleteStatus.value = "success";
+    } catch (error) {
+      deleteStatus.value = "error";
+    }
+  }
+  async function put(id, data) {
+    try {
+      const response = await axiosInstance.put(`/students/${id}/`, data);
+      updateStatus.value = "success";
+    } catch (error) {
+      console.error("Error", error);
+      updateStatus.value = "error";
+    }
+  }
+  return {
+    students,
+    studentsAdditional,
+    student,
+    studentInfo,
+    expelledStudent,
+    neutralStudent,
+    expelledStudentsAdditional,
+    excelForm,
+    excelFormContentType,
+    documentation,
+    documentationContentType,
+    createStatus,
+    createSessionStatus,
+    createSessionMistakes,
+    deleteStatus,
+    updateStatus,
+    dataTablePageCount,
+    updateStudyYears,
+    resetMistakeVariables,
+    resetExcelFormStates,
+    resetDocumentationStates,
+    getExpelledStudent,
+    getNeutralInfo,
+    getAllExpelledStudents,
+    get,
+    getInfo,
+    getForm,
+    getFormForHighSchool,
+    getDocumentation,
+    getAll,
+    getAllAdditional,
+    getAllAdditionalWithQuery,
+    create,
+    validate,
+    _delete,
+    put,
+  };
 });
 
 export const useGraduatesStore = defineStore({

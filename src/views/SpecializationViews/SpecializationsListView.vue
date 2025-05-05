@@ -10,9 +10,18 @@ import TheSpinner from "@/components/TheSpinner.vue";
 
 const authStore = useAuthStore()
 const specializationsStore = useSpecializationsStore();
-const { specializationsAdditional } = storeToRefs(specializationsStore);
+const { specializationsAdditional, dataTablePageCount } = storeToRefs(specializationsStore);
 const { role } = storeToRefs(authStore);
 const uxStore = useUxStore()
+
+
+function updateData() {
+  uxStore.isLoading = true;
+  specializationsStore.getAllAdditional().then(() => {
+    uxStore.isLoading = false;
+  })
+}
+
 
 onMounted(() => {
   uxStore.isLoading = true;
@@ -35,8 +44,8 @@ const breadcrumbPaths = [
       <the-spinner class="w-24"></the-spinner>
     </div>
     <div v-else>
-      <specializations-data-table :data="specializationsAdditional"
-        @update="specializationsStore.getAllAdditional()"></specializations-data-table>
+      <specializations-data-table :data="specializationsAdditional" :total-pages="dataTablePageCount"
+        @update="updateData"></specializations-data-table>
     </div>
   </div>
 </template>

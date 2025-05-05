@@ -4,19 +4,30 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import { useDepartmentsStore, useSpecializationsStore } from "@/stores/api.store.js";
+import { useSpecializationsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
+import { useRoute } from 'vue-router';
 
 
-const props = defineProps(["data"])
+const props = defineProps({
+  data: Array,
+  totalPages: Number,
+  sortedBy: {
+    type: String,
+    required: false,
+    default: "name"
+  }
+})
 const emit = defineEmits(["update"]);
 
 watch(props, (newVal, oldVal) => {
   data.value = newVal.data;
   filteredData.value = [...data.value];
 })
+
+const route = useRoute();
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
 const { toasts, addToast } = useToast();
@@ -35,56 +46,49 @@ if (props.data.length > 0) {
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
-const sortColumn = ref("name");
-const sortOrder = ref('asc');
-const currentPage = ref(1);
-const rowsPerPage = ref(10);
-const rowsPerPageOptions = [10, 20, 50, 100];
+const sortColumn = ref(route.query.column || "name");
+const sortOrder = ref(route.query.order || 'asc');
+const currentPage = ref(Number(route.query.page || 1));
+const rowsPerPage = ref(localStorage.getItem("rowsPerPage") || 10);
+const rowsPerPageOptions = [10, 20, 50, 100, 250, 500];
 const searchQuery = ref('');
-const isSearching = ref(false);
+const isSearching = ref(!!route.query.search || false);
 
 const applySearch = () => {
-  filteredData.value = data.value.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-  currentPage.value = 1;
-  isSearching.value = true;
+  router.push({ name: 'specializations-list', query: { ...route.query, search: searchQuery.value.toLowerCase() } }).then(() => {
+    emit('update')
+  });
 };
 
 const resetTable = () => {
-  searchQuery.value = '';
-  filteredData.value = [...data.value];
-  currentPage.value = 1;
-  isSearching.value = false;
+  const newQuery = { ...route.query };
+  delete newQuery.search;
+
+  router.replace({ query: newQuery }).then(() => {
+    emit('update');
+    isSearching.value = false;
+  });
 };
 
-const sortedData = computed(() => {
-  if (!sortColumn.value) return data.value;
-  return [...filteredData.value].sort((a, b) => {
-    if (a[sortColumn.value] < b[sortColumn.value]) return sortOrder.value === 'asc' ? -1 : 1;
-    if (a[sortColumn.value] > b[sortColumn.value]) return sortOrder.value === 'asc' ? 1 : -1;
-    return 0;
-  });
-});
 
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value;
-  return sortedData.value.slice(start, start + rowsPerPage.value);
-});
 
-const totalPages = computed(() => Math.ceil(sortedData.value.length / rowsPerPage.value));
-
+// const totalPages = computed(() => Math.ceil(sortedData.value.length / rowsPerPage.value));
 const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
+  if (page >= 1 && page <= props.totalPages) {
     currentPage.value = page;
   }
 };
 
-const changeRowsPerPage = (option) => {
-  rowsPerPage.value = parseInt(option, 10);
-  currentPage.value = 1;
-  isOpen.value = false;
 
+const changeRowsPerPage = async (option) => {
+  rowsPerPage.value = parseInt(option, 10);
+  localStorage.setItem("rowsPerPage", rowsPerPage.value)
+  if (currentPage.value === 1) {
+    emit('update')
+  } else {
+    currentPage.value = 1;
+  }
+  isOpen.value = false;
 };
 
 const pagesBefore = computed(() => {
@@ -93,9 +97,10 @@ const pagesBefore = computed(() => {
 });
 
 const pagesAfter = computed(() => {
-  const end = Math.min(totalPages.value - 1, currentPage.value + 2);
+  const end = Math.min(props.totalPages - 1, currentPage.value + 2);
   return Array.from({ length: Math.max(0, end - currentPage.value) }, (_, i) => currentPage.value + i + 1);
 });
+
 
 const sort = (column) => {
   if (sortColumn.value === column) {
@@ -136,11 +141,30 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  specializationsStore.delete(selectedItem.value).then(() => {
+  specializationsStore._delete(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
 }
+
+watch(currentPage, (newVal) => {
+  router.push({ name: 'specializations-list', query: { ...route.query, page: newVal } }).then(() => {
+    emit('update')
+  });
+})
+watch(sortColumn, (newVal) => {
+  setTimeout(() => {
+    router.push({ name: 'specializations-list', query: { ...route.query, order: sortOrder.value, column: newVal } }).then(() => {
+      emit('update');
+    })
+  }, 50)
+})
+
+watch(sortOrder, (newVal) => {
+  router.push({ name: 'specializations-list', query: { ...route.query, order: newVal, column: sortColumn.value } }).then(() => {
+    emit('update');
+  })
+})
 
 watch(deleteStatus, (newVal, oldVal) => {
   if (newVal) {
@@ -308,15 +332,15 @@ window.addEventListener("click", onClickOutside);
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in paginatedData" :key="item.id"
+          <tr v-for="(item, index) in data" :key="item.id"
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.name
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
               v-if="!authStore.role === 'root'">{{
@@ -334,7 +358,7 @@ window.addEventListener("click", onClickOutside);
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.male_count
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               {{ item.female_count }}

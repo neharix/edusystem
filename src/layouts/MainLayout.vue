@@ -60,10 +60,10 @@
             src="/src/assets/svgs/favicon.svg" alt=""><span class="px-2 select-none">BMDU</span></div>
       </router-link>
       <div class="flex items-center">
-        <the-spinner class="hidden lg:block" v-if="uxStore.isLoading"></the-spinner>
-        <site-tools :is-dark="isDark" :notifications="role === 'root' && user.notifications.length > 0"
-          @toggle-theme="toggleTheme"></site-tools>
-        <user-dropdown v-if="user"></user-dropdown>
+        <TheSpinner class="hidden lg:block" v-if="uxStore.isLoading" />
+        <SiteTools :is-dark="isDark" enable-dumper :notifications="role === 'root' && user.notifications.length > 0"
+          @toggle-theme="toggleTheme" />
+        <UserDropdown v-if="user" />
       </div>
     </div>
     <!-- Page Content -->

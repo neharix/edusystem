@@ -2,18 +2,24 @@
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
 import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
-import useInfoModal from "@/use/useInfoModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
 import { useStudentsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
-import InfoModal from '../Modals/InfoModal.vue';
 import { useRoute } from 'vue-router';
 
 
-const props = defineProps(["data"])
+const props = defineProps({
+  data: Array,
+  totalPages: Number,
+  sortedBy: {
+    type: String,
+    required: false,
+    default: "full_name"
+  }
+})
 const emit = defineEmits(["update"]);
 
 
@@ -42,56 +48,50 @@ if (props.data.length > 0) {
 
 const activeBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white");
 const defaultBtnClasses = ref("p-4 py-2 my-2 rounded-full border-none bg-gray-200 dark:bg-[#261953]");
-const sortColumn = ref("full_name");
-const sortOrder = ref('asc');
-const currentPage = ref(1);
-const rowsPerPage = ref(10);
-const rowsPerPageOptions = [10, 20, 50, 100];
+const sortColumn = ref(route.query.column || "full_name");
+const sortOrder = ref(route.query.order || 'asc');
+const currentPage = ref(Number(route.query.page || 1));
+const rowsPerPage = ref(localStorage.getItem("rowsPerPage") || 10);
+const rowsPerPageOptions = [10, 20, 50, 100, 250, 500];
 const searchQuery = ref('');
-const isSearching = ref(false);
+const isSearching = ref(!!route.query.search || false);
 
 const applySearch = () => {
-  filteredData.value = data.value.filter((item) =>
-    item.full_name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-  currentPage.value = 1;
-  isSearching.value = true;
+  router.push({ name: 'students-list', query: { ...route.query, search: searchQuery.value.toLowerCase() } }).then(() => {
+    emit('update')
+  });
 };
 
 const resetTable = () => {
-  searchQuery.value = '';
-  filteredData.value = [...data.value];
-  currentPage.value = 1;
-  isSearching.value = false;
+  const newQuery = { ...route.query };
+  delete newQuery.search;
+
+  router.replace({ query: newQuery }).then(() => {
+    emit('update');
+    isSearching.value = false;
+  });
 };
 
-const sortedData = computed(() => {
-  if (!sortColumn.value) return data.value;
-  return [...filteredData.value].sort((a, b) => {
-    if (a[sortColumn.value] < b[sortColumn.value]) return sortOrder.value === 'asc' ? -1 : 1;
-    if (a[sortColumn.value] > b[sortColumn.value]) return sortOrder.value === 'asc' ? 1 : -1;
-    return 0;
-  });
-});
 
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * rowsPerPage.value;
-  return sortedData.value.slice(start, start + rowsPerPage.value);
-});
 
-const totalPages = computed(() => Math.ceil(sortedData.value.length / rowsPerPage.value));
+// const totalPages = computed(() => Math.ceil(sortedData.value.length / rowsPerPage.value));
 
 const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
+  if (page >= 1 && page <= props.totalPages) {
     currentPage.value = page;
   }
 };
 
-const changeRowsPerPage = (option) => {
-  rowsPerPage.value = parseInt(option, 10);
-  currentPage.value = 1;
-  isOpen.value = false;
 
+const changeRowsPerPage = async (option) => {
+  rowsPerPage.value = parseInt(option, 10);
+  localStorage.setItem("rowsPerPage", rowsPerPage.value)
+  if (currentPage.value === 1) {
+    emit('update')
+  } else {
+    currentPage.value = 1;
+  }
+  isOpen.value = false;
 };
 
 const pagesBefore = computed(() => {
@@ -100,7 +100,7 @@ const pagesBefore = computed(() => {
 });
 
 const pagesAfter = computed(() => {
-  const end = Math.min(totalPages.value - 1, currentPage.value + 2);
+  const end = Math.min(props.totalPages - 1, currentPage.value + 2);
   return Array.from({ length: Math.max(0, end - currentPage.value) }, (_, i) => currentPage.value + i + 1);
 });
 
@@ -143,11 +143,31 @@ function closeModal() {
 
 function submitModal() {
   isModalOpen.value = false;
-  studentsStore.delete(selectedItem.value).then(() => {
+  studentsStore._delete(selectedItem.value).then(() => {
     emit('update');
   });
   selectedItem.value = null;
 }
+
+watch(currentPage, (newVal) => {
+  router.push({ name: 'students-list', query: { ...route.query, page: newVal } }).then(() => {
+    emit('update')
+  });
+})
+watch(sortColumn, (newVal) => {
+  setTimeout(() => {
+    router.push({ name: 'students-list', query: { ...route.query, order: sortOrder.value, column: newVal } }).then(() => {
+      emit('update');
+    })
+  }, 50)
+})
+
+watch(sortOrder, (newVal) => {
+  router.push({ name: 'students-list', query: { ...route.query, order: newVal, column: sortColumn.value } }).then(() => {
+    emit('update');
+  })
+})
+
 
 watch(deleteStatus, (newVal, oldVal) => {
   if (newVal) {
@@ -266,10 +286,9 @@ window.addEventListener("click", onClickOutside);
             </th>
             <th
               class="transition duration-200 ease-in border-y border-gray-300 dark:border-[#171131ef] dark:hover:bg-[#32237cef] p-3 select-none cursor-pointer hover:bg-gray-300  text-left text-[0.8rem]"
-              @click="sort('high_school.name')" v-if="authStore.role === 'root' && route.name === 'students-list'">
+              @click="sort('high_school')" v-if="authStore.role === 'root' && route.name === 'students-list'">
               ÝOM
-              <span
-                :class="sortColumn === 'high_school.name' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
+              <span :class="sortColumn === 'high_school' ? (sortOrder === 'asc' ? 'rotate-180' : '') : 'opacity-50'"
                 class="ml-2 transition-transform duration-200 inline-block">
                 ▲
               </span>
@@ -298,7 +317,7 @@ window.addEventListener("click", onClickOutside);
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in paginatedData" :key="item.id"
+          <tr v-for="(item, index) in data" :key="item.id"
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               index + 1
@@ -310,7 +329,7 @@ window.addEventListener("click", onClickOutside);
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
               v-if="authStore.role === 'root' && route.name === 'students-list'">{{
-                item.high_school.name
+                item.high_school
               }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"

@@ -11,6 +11,7 @@ import router from "@/router/index.js";
 import { useDashboardStore } from '@/stores/api.store';
 
 const dashboardStore = useDashboardStore();
+const authStore = useAuthStore();
 
 const schema = Yup.object().shape({
   username: Yup.string().trim().required('Ulanyjy ady hökmany şekilde girizilmeli'),
@@ -21,7 +22,9 @@ function onSubmit(values, { setErrors }) {
   const authStore = useAuthStore();
   const { username, password } = values;
   return authStore.login({ username, password }).then(() => {
-    router.push('/');
+    if (authStore.isLoginSuccessfully === 'success') {
+      router.push('/');
+    }
   })
     .catch(error => setErrors({ apiError: error }));
 }
@@ -44,6 +47,14 @@ function toggleTheme() {
 
 }
 
+function togglePwdVisibility() {
+  let pwdField = document.querySelector('#password');
+  if (pwdField.getAttribute('type') === "password") {
+    pwdField.setAttribute('type', 'text')
+  } else {
+    pwdField.setAttribute('type', 'password')
+  }
+}
 
 onMounted(() => {
   dashboardStore.clearData();
@@ -67,29 +78,41 @@ onMounted(() => {
     <p class="text-gray-600 dark:text-gray-300 mb-6 text-center lg:text-left select-none">Içeri girmek üçin şahsyňyzy
       tassyklaň</p>
     <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4">
-      <div>
-        <label for="username" class="block text-gray-700 dark:text-gray-300 text-sm py-2 select-none">Ulanyjy
-          adyňyz</label>
-        <Field name="username" type="text" id="username"
-          class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
+      <div class="relative">
+        <Field name="username" type="text" id="username" class="peer text-input" placeholder="Ulanyjy ady"
           :class="{ 'is-invalid': errors.username }" />
+        <label for="username" class="text-input-placeholder">
+          Ulanyjy ady
+        </label>
         <div class="invalid-feedback text-red-500 my-2 text-sm select-none">{{ errors.username }}</div>
       </div>
-      <div>
-        <label for="password" class="block text-gray-700 dark:text-gray-300 text-sm py-2 select-none">Açar sözi</label>
-        <Field name="password" type="password" id="password"
-          class="w-full dark:text-gray-300 bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
+      <div class="relative">
+        <Field name="password" type="password" id="password" placeholder="Açar sözi" class="peer text-input"
           :class="{ 'is-invalid': errors.password }" />
+        <div class="absolute top-0 right-0 p-4" @click="togglePwdVisibility">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 text-gray-500" viewBox="0 0 24 24" fill="none">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9ZM11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12Z"
+              fill="currentColor" />
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M21.83 11.2807C19.542 7.15186 15.8122 5 12 5C8.18777 5 4.45796 7.15186 2.17003 11.2807C1.94637 11.6844 1.94361 12.1821 2.16029 12.5876C4.41183 16.8013 8.1628 19 12 19C15.8372 19 19.5882 16.8013 21.8397 12.5876C22.0564 12.1821 22.0536 11.6844 21.83 11.2807ZM12 17C9.06097 17 6.04052 15.3724 4.09173 11.9487C6.06862 8.59614 9.07319 7 12 7C14.9268 7 17.9314 8.59614 19.9083 11.9487C17.9595 15.3724 14.939 17 12 17Z"
+              fill="currentColor" />
+          </svg>
+        </div>
+        <label for="password" class="text-input-placeholder">
+          Açar sözi
+        </label>
         <div class="invalid-feedback text-red-500 my-2 text-sm select-none">{{ errors.password }}</div>
-
       </div>
       <div class="flex flex-wrap justify-center">
         <button :disabled="isSubmitting"
-          class="flex justify-center w-50 px-4 py-2 my-2 rounded-lg border-none dark:border-violet-500/50 border-1 bg-gradient-to-r from-blue-400 to-blue-500 dark:from-violet-600 dark:to-violet-500 text-white hover:shadow-lg hover:shadow-blue-300/50 hover:ease-in ease-out duration-200 dark:hover:shadow-violet-500/50">
+          class="flex justify-center w-50 px-4 py-2 my-2 rounded-lg border-none dark:border-violet-500/50 border-1 bg-gradient-to-r from-blue-400 to-blue-500 dark:from-violet-600 dark:to-violet-500 text-white hover:shadow-md hover:shadow-blue-300/50 hover:ease-in ease-out duration-200 dark:hover:shadow-violet-500/50">
           <the-spinner :class="{ hidden: !isSubmitting }"></the-spinner><span class="select-none"
             :class="{ hidden: isSubmitting }">Giriş</span>
         </button>
       </div>
+      <div v-if="authStore.isLoginSuccessfully === 'failed'" class="text-center text-red-500 mt-3 mb-0 text-sm">Ulanyjy
+        adyňyz ýa-da açar sözüňiz ýalňyş</div>
       <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm">{{ errors.apiError }}</div>
     </Form>
   </div>

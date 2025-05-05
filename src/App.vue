@@ -31,6 +31,9 @@ onBeforeMount(() => {
   if (!localStorage.getItem("sidebarExpanded")) {
     localStorage.setItem("sidebarExpanded", "1");
   }
+  if (!localStorage.getItem("rowsPerPage")) {
+    localStorage.setItem("rowsPerPage", "10");
+  }
 })
 
 onMounted(() => {

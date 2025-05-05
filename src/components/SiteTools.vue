@@ -72,7 +72,7 @@
           </svg>
         </template>
       </button-with-tooltip>
-      <button-with-tooltip v-if="role === 'root'" text-value="Umumy import" position-classes="right-30"
+      <button-with-tooltip v-if="role === 'root' && enableDumper" text-value="Umumy import" position-classes="right-30"
         @clicked="openModalWrap('Umumy import', 'Maglumat gorundaky ähli maglumatlaryň importyny tassyklaýarsyňyzmy?', getDumpFile)">
         <template #btn-content>
           <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none">
@@ -163,7 +163,7 @@
               Kursy üýtgetmek
             </p>
           </button>
-          <button v-if="role === 'root'" class="flex items-center space-x-2 w-full"
+          <button v-if="role === 'root' && enableDumper" class="flex items-center space-x-2 w-full"
             @click="openModalWrap('Umumy import', 'Maglumat gorundaky ähli maglumatlaryň importyny tassyklaýarsyňyzmy?', getDumpFile)">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none">
               <path
@@ -240,6 +240,18 @@ import { useSpecialFunctionsStore, useStudentsStore } from "@/stores/api.store";
 import { useRoute } from "vue-router";
 
 
+const props = defineProps({
+  enableDumper: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  isDark: Boolean,
+  isMobile: Boolean,
+  notifications: Boolean,
+  class: String,
+});
+
 const submitFunction = ref(() => { console.log('nothing to do') });
 
 const specialFunctionsStore = useSpecialFunctionsStore();
@@ -283,13 +295,6 @@ function submitModal(func) {
 
 const authStore = useAuthStore();
 const { user, role } = storeToRefs(authStore);
-
-const props = defineProps({
-  isDark: Boolean,
-  isMobile: Boolean,
-  notifications: Boolean,
-  class: String,
-});
 
 const diplomas = ref(null);
 

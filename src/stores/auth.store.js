@@ -8,6 +8,7 @@ export const useAuthStore = defineStore("auth", {
     role: "empty",
     token: localStorage.getItem("access_token") || null,
     isLoading: true,
+    isLoginSuccessfully: "",
   }),
   getters: {
     isSuperuser: (state) => {
@@ -25,8 +26,12 @@ export const useAuthStore = defineStore("auth", {
         this.token = response.data.access;
 
         localStorage.setItem("access_token", this.token);
-        axiosInstance.defaults.headers["Authorization"] = `BMDU ${this.token}`;
+        axiosInstance.defaults.headers[
+          "Authorization"
+        ] = `EDUSYSTEM ${this.token}`;
+        this.isLoginSuccessfully = "success";
       } catch (error) {
+        this.isLoginSuccessfully = "failed";
         console.error("Login failed", error);
       }
     },
