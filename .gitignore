@@ -1,9 +1,0 @@
-# Virtual environment
-unix_venv
-venv
-
-# Python cache files
-__pycache__
-
-# Logs
-requests.log
