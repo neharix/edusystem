@@ -1,3 +1,4 @@
+import datetime
 import io
 import os
 import subprocess
@@ -13,6 +14,9 @@ from django.utils import timezone
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import CustomTokenObtainPairSerializer
+
+os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
+os.environ["PYTHONUTF8"] = "1"
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -62,7 +66,7 @@ def clear_log_file(request: DjangoRequest):
         return HttpResponseForbidden()
 
 
-def dumpdata_view(request: HttpRequest):
+def dump_json_data_view(request: HttpRequest):
     if request.user.is_superuser:
         try:
             env = os.environ.copy()
@@ -99,4 +103,42 @@ def dumpdata_view(request: HttpRequest):
 
         except subprocess.CalledProcessError as e:
             return HttpResponse(f"Ошибка выполнения: {e.output}", status=500)
+    return HttpResponse("Знакомы?)", status=403)
+
+
+def dump_sql_data_view(request: HttpRequest):
+    if request.user.is_superuser:
+        try:
+            env = os.environ.copy()
+            now = datetime.datetime.now().strftime("%d-%m-%Y-%H%M%S")
+            output = subprocess.check_output(
+                [
+                    "pg_dump",
+                    "-f",
+                    f"data-{now}.sql",
+                    "-h",
+                    settings.DATABASES["default"]["HOST"],
+                    "-U",
+                    settings.DATABASES["default"]["USER"],
+                    "-d",
+                    settings.DATABASES["default"]["NAME"],
+                    "-p",
+                    settings.DATABASES["default"]["PORT"],
+                ],
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                env=env,
+            )
+            output = output.encode("utf-8", "ignore").decode("utf-8")
+
+            response = HttpResponse(
+                output, content_type="application/plain; charset=utf-8"
+            )
+            response["Content-Disposition"] = f"attachment; filename=data-{now}.sql"
+            return response
+        except subprocess.CalledProcessError as e:
+            return HttpResponse(f"Ошибка выполнения: {e.output}", status=500)
+        # except Exception as e:
+        # return HttpResponse(f"Ошибка выполнения: {e}", status=500)
     return HttpResponse("Знакомы?)", status=403)
