@@ -151,23 +151,23 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
 }
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "bmdu",
-        "USER": "neharix",
-        "PASSWORD": "ghost2928",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "bmdu",
+#         "USER": "neharix",
+#         "PASSWORD": "ghost2928",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
 
 # For Docker
 
@@ -225,10 +225,6 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
-
-SILKY_PYTHON_PROFILER = True
-SILKY_AUTHENTICATION = True
-SILKY_AUTHORISATION = True
 
 LANGUAGE_CODE = "en"
 

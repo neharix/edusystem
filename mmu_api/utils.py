@@ -1,6 +1,8 @@
 from string import ascii_uppercase
 from typing import List
 
+import pandas as pd
+from django.contrib.auth.models import User
 from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -22,12 +24,13 @@ def action_logger(request: HttpRequest, message: str):
 def xlsx_exporter(model: str, identificators: List[int]):
     match model:
         case "profile":
-            fields = ["id", "username", "password", "role"]
+            fields = ["id", "username", "password", "role", "email"]
             objects = [
                 {
                     "id": item.id,
                     "username": item.user.username,
                     "password": item.password,
+                    "email": item.user.email,
                     "role": item.role,
                 }
                 for item in Profile.objects.filter(id__in=identificators)
@@ -55,7 +58,7 @@ def xlsx_exporter(model: str, identificators: List[int]):
     column_index = 0
 
     for column_id in ascii_uppercase[: len(fields)]:
-        ws[f"{column_id}1"].value = fields[column_index].upper()
+        ws[f"{column_id}1"].value = fields[column_index].capitalize()
         column_index += 1
         ws.column_dimensions[column_id].width = 20
         for row_id in range(1, row_count + 2):
@@ -75,3 +78,24 @@ def xlsx_exporter(model: str, identificators: List[int]):
     ws.column_dimensions["B"].width = 20
 
     return wb
+
+
+def xlsx_importer(model: str, excel):  # excel : request.FILES["excel"]
+    match model:
+        case "profile":
+            dataframe = pd.read_excel(excel)
+            for index, row in dataframe.iterrows():
+                username = row["Username"].lstrip().rstrip()
+                password = row["Password"].lstrip().rstrip()
+                email = row["Email"].lstrip().rstrip()
+                role = row["Role"].lstrip().rstrip()
+                user = User.objects.create_user(
+                    username=username, password=password, email=email
+                )
+                profile = Profile.objects.get(user=user)
+                profile.password = password
+                profile.allowed_service = "mmu"
+                profile.role = role
+                profile.save()
+        case _:
+            print("Doesn't found model")

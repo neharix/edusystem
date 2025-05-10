@@ -3,6 +3,7 @@ import io
 import os
 import subprocess
 import sys
+import zipfile
 
 from django.conf import settings
 from django.http import FileResponse, Http404
@@ -14,9 +15,12 @@ from django.utils import timezone
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import CustomTokenObtainPairSerializer
+from .utils import get_global_models
 
 os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
 os.environ["PYTHONUTF8"] = "1"
+
+MODELS = get_global_models()
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -69,36 +73,45 @@ def clear_log_file(request: DjangoRequest):
 def dump_json_data_view(request: HttpRequest):
     if request.user.is_superuser:
         try:
+            outputs = []
             env = os.environ.copy()
             env["PYTHONUTF8"] = "1"
-            output = subprocess.check_output(
-                [
-                    sys.executable,
-                    "manage.py",
-                    "dumpdata",
-                    "--natural-foreign",
-                    "--natural-primary",
-                    "-e",
-                    "contenttypes",
-                    "--exclude",
-                    "admin.logentry",
-                    "--exclude",
-                    "auth.permission",
-                    "--indent",
-                    "2",
-                ],
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                env=env,
+            for model in MODELS:
+                outputs.append(
+                    subprocess.check_output(
+                        [
+                            sys.executable,
+                            "manage.py",
+                            "dumpdata",
+                            model,
+                            "--natural-foreign",
+                            "--natural-primary",
+                            "--indent",
+                            "2",
+                        ],
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        encoding="utf-8",
+                        env=env,
+                    )
+                    .encode("utf-8", "ignore")
+                    .decode("utf-8")
+                )
+
+            buffer = io.BytesIO()
+
+            with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                for i, data in enumerate(outputs):
+                    filename = f"{MODELS[i].replace('.', '_').lower()}.json"
+                    zip_file.writestr(filename, data)
+
+            buffer.seek(0)
+
+            response = HttpResponse(buffer.read(), content_type="application/zip")
+            response["Content-Disposition"] = (
+                f'attachment; filename="bmdu-dump-{datetime.datetime.now().strftime('%d-%m-%Y-%H%M%S')}.zip"'
             )
 
-            output = output.encode("utf-8", "ignore").decode("utf-8")
-
-            response = HttpResponse(
-                output, content_type="application/json; charset=utf-8"
-            )
-            response["Content-Disposition"] = "attachment; filename=dumpdata.json"
             return response
 
         except subprocess.CalledProcessError as e:
@@ -109,9 +122,8 @@ def dump_json_data_view(request: HttpRequest):
 def dump_sql_data_view(request: HttpRequest):
     if request.user.is_superuser:
         try:
-            env = os.environ.copy()
             now = datetime.datetime.now().strftime("%d-%m-%Y-%H%M%S")
-            output = subprocess.check_output(
+            subprocess.run(
                 [
                     "pg_dump",
                     "-f",
@@ -125,15 +137,16 @@ def dump_sql_data_view(request: HttpRequest):
                     "-p",
                     settings.DATABASES["default"]["PORT"],
                 ],
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                env=env,
             )
-            output = output.encode("utf-8", "ignore").decode("utf-8")
+            with open(
+                os.path.join(settings.BASE_DIR / f"data-{now}.sql"), "r"
+            ) as sql_file:
+                attachment = sql_file.read()
+
+            os.remove(os.path.join(settings.BASE_DIR / f"data-{now}.sql"))
 
             response = HttpResponse(
-                output, content_type="application/plain; charset=utf-8"
+                attachment, content_type="application/plain; charset=utf-8"
             )
             response["Content-Disposition"] = f"attachment; filename=data-{now}.sql"
             return response

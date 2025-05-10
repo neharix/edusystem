@@ -1,18 +1,20 @@
 import datetime
 import io
+import os
 import subprocess
+import sys
+import zipfile
 
 import numpy as np
 import pandas as pd
 import pytz
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import logout
 from django.contrib.auth.models import User
-from django.db.models import Count, Field, Q
+from django.db.models import Count, Q
 from django.http import FileResponse
 from django.http import HttpRequest as DjangoHttpRequest
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.cache import cache_page
@@ -24,12 +26,13 @@ from rest_framework.generics import (
     RetrieveDestroyAPIView,
     RetrieveUpdateDestroyAPIView,
 )
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
 from main.decorators import validate_files, validate_payload
 from main.paginators import ResponsivePageSizePagination
+from main.utils import get_app_models
 
 from .models import (
     AnnualUpdateReport,
@@ -86,20 +89,16 @@ from .utils import (
     advanced_filter,
     advanced_quantity_filter,
     create_example,
+    create_hardcore_example,
     filter_by_query,
     validate_excel_fields,
     validate_not_null_field,
 )
 
+MODELS = get_app_models("api")
 ADMISSION_START_RANGE = 2017
 
 # Dumper view
-
-import os
-import subprocess
-import sys
-
-from django.http import HttpResponse
 
 
 @permission_classes([IsAuthenticated])
@@ -107,36 +106,45 @@ from django.http import HttpResponse
 def dumpdata_view(request: HttpRequest):
     if request.user.is_superuser:
         try:
+            outputs = []
             env = os.environ.copy()
             env["PYTHONUTF8"] = "1"
-            output = subprocess.check_output(
-                [
-                    sys.executable,
-                    "manage.py",
-                    "dumpdata",
-                    "--natural-foreign",
-                    "--natural-primary",
-                    "-e",
-                    "contenttypes",
-                    "--exclude",
-                    "admin.logentry",
-                    "--exclude",
-                    "auth.permission",
-                    "--indent",
-                    "2",
-                ],
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                env=env,
+            for model in MODELS:
+                outputs.append(
+                    subprocess.check_output(
+                        [
+                            sys.executable,
+                            "manage.py",
+                            "dumpdata",
+                            model,
+                            "--natural-foreign",
+                            "--natural-primary",
+                            "--indent",
+                            "2",
+                        ],
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        encoding="utf-8",
+                        env=env,
+                    )
+                    .encode("utf-8", "ignore")
+                    .decode("utf-8")
+                )
+
+            buffer = io.BytesIO()
+
+            with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                for i, data in enumerate(outputs):
+                    filename = f"{MODELS[i].replace('.', '_').lower()}.json"
+                    zip_file.writestr(filename, data)
+
+            buffer.seek(0)
+
+            response = HttpResponse(buffer.read(), content_type="application/zip")
+            response["Content-Disposition"] = (
+                f'attachment; filename="bmdu-dump-{datetime.datetime.now().strftime('%d-%m-%Y-%H%M%S')}.zip"'
             )
 
-            output = output.encode("utf-8", "ignore").decode("utf-8")
-
-            response = HttpResponse(
-                output, content_type="application/json; charset=utf-8"
-            )
-            response["Content-Disposition"] = "attachment; filename=dumpdata.json"
             return response
 
         except subprocess.CalledProcessError as e:
@@ -295,7 +303,7 @@ def get_example(request: HttpRequest, high_school_id: int, row_count: int):
     else:
         return HttpResponse({"detail": "High school isn't found"})
 
-    workbook = create_example(row_count, high_school)
+    workbook = create_hardcore_example(row_count, high_school)
 
     with io.BytesIO() as buffer:
         workbook.save(buffer)
@@ -1550,12 +1558,12 @@ def validate_students_from_excel_api_view(request: HttpRequest):
 @cache_page(60 * 2)
 def get_students_with_additional_data_api_view(request: HttpRequest):
     page_size = int(request.GET.get("page_size", 10))
-    order = "-" if request.GET.get("order", "asc") == "desc" else ""
-    order_by = order + request.GET.get("column", "full_name")
-
     search = request.GET.get("search", False)
 
     if request.user.is_superuser:
+        order = "-" if request.GET.get("order", "asc") == "desc" else ""
+        order_by = order + request.GET.get("column", "full_name")
+
         if search:
             students = Student.objects.filter(
                 full_name__contains=search,
@@ -1576,6 +1584,13 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
             {"data": serializer.data, "total_pages": paginator.page.paginator.num_pages}
         )
     else:
+        order = "-" if request.GET.get("order", "asc") == "desc" else ""
+        order_key = request.GET.get("column", "full_name")
+        match order_key:
+            case "faculty":
+                order_key = "specialization__specialization__faculty_department__high_school_faculty__faculty__name"
+        order_by = order + order_key
+
         if search:
             students = Student.objects.filter(
                 full_name__contains=search,

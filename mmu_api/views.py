@@ -5,15 +5,18 @@ import os
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
 from rest_framework.decorators import api_view
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
 from api.models import Profile
-from main.decorators import validate_payload
+from main.decorators import validate_files, validate_payload
+from main.paginators import ResponsivePageSizePagination
 
 from .decorators import check_service_status, login_required
-from .utils import action_logger, is_admin, xlsx_exporter
+from .serializers import ProfileAdditionalSerializer
+from .utils import action_logger, is_admin, xlsx_exporter, xlsx_importer
 
 
 # Create your views here.
@@ -134,6 +137,7 @@ def get_user_data(request: HttpRequest):
 @api_view(http_method_names=["GET"])
 @login_required()
 @check_service_status()
+@cache_page(60 * 2)
 def dashboard_api_view(request: HttpRequest):
     if is_admin(request):
         return Response(
@@ -196,21 +200,35 @@ def toggle_service_status(request: HttpRequest):
 @login_required()
 @check_service_status()
 def profile_list_view(request: HttpRequest):
+    page_size = int(request.GET.get("page_size", 10))
+    order = "-" if request.GET.get("order", "asc") == "desc" else ""
+    order_key = request.GET.get("column", "username")
+    search = request.GET.get("search", False)
+
+    match order_key:
+        case "username":
+            order_key = "user__username"
+        case "email":
+            order_key = "user__email"
+        case "user_id":
+            order_key = "user__id"
+
+    order_by = order + order_key
+
     if is_admin(request):
-
-        profiles = Profile.objects.filter(allowed_service="mmu").select_related("user")
-
-        print(profiles)
-        return Response(
-            [
-                {
-                    "id": profile.id,
-                    "username": profile.user.username,
-                    "email": profile.user.email,
-                    "role": profile.role,
-                }
-                for profile in profiles
-            ]
+        profiles = (
+            Profile.objects.filter(
+                allowed_service="mmu", user__username__contains=search
+            ).select_related("user")
+            if search
+            else Profile.objects.filter(allowed_service="mmu").select_related("user")
+        ).order_by(order_by)
+        paginator = ResponsivePageSizePagination()
+        paginator.page_size = page_size
+        paginated_result = paginator.paginate_queryset(profiles, request)
+        serializer = ProfileAdditionalSerializer(paginated_result, many=True)
+        return paginator.get_paginated_response(
+            {"data": serializer.data, "total_pages": paginator.page.paginator.num_pages}
         )
     else:
         # high_school = HighSchool.objects.get(manager__user=request.user)
@@ -247,6 +265,16 @@ def export_data(request: HttpRequest):
         content=content,
         content_type="application/xlsx",
     )
-    filename = f"profile-{timezone.now().strftime('%d-%m-%Y')}.xlsx"
+    filename = f"{request.data['model']}-{timezone.now().strftime('%d-%m-%Y')}.xlsx"
     response["Content-Disposition"] = f'attachment; filename="' + filename + '"'
     return response
+
+
+@api_view(http_method_names=["POST"])
+@login_required()
+@validate_payload(["model"])
+@validate_files(["excel"])
+@check_service_status()
+def import_data(request: HttpRequest):
+    xlsx_importer(request.data["model"], request.FILES["excel"])
+    return Response({"detail": "Success"})
