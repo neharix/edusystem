@@ -86,7 +86,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "main.apps.MainConfig",
-    "api.apps.ApiConfig",
+    "bmdu_api.apps.BmduApiConfig",
     "mmu_api.apps.MmuApiConfig",
 ]
 
@@ -144,8 +144,8 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "BMDU API",
-    "DESCRIPTION": "BMDU API documentation",
+    "TITLE": "EDUSYSTEM API",
+    "DESCRIPTION": "EDUSYSTEM API documentation",
     "VERSION": "1.0.3",
     "SERVE_INCLUDE_SCHEMA": False,
     "REDOC_DIST": "SIDECAR",

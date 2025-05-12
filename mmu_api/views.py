@@ -10,8 +10,8 @@ from rest_framework.decorators import api_view
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
-from api.models import Profile
 from main.decorators import validate_files, validate_payload
+from main.models import Profile
 from main.paginators import ResponsivePageSizePagination
 
 from .decorators import check_service_status, login_required
@@ -111,7 +111,9 @@ def change_password_api_view(request: HttpRequest):
 def get_user_data(request: HttpRequest):
     if request.user.is_superuser:
         with open(
-            os.path.join(settings.BASE_DIR / "conf/mmu.json"), "r", encoding="utf-8"
+            os.path.join(settings.BASE_DIR / "mmu_api/config.json"),
+            "r",
+            encoding="utf-8",
         ) as cfg_file:
             service_status = json.loads(cfg_file.read())["is_enabled"]
 

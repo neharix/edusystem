@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from api.models import Country, Profile, Region
+from main.models import Country, Profile, Region
 
 
 # Create your models here.

@@ -18,7 +18,7 @@ Including another URLconf
 from debug_toolbar.toolbar import debug_toolbar_urls
 from django.urls import include, path
 
-from api.views import echo
+from main.views import echo
 
 urlpatterns = [
     path("api/", include("main.urls")),

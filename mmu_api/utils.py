@@ -8,7 +8,7 @@ from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from rest_framework.request import HttpRequest
 
-from api.models import Profile
+from main.models import Profile
 
 from .models import ActionLog
 

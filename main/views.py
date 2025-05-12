@@ -12,6 +12,9 @@ from django.http import HttpRequest as DjangoRequest
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import CustomTokenObtainPairSerializer
@@ -21,6 +24,12 @@ os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
 os.environ["PYTHONUTF8"] = "1"
 
 MODELS = get_global_models()
+
+
+@permission_classes([IsAuthenticated])
+@api_view(http_method_names=["GET", "POST", "PATCH", "DELETE", "PUT"])
+def echo(request: HttpRequest):
+    return Response({"detail": "The API works correctly"})
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):

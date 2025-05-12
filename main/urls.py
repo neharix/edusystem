@@ -16,7 +16,7 @@ urlpatterns = [
         name="redoc",
     ),
     # Includes
-    path("v1/bmdu/", include("api.urls")),
+    path("v1/bmdu/", include("bmdu_api.urls")),
     path("v1/mmu/", include("mmu_api.urls")),
     # Special routes
     path("admin/", admin.site.urls),
