@@ -263,13 +263,13 @@ const { isModalOpen, openModal, header, context } = useConfirmModal();
 
 function getDumpFile() {
   specialFunctionsStore.getDump().then(() => {
+    let now = new Date();
     const blob = new Blob([specialFunctionsStore.dump], { type: specialFunctionsStore.dumpContentType })
-    console.log(blob)
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.target = "_blank";
-    link.download = "dump.json";
+    link.download = `bmdu-dump-${now.toISOString()}.zip`;
     link.classList.add('hidden');
     document.body.appendChild(link);
     link.click();
