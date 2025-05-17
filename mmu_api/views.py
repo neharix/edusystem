@@ -11,8 +11,9 @@ from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
 from main.decorators import validate_files, validate_payload
-from main.models import Profile
+from main.models import Country, Nationality, Profile, Region
 from main.paginators import ResponsivePageSizePagination
+from main.serializers import CountrySerializer, NationalitySerializer, RegionSerializer
 
 from .decorators import check_service_status, login_required
 from .serializers import ProfileAdditionalSerializer
@@ -182,7 +183,7 @@ def dashboard_api_view(request: HttpRequest):
 @login_required(is_admin=True)
 def toggle_service_status(request: HttpRequest):
     with open(
-        os.path.join(settings.BASE_DIR / "conf/mmu.json"), "r", encoding="utf-8"
+        os.path.join(settings.BASE_DIR / "mmu_api/config.json"), "r", encoding="utf-8"
     ) as cfg_file:
         cfg = json.loads(cfg_file.read())
     if cfg["is_enabled"]:
@@ -192,10 +193,40 @@ def toggle_service_status(request: HttpRequest):
         cfg["is_enabled"] = True
 
     with open(
-        os.path.join(settings.BASE_DIR / "conf/mmu.json"), "w", encoding="utf-8"
+        os.path.join(settings.BASE_DIR / "mmu_api/config.json"), "w", encoding="utf-8"
     ) as cfg_file:
         cfg_file.write(json.dumps(cfg))
     return Response({"detail": "Success", "is_enabled": cfg["is_enabled"]})
+
+
+@api_view(http_method_names=["POST"])
+@login_required()
+@validate_payload(["model", "identificators"])
+@check_service_status()
+def export_data(request: HttpRequest):
+    workbook = xlsx_exporter(request.data["model"], request.data["identificators"])
+
+    with io.BytesIO() as buffer:
+        workbook.save(buffer)
+        content = buffer.getvalue()
+
+    response = HttpResponse(
+        content=content,
+        content_type="application/xlsx",
+    )
+    filename = f"{request.data['model']}-{timezone.now().strftime('%d-%m-%Y')}.xlsx"
+    response["Content-Disposition"] = f'attachment; filename="' + filename + '"'
+    return response
+
+
+@api_view(http_method_names=["POST"])
+@login_required()
+@validate_payload(["model"])
+@validate_files(["excel"])
+@check_service_status()
+def import_data(request: HttpRequest):
+    xlsx_importer(request.data["model"], request.FILES["excel"])
+    return Response({"detail": "Success"})
 
 
 @api_view(http_method_names=["GET"])
@@ -252,31 +283,34 @@ def profile_list_view(request: HttpRequest):
         )
 
 
-@api_view(http_method_names=["POST"])
+# Region API views
+@api_view(http_method_names=["GET"])
 @login_required()
-@validate_payload(["model", "identificators"])
 @check_service_status()
-def export_data(request: HttpRequest):
-    workbook = xlsx_exporter(request.data["model"], request.data["identificators"])
-
-    with io.BytesIO() as buffer:
-        workbook.save(buffer)
-        content = buffer.getvalue()
-
-    response = HttpResponse(
-        content=content,
-        content_type="application/xlsx",
-    )
-    filename = f"{request.data['model']}-{timezone.now().strftime('%d-%m-%Y')}.xlsx"
-    response["Content-Disposition"] = f'attachment; filename="' + filename + '"'
-    return response
+def region_list_view(request: HttpRequest):
+    if is_admin(request):
+        return Response(RegionSerializer(Region.objects.all(), many=True))
+    else:
+        return Response({"detail": "FIXME"})
 
 
-@api_view(http_method_names=["POST"])
+# Nationality API views
+@api_view(http_method_names=["GET"])
 @login_required()
-@validate_payload(["model"])
-@validate_files(["excel"])
 @check_service_status()
-def import_data(request: HttpRequest):
-    xlsx_importer(request.data["model"], request.FILES["excel"])
-    return Response({"detail": "Success"})
+def nationality_list_view(request: HttpRequest):
+    if is_admin(request):
+        return Response(NationalitySerializer(Nationality.objects.all(), many=True))
+    else:
+        return Response({"detail": "FIXME"})
+
+
+# Country API views
+@api_view(http_method_names=["GET"])
+@login_required()
+@check_service_status()
+def country_list_view(request: HttpRequest):
+    if is_admin(request):
+        return Response(CountrySerializer(Country.objects.all(), many=True))
+    else:
+        return Response({"detail": "FIXME"})

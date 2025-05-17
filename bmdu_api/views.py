@@ -5,7 +5,6 @@ import subprocess
 import sys
 import zipfile
 
-import numpy as np
 import pandas as pd
 import pytz
 from django.contrib.auth import logout
@@ -356,7 +355,6 @@ def get_documentation(request: HttpRequest):
 
 @permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
-@cache_page(60 * 2)
 def dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser:
         male_graduates = 0
@@ -1158,7 +1156,6 @@ class ClassificatorRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 @permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
-@cache_page(60 * 2)
 def get_specializations_with_additional_data_api_view(request: HttpRequest):
     page_size = int(request.GET.get("page_size", 10))
     order = "-" if request.GET.get("order", "asc") == "desc" else ""
@@ -1519,7 +1516,7 @@ def import_students_from_excel_api_view(request: HttpRequest):
                     if not Student.objects.filter(
                         high_school=high_school,
                         full_name=data["full_name"],
-                        specialization=data["specialization"],
+                        specialization=specialization,
                         passport=data["passport"],
                     ).exists():
                         student = Student.objects.create(

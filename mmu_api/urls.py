@@ -24,4 +24,10 @@ urlpatterns = [
     path("import/", import_data),
     # Profile routes
     path("profiles/", profile_list_view, name="profile-list"),
+    # Region routes
+    path("regions/", region_list_view, name="region-list"),
+    # Nationality routes
+    path("nationalities/", nationality_list_view, name="nationality-list"),
+    # Country routes
+    path("countries/", country_list_view, name="country-list"),
 ]

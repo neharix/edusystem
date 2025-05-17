@@ -40,7 +40,7 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
         "Welaýaty",
         "Milleti",
         "Ýurdy",
-        "Hünari",
+        "Hünäri",
         "Kursy",
         "Töleg görnüşi",
         "Maşgala ýagdaýy",
@@ -68,7 +68,7 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
 
     # Specialization validation values
     index = 1
-    specialization_ws: Worksheet = wb.create_sheet("Hünarler")
+    specialization_ws: Worksheet = wb.create_sheet("Hünärler")
     for specialization in Specialization.objects.filter(
         id__in=[
             department_specialization.specialization.id
@@ -126,7 +126,7 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
 
     specialization_data_val = DataValidation(
         type="list",
-        formula1=f"={quote_sheetname('Hünarler')}!$A:$A",
+        formula1=f"={quote_sheetname('Hünärler')}!$A:$A",
     )
     country_data_val = DataValidation(
         type="list",
@@ -175,6 +175,19 @@ def create_example(row_count: int, high_school: HighSchool) -> Workbook:
         family_status_data_val.add(ws[f"K{row_index}"])
         nationality_data_val.add(ws[f"F{row_index}"])
         payment_type_data_val.add(ws[f"J{row_index}"])
+
+    for sheet_name in [
+        "Hünärler",
+        "Ýurtlar",
+        "Milletler",
+        "Welaýatlar",
+        "Jynslar",
+        "Kurslar",
+        "Maşgala ýagdaýlary",
+        "Töleg görnüşleri",
+    ]:
+        wb[sheet_name].protection.sheet = True
+        wb[sheet_name].protection.set_password("ghost2928")
 
     return wb
 
@@ -237,29 +250,18 @@ def create_hardcore_example(row_count: int, high_school: HighSchool) -> Workbook
     department_specializations = DepartmentSpecialization.objects.filter(
         faculty_department__high_school_faculty__high_school=high_school
     )
-    faculty_ids = []
-    department_ids = []
-    for department_specialization in department_specializations:
-        if (
-            not department_specialization.faculty_department.high_school_faculty.faculty.id
-            in faculty_ids
-        ):
-            faculty_ids.append(
-                department_specialization.faculty_department.high_school_faculty.faculty.id
-            )
-        if (
-            not department_specialization.faculty_department.department.id
-            in department_ids
-        ):
-            department_ids.append(
-                department_specialization.faculty_department.department.id
-            )
 
     # Faculty validation values
     index = 1
 
     faculty_ws: Worksheet = wb.create_sheet("Fakultetler")
-    for faculty in Faculty.objects.filter(id__in=faculty_ids):
+    for faculty in Faculty.objects.filter(
+        active=True,
+        id__in=[
+            _faculty.faculty.id
+            for _faculty in HighSchoolFaculty.objects.filter(high_school=high_school)
+        ],
+    ):
         faculty_ws[f"A{index}"].value = f"{faculty.id}.{faculty.name}"
         index += 1
 
@@ -267,7 +269,15 @@ def create_hardcore_example(row_count: int, high_school: HighSchool) -> Workbook
     index = 1
 
     department_ws: Worksheet = wb.create_sheet("Kafedralar")
-    for department in Department.objects.filter(id__in=department_ids):
+    for department in Department.objects.filter(
+        active=True,
+        id__in=[
+            _department.department.id
+            for _department in FacultyDepartment.objects.filter(
+                high_school_faculty__high_school=high_school
+            )
+        ],
+    ):
         department_ws[f"A{index}"].value = f"{department.id}.{department.name}"
         index += 1
 
@@ -276,10 +286,11 @@ def create_hardcore_example(row_count: int, high_school: HighSchool) -> Workbook
 
     specialization_ws: Worksheet = wb.create_sheet("Hünärler")
     for specialization in Specialization.objects.filter(
+        active=True,
         id__in=[
             department_specialization.specialization.id
             for department_specialization in department_specializations
-        ]
+        ],
     ):
         specialization_ws[f"A{index}"].value = (
             f"{specialization.id}.{specialization.name}"
@@ -801,16 +812,16 @@ def validate_excel_fields(
         row_validation = False
 
     if DepartmentSpecialization.objects.filter(
-        specialization__name=row["Hünari"],
+        specialization__name=row["Hünäri"],
         faculty_department__high_school_faculty__high_school=high_school,
     ).exists():
         data["specialization"] = DepartmentSpecialization.objects.get(
-            specialization__name=row["Hünari"],
+            specialization__name=row["Hünäri"],
             faculty_department__high_school_faculty__high_school=high_school,
         )
     else:
         invalid_fields.append(
-            f"Setir №{index + 1}: '{row['Hünari']}' atly hünär tapylmady"
+            f"Setir №{index + 1}: '{row['Hünäri']}' atly hünär tapylmady"
         )
         row_validation = False
     if (
