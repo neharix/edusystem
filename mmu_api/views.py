@@ -1,9 +1,10 @@
 import io
 import json
+import mimetypes
 import os
 
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from rest_framework.decorators import api_view
@@ -14,13 +15,24 @@ from main.decorators import validate_files, validate_payload
 from main.models import Country, Nationality, Profile, Region
 from main.paginators import ResponsivePageSizePagination
 from main.serializers import CountrySerializer, NationalitySerializer, RegionSerializer
+from main.utils import file_iterator, is_valid_files, is_valid_payload
 
 from .decorators import check_service_status, login_required
-from .serializers import ProfileAdditionalSerializer
+from .models import EducationCenter, File, Specialization, Staff
+from .serializers import (
+    AboutEducationCenterSerializer,
+    EducationCenterAdditionalSerializer,
+    EducationCenterSerializer,
+    FileSerializer,
+    ProfileAdditionalSerializer,
+    SpecializationSerializer,
+    StaffSerializer,
+)
 from .utils import action_logger, is_admin, xlsx_exporter, xlsx_importer
 
-
 # Create your views here.
+
+
 @api_view(http_method_names=["POST"])
 @validate_payload(["username"])
 def try_otp_api_view(request: HttpRequest):
@@ -72,7 +84,6 @@ def try_otp_api_view(request: HttpRequest):
             return Response(
                 {"detail": "This account have not available email"}, status=400
             )
-
     else:
         return Response({"detail": "User not found"}, status=404)
 
@@ -283,13 +294,161 @@ def profile_list_view(request: HttpRequest):
         )
 
 
+# Education center API views
+
+
+@api_view(http_method_names=["GET", "POST"])
+@login_required(is_admin=True)
+def education_center_list_create_view(request: HttpRequest):
+    match request.method:
+        case "GET":
+            page_size = int(request.GET.get("page_size", 10))
+            order = "-" if request.GET.get("order", "asc") == "desc" else ""
+            order_key = request.GET.get("column", "name")
+            search = request.GET.get("search", False)
+
+            order_by = order + order_key
+
+            education_centers = (
+                EducationCenter.objects.filter(is_active=True, name__contains=search)
+                if search
+                else EducationCenter.objects.filter(is_active=True)
+            ).order_by(order_by)
+
+            paginator = ResponsivePageSizePagination()
+            paginator.page_size = page_size
+            paginated_result = paginator.paginate_queryset(education_centers, request)
+            serializer = EducationCenterAdditionalSerializer(
+                paginated_result, many=True
+            )
+            return paginator.get_paginated_response(
+                {
+                    "data": serializer.data,
+                    "total_pages": paginator.page.paginator.num_pages,
+                }
+            )
+        case "POST":
+            if is_admin(request):
+                pass
+            return
+
+
+@api_view(http_method_names=["GET", "PUT", "PATCH", "DELETE"])
+@login_required()
+def education_center_retrieve_update_delete_view(
+    request: HttpRequest, education_center_id: int
+):
+    if EducationCenter.objects.filter(id=education_center_id, is_active=True).exists():
+        education_center = EducationCenter.objects.get(id=education_center_id)
+    else:
+        return Response({"detail": "Education center not found"}, status=404)
+
+    match request.method:
+        case "GET":
+            return Response(EducationCenterSerializer(education_center).data)
+        case "PUT", "PATCH":
+            pass
+        case "DELETE":
+            education_center.is_active = False
+            education_center.save()
+            return Response({"detail": "Deactivated", "id": education_center.id})
+
+
+@api_view(http_method_names=["GET"])
+@login_required(is_admin=True)
+def about_education_center(request: HttpRequest, education_center_id: int):
+    if EducationCenter.objects.filter(id=education_center_id, is_active=True).exists():
+        education_center = EducationCenter.objects.get(id=education_center_id)
+    else:
+        return Response({"detail": "Education center not found"}, status=404)
+    return Response(AboutEducationCenterSerializer(education_center).data)
+
+
+@api_view(http_method_names=["GET"])
+@login_required(is_admin=True)
+def get_education_center_files(request: HttpRequest, education_center_id: int):
+    page_size = int(request.GET.get("page_size", 10))
+    order = "-" if request.GET.get("order", "asc") == "desc" else ""
+    order_key = request.GET.get("column", "name")
+
+    match order_key:
+        case "uploader":
+            order_key = "uploader__user__username"
+
+    search = request.GET.get("search", False)
+
+    order_by = order + order_key
+
+    if EducationCenter.objects.filter(id=education_center_id, is_active=True).exists():
+        education_center = EducationCenter.objects.get(id=education_center_id)
+    else:
+        return Response({"detail": "Education center not found"}, status=404)
+
+    files = (
+        (
+            File.objects.filter(to_storage=education_center, name__contains=search)
+            if search
+            else File.objects.filter(to_storage=education_center)
+        )
+        .select_related("uploader", "uploader__user", "to", "to__user", "to_storage")
+        .order_by(order_by)
+    )
+
+    paginator = ResponsivePageSizePagination()
+    paginator.page_size = page_size
+    paginated_result = paginator.paginate_queryset(files, request)
+    serializer = FileSerializer(paginated_result, many=True)
+
+    return paginator.get_paginated_response(
+        {"data": serializer.data, "total_pages": paginator.page.paginator.num_pages}
+    )
+
+
+@api_view(http_method_names=["GET"])
+@login_required(is_admin=True)
+def get_education_center_staff(request: HttpRequest, education_center_id: int):
+    page_size = int(request.GET.get("page_size", 10))
+    order = "-" if request.GET.get("order", "asc") == "desc" else ""
+    order_key = request.GET.get("column", "full_name")
+
+    match order_key:
+        case "region":
+            order_key = "region__name"
+        case "country":
+            order_key = "country__name"
+
+    order_by = order + order_key
+
+    search = request.GET.get("search", False)
+
+    if EducationCenter.objects.filter(id=education_center_id, is_active=True).exists():
+        education_center = EducationCenter.objects.get(id=education_center_id)
+    else:
+        return Response({"detail": "Education center not found"}, status=404)
+
+    staff = education_center.staff.filter(is_active=True)
+    if search:
+        staff = staff.filter(full_name__contains=search).order_by(order_by)
+    else:
+        staff = staff.order_by(order_by)
+
+    paginator = ResponsivePageSizePagination()
+    paginator.page_size = page_size
+    paginated_result = paginator.paginate_queryset(staff, request)
+    serializer = StaffSerializer(paginated_result, many=True)
+
+    return paginator.get_paginated_response(
+        {"data": serializer.data, "total_pages": paginator.page.paginator.num_pages}
+    )
+
+
 # Region API views
 @api_view(http_method_names=["GET"])
 @login_required()
 @check_service_status()
 def region_list_view(request: HttpRequest):
     if is_admin(request):
-        return Response(RegionSerializer(Region.objects.all(), many=True))
+        return Response(RegionSerializer(Region.objects.all(), many=True).data)
     else:
         return Response({"detail": "FIXME"})
 
@@ -300,7 +459,9 @@ def region_list_view(request: HttpRequest):
 @check_service_status()
 def nationality_list_view(request: HttpRequest):
     if is_admin(request):
-        return Response(NationalitySerializer(Nationality.objects.all(), many=True))
+        return Response(
+            NationalitySerializer(Nationality.objects.all(), many=True).data
+        )
     else:
         return Response({"detail": "FIXME"})
 
@@ -311,6 +472,91 @@ def nationality_list_view(request: HttpRequest):
 @check_service_status()
 def country_list_view(request: HttpRequest):
     if is_admin(request):
-        return Response(CountrySerializer(Country.objects.all(), many=True))
+        return Response(CountrySerializer(Country.objects.all(), many=True).data)
     else:
         return Response({"detail": "FIXME"})
+
+
+# File API views
+
+
+@api_view(http_method_names=["GET"])
+@login_required()
+def download_file(request: HttpRequest, file_id: str):
+
+    if File.objects.filter(id=file_id).exists():
+        file = File.objects.get(id=file_id)
+    else:
+        return Response({"detail": "File not found"}, status=404)
+
+    file_path = file.content.path
+    file_name = file.content.name.split("/")[-1]
+
+    try:
+        file_size = os.path.getsize(file_path)
+    except FileNotFoundError as e:
+        return Response({"detail": "File not found at server storage"}, status=404)
+
+    response = StreamingHttpResponse(
+        file_iterator(file_path), content_type=mimetypes.guess_type(file_name)
+    )
+    response["Content-Disposition"] = f"attachment; filename={file_name}"
+    response["Content-Length"] = file_size
+    return response
+
+
+@api_view(http_method_names=["GET", "POST"])
+@login_required()
+@check_service_status()
+def file_list_create_view(request: HttpRequest):
+    match request.method:
+        case _:
+            pass
+        # FIXME
+        # case "GET":
+        #     return Response(FileSerializer(File.objects.all(), many=True).data)
+        # case "POST":
+        #     if is_valid_payload([]) and is_valid_files():
+        #         pass
+
+
+@api_view(http_method_names=["GET", "DELETE", "PUT", "PATCH"])
+@login_required()
+@check_service_status()
+def file_retrieve_delete_view(request: HttpRequest, file_id):
+    if File.objects.filter(id=file_id).exists():
+        file = File.objects.get(id=file_id)
+    else:
+        return Response({"detail": "File not found"}, status=404)
+    match request.method:
+        case "GET":
+            return Response(FileSerializer(file).data)
+        case "DELETE":
+            os.remove(file.content.path)
+            file.delete()
+            return Response({"detail": "Success", "id": file_id})
+
+
+# Staff API views
+
+# @api_view(http_method_names=["GET", "POST"])
+# @login_required()
+# @check_service_status()
+# def staff_list_create_view(request: HttpRequest):
+
+
+# Specialization API views
+
+
+# @api_view(http_method_names=["GET", "POST"])
+# @login_required()
+# @check_service_status()
+# def specialization_list_create_view(request: HttpRequest):
+#     match request.method:
+#         case "GET":
+#             pass
+#         case "POST":
+#             pass
+#     return Response(
+#         SpecializationSerializer(Specialization.objects.all(), many=True).data
+#     )

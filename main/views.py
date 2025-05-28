@@ -1,5 +1,6 @@
 import datetime
 import io
+import mimetypes
 import os
 import subprocess
 import sys
@@ -9,7 +10,7 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from django.http import HttpRequest
 from django.http import HttpRequest as DjangoRequest
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
@@ -17,8 +18,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from main.models import Profile
+from mmu_api.models import File as MmuFile
+
+from .decorators import login_required
 from .serializers import CustomTokenObtainPairSerializer
-from .utils import get_global_models
+from .utils import file_iterator, get_global_models
 
 os.environ["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
 os.environ["PYTHONUTF8"] = "1"

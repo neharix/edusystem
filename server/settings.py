@@ -71,12 +71,19 @@ REST_TITLE = "EDUSYSTEM API"
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
+    "unfold.contrib.inlines",
+    "unfold.contrib.import_export",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "parler",
+    "parler_rest",
     "import_export",
     "debug_toolbar",
     "django_filters",
@@ -226,7 +233,25 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-LANGUAGE_CODE = "en"
+LANGUAGE_CODE = "tk"
+
+LANGUAGES = (
+    ("en", "English"),
+    ("ru", "Russian"),
+    ("tk", "Turkmen"),
+)
+
+PARLER_LANGUAGES = {
+    None: (
+        {"code": "en"},
+        {"code": "ru"},
+        {"code": "tk"},
+    ),
+    "default": {
+        "fallback": "tk",
+        "hide_untranslated": False,
+    },
+}
 
 TIME_ZONE = "Asia/Ashgabat"
 
@@ -238,7 +263,7 @@ USE_TZ = True
 STATIC_URL = "/api/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-MEDIA_URL = "/media/"
+MEDIA_URL = "/api/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

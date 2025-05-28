@@ -18,7 +18,9 @@ def is_admin(request: HttpRequest):
 
 
 def action_logger(request: HttpRequest, message: str):
-    ActionLog.objects.create(user=request.user, action=message)
+    ActionLog.objects.create(
+        user=Profile.objects.get(user=request.user), action=message
+    )
 
 
 def xlsx_exporter(model: str, identificators: List[int]):
