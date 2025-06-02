@@ -329,8 +329,55 @@ def education_center_list_create_view(request: HttpRequest):
             )
         case "POST":
             if is_admin(request):
-                pass
-            return
+                if is_valid_payload(
+                    request,
+                    [
+                        "name",
+                        "phone_number",
+                        "address",
+                        "region",
+                        "country",
+                        "buildings_count",
+                        "capacity",
+                        "rooms_count",
+                        "books_count",
+                        "lng",
+                        "lat",
+                    ],
+                ):
+                    if not EducationCenter.objects.filter(
+                        name=request.data["name"].strip()
+                    ).exists():
+                        try:
+                            region = Region.objects.get(id=request.data["region"])
+                        except:
+                            return Response({"detail": "Region not found"}, status=404)
+
+                        try:
+                            country = Country.objects.get(id=request.data["country"])
+                        except:
+                            return Response({"detail": "Country not found"}, status=404)
+
+                        EducationCenter.objects.create(
+                            name=request.data["name"],
+                            phone_number=request.data["phone_number"],
+                            address=request.data["address"],
+                            region=region,
+                            country=country,
+                            buildings_count=request.data["buildings_count"],
+                            rooms_count=request.data["rooms_count"],
+                            capacity=request.data["capacity"],
+                            books_count=request.data["books_count"],
+                        )
+                        return Response({"detail": "Success"})
+                    else:
+                        return Response(
+                            {"detail": "Education center already exist"}, status=400
+                        )
+                else:
+                    return Response({"detail": "Payload invalid"}, status=400)
+            else:
+                return Response({"detail": "Permission denied"}, status=403)
 
 
 @api_view(http_method_names=["GET", "PUT", "PATCH", "DELETE"])
@@ -448,7 +495,12 @@ def get_education_center_staff(request: HttpRequest, education_center_id: int):
 @check_service_status()
 def region_list_view(request: HttpRequest):
     if is_admin(request):
-        return Response(RegionSerializer(Region.objects.all(), many=True).data)
+        response_as = request.GET.get("as", "all")
+        match response_as:
+            case "all":
+                return Response(RegionSerializer(Region.objects.all(), many=True).data)
+            case "page":
+                return Response({"detail": "FIXME"})
     else:
         return Response({"detail": "FIXME"})
 
@@ -472,7 +524,14 @@ def nationality_list_view(request: HttpRequest):
 @check_service_status()
 def country_list_view(request: HttpRequest):
     if is_admin(request):
-        return Response(CountrySerializer(Country.objects.all(), many=True).data)
+        response_as = request.GET.get("as", "all")
+        match response_as:
+            case "all":
+                return Response(
+                    CountrySerializer(Country.objects.all(), many=True).data
+                )
+            case "page":
+                return Response({"detail": "FIXME"})
     else:
         return Response({"detail": "FIXME"})
 
