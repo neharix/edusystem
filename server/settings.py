@@ -15,8 +15,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-s2l-7eu!5s)n50pc&2)ya(-e=tehko1tp*(ol4s-x)8_0jub%*"
 
 
-# DEBUG = False
-DEBUG = True
+DEBUG = False
+# DEBUG = True
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 
@@ -158,23 +158,23 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
 }
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
 # DATABASES = {
 #     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "edusystem",
-#         "USER": "neharix",
-#         "PASSWORD": "ghost2928",
-#         "HOST": "localhost",
-#         "PORT": "5432",
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
 #     }
 # }
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "edusystem",
+        "USER": "neharix",
+        "PASSWORD": "ghost2928",
+        "HOST": "localhost",
+        "PORT": "5432",
+    }
+}
 
 # For Docker
 
@@ -209,7 +209,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["x-service"]
 
-CSRF_TRUSTED_ORIGINS = ["https://bmdu.depder.com", "http://localhost:5173"]
+CSRF_TRUSTED_ORIGINS = ["https://bmdu.it.net.tm", "http://localhost:5173"]
 
 
 REST_FRAMEWORK = {

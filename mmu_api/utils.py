@@ -10,7 +10,7 @@ from rest_framework.request import HttpRequest
 
 from main.models import Profile
 
-from .models import ActionLog
+from .models import ActionLog, EducationCenter
 
 
 def is_admin(request: HttpRequest):
@@ -37,6 +37,40 @@ def xlsx_exporter(model: str, identificators: List[int]):
                 }
                 for item in Profile.objects.filter(id__in=identificators)
             ]
+        case "education-center":
+            fields = [
+                "id",
+                "name",
+                "is_active",
+                "phone_number",
+                "lat",
+                "lng",
+                "country",
+                "region",
+                "address",
+                "buildings_count",
+                "rooms_count",
+                "capacity",
+                "books_count",
+            ]
+            objects = [
+                {
+                    "id": item.id,
+                    "name": item.name,
+                    "is_active": item.is_active,
+                    "phone_number": item.phone_number,
+                    "lat": item.lat,
+                    "lng": item.lng,
+                    "country": item.country.id,
+                    "region": item.region.id,
+                    "address": item.address,
+                    "buildings_count": item.buildings_count,
+                    "rooms_count": item.rooms_count,
+                    "capacity": item.capacity,
+                    "books_count": item.books_count,
+                }
+                for item in EducationCenter.objects.filter(id__in=identificators)
+            ]
 
     row_count = len(objects)
 
@@ -60,7 +94,7 @@ def xlsx_exporter(model: str, identificators: List[int]):
     column_index = 0
 
     for column_id in ascii_uppercase[: len(fields)]:
-        ws[f"{column_id}1"].value = fields[column_index].capitalize()
+        ws[f"{column_id}1"].value = fields[column_index].replace("_", " ").capitalize()
         column_index += 1
         ws.column_dimensions[column_id].width = 20
         for row_id in range(1, row_count + 2):

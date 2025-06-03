@@ -4,6 +4,7 @@ import mimetypes
 import os
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
@@ -211,7 +212,7 @@ def toggle_service_status(request: HttpRequest):
 
 
 @api_view(http_method_names=["POST"])
-@login_required()
+@login_required(is_admin=True)
 @validate_payload(["model", "identificators"])
 @check_service_status()
 def export_data(request: HttpRequest):
@@ -228,6 +229,29 @@ def export_data(request: HttpRequest):
     filename = f"{request.data['model']}-{timezone.now().strftime('%d-%m-%Y')}.xlsx"
     response["Content-Disposition"] = f'attachment; filename="' + filename + '"'
     return response
+
+
+@api_view(http_method_names=["POST"])
+@login_required(is_admin=True)
+@validate_payload(["model", "identificators"])
+@check_service_status()
+def delete_data(request: HttpRequest):
+    metas = []
+    match request.data["model"]:
+        case "profile":
+            data = Profile.objects.filter(id__in=request.data["identificators"])
+            user_ids = [item.user.id for item in data]
+            users = User.objects.filter(id__in=user_ids)
+            metas.append(users)
+        case "education-center":
+            data = EducationCenter.objects.filter(id__in=request.data["identificators"])
+
+    data.delete()
+
+    while len(metas) > 0:
+        metas[len(metas) - 1].delete()
+
+    return Response({"detail": "Success"})
 
 
 @api_view(http_method_names=["POST"])

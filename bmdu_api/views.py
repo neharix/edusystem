@@ -1,8 +1,10 @@
 import datetime
 import io
+import json
 import os
 import subprocess
 import sys
+import time
 import zipfile
 
 import pandas as pd
@@ -57,23 +59,30 @@ from .models import (
 )
 from .serializers import (
     ClassificatorSerializer,
+    CountryFilterSerializer,
     CountrySerializer,
     DegreeSerializer,
+    DepartmentFilterSerializer,
     DepartmentSerializer,
     DepartmentSpecializationAdditionalSerializer,
     DiplomaRequestSerializer,
     ExpelledStudentInfoSerializer,
     ExpulsionReasonSerializer,
     ExpulsionRequestSerializer,
+    FacultyFilterSerializer,
     FacultySerializer,
     GraduateAdditionalSerializer,
     GraduateInfoSerializer,
+    HighSchoolFilterSerializer,
     HighSchoolSerializer,
+    NationalityFilterSerializer,
     NationalitySerializer,
     ProfileSerializer,
+    RegionFilterSerializer,
     RegionSerializer,
     ReinstateRequestSerializer,
     SpecializationAdditionalAdminSerializer,
+    SpecializationFilterSerializer,
     SpecializationSerializer,
     StudentAdditionalSerializerForAdmin,
     StudentAdditionalSerializerForUser,
@@ -2781,22 +2790,18 @@ def filter_api_view(request: HttpRequest):
             {"name": "Aspirantura tölegsiz", "count": 0},
             {"name": "Magistratura tölegsiz", "count": 0},
         ],
-        "high_schools": [
-            {"id": high_school.id, "name": high_school.name}
-            for high_school in HighSchool.objects.filter(active=True)
-        ],
-        "faculties": [
-            {"id": faculty.id, "name": faculty.name}
-            for faculty in Faculty.objects.filter(active=True)
-        ],
-        "departments": [
-            {"id": department.id, "name": department.name}
-            for department in Department.objects.filter(active=True)
-        ],
-        "specializations": [
-            {"id": specialization.id, "name": specialization.name}
-            for specialization in Specialization.objects.filter(active=True)
-        ],
+        "high_schools": HighSchoolFilterSerializer(
+            HighSchool.objects.filter(active=True), many=True
+        ).data,
+        "faculties": FacultyFilterSerializer(
+            Faculty.objects.filter(active=True), many=True
+        ).data,
+        "departments": DepartmentFilterSerializer(
+            Department.objects.filter(active=True), many=True
+        ).data,
+        "specializations": SpecializationFilterSerializer(
+            Specialization.objects.filter(active=True), many=True
+        ).data,
         "study_years": [
             {"id": 1, "name": "I kurs"},
             {"id": 2, "name": "II kurs"},
@@ -2814,20 +2819,15 @@ def filter_api_view(request: HttpRequest):
             {"id": 1, "name": "Oglan"},
             {"id": 2, "name": "Gyz"},
         ],
-        "nationalities": [
-            {"id": nationality.id, "name": nationality.name}
-            for nationality in Nationality.objects.all()
-        ],
-        "countries": [
-            {"id": country.id, "name": country.name}
-            for country in Country.objects.all()
-        ],
-        "regions": [
-            {"id": region.id, "name": region.name, "count": 0}
-            for region in Region.objects.all()
-        ],
+        "nationalities": NationalityFilterSerializer(
+            Nationality.objects.all(), many=True
+        ).data,
+        "countries": CountryFilterSerializer(Country.objects.all(), many=True).data,
+        "regions": RegionFilterSerializer(Region.objects.all(), many=True).data,
     }
     if request.method == "POST":
+        t0 = time.time()
+        print("start")
         faculty_ids = [faculty["id"] for faculty in response["faculties"]]
         department_ids = [department["id"] for department in response["departments"]]
         specialization_ids = [
@@ -2940,10 +2940,17 @@ def filter_api_view(request: HttpRequest):
                 id__in=specialization_ids
             )
         ]
+        print(f"before filter: {time.time() - t0:.2f} seconds")
         filter_output = advanced_quantity_filter(request.data)
+        print(f"after filter {time.time() - t0:.2f} seconds")
+
         response["students"] = filter_output["students"]
         response["regions"] = filter_output["regions"]
         response["degrees"] = filter_output["degrees"]
+        response = json.dumps(response)
+        print(f"sending for render: {time.time() - t0:.2f} seconds")
+
+        return Response({"output": response})
 
     return Response(response)
 

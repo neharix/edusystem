@@ -12,6 +12,7 @@ from pandas.core.series import Series
 from main.models import Country, Nationality, Region
 
 from .models import *
+from .serializers import StudentFilterSerializer
 
 
 def create_example(row_count: int, high_school: HighSchool) -> Workbook:
@@ -435,13 +436,12 @@ def validate_not_null_field(row: Series, excepted_fields: List[str]):
 
 
 def advanced_quantity_filter(payload: dict):
-    print(payload)
     students = Student.objects.filter(active=True, is_expelled=False)
     query_set = Student.objects.none()
     if len(payload["high_schools"]):
         for high_school_id in payload["high_schools"]:
             query_set = query_set.union(students.filter(high_school__id=high_school_id))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["faculties"]):
         for faculty_id in payload["faculties"]:
@@ -450,7 +450,7 @@ def advanced_quantity_filter(payload: dict):
                     specialization__faculty_department__high_school_faculty__faculty__id=faculty_id
                 )
             )
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["departments"]):
         for department_id in payload["departments"]:
@@ -459,57 +459,63 @@ def advanced_quantity_filter(payload: dict):
                     specialization__faculty_department__department__id=department_id
                 )
             )
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["specializations"]):
         for specialization_id in payload["specializations"]:
             query_set = query_set.union(
                 students.filter(specialization__specialization__id=specialization_id)
             )
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["study_years"]):
         for study_year in payload["study_years"]:
             query_set = query_set.union(students.filter(study_year=study_year))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["payment_types"]):
         for payment_type_id in payload["payment_types"]:
             payment_type = "P" if payment_type_id == 1 else "B"
             query_set = query_set.union(students.filter(payment_type=payment_type))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["genders"]):
         for gender_id in payload["genders"]:
             gender = "M" if gender_id == 1 else "F"
             query_set = query_set.union(students.filter(gender=gender))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["nationalities"]):
         for nationality_id in payload["nationalities"]:
             query_set = query_set.union(students.filter(nationality__id=nationality_id))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["countries"]):
         for country_id in payload["countries"]:
             query_set = query_set.union(students.filter(country__id=country_id))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["regions"]):
         for region_id in payload["regions"]:
             query_set = query_set.union(students.filter(region__id=region_id))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if payload["military_service"] == 1:
         query_set = query_set.union(students.exclude(military_service=None))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     elif payload["military_service"] == 2:
         query_set = query_set.union(students.filter(military_service=None, gender="M"))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
 
-    print(students)
+    print(
+        students.select_related(
+            "region",
+            "country",
+            "nationality",
+        )
+    )
     degrees = [
         {
             "name": "Bakalawr",
@@ -624,7 +630,7 @@ def advanced_filter(payload: dict, key: str = "gender", value: int = 0):
     if len(payload["high_schools"]):
         for high_school_id in payload["high_schools"]:
             query_set = query_set.union(students.filter(high_school__id=high_school_id))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["faculties"]):
         for faculty_id in payload["faculties"]:
@@ -633,7 +639,7 @@ def advanced_filter(payload: dict, key: str = "gender", value: int = 0):
                     specialization__faculty_department__high_school_faculty__faculty__id=faculty_id
                 )
             )
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["departments"]):
         for department_id in payload["departments"]:
@@ -642,56 +648,56 @@ def advanced_filter(payload: dict, key: str = "gender", value: int = 0):
                     specialization__faculty_department__department__id=department_id
                 )
             )
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["specializations"]):
         for specialization_id in payload["specializations"]:
             query_set = query_set.union(
                 students.filter(specialization__specialization__id=specialization_id)
             )
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["study_years"]):
         for study_year in payload["study_years"]:
             query_set = query_set.union(students.filter(study_year=study_year))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["payment_types"]):
         for payment_type_id in payload["payment_types"]:
             payment_type = "P" if payment_type_id == 1 else "B"
             query_set = query_set.union(students.filter(payment_type=payment_type))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["genders"]):
         for gender_id in payload["genders"]:
             gender = "M" if gender_id == 1 else "F"
             query_set = query_set.union(students.filter(gender=gender))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["nationalities"]):
         for nationality_id in payload["nationalities"]:
             query_set = query_set.union(students.filter(nationality__id=nationality_id))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["countries"]):
         for country_id in payload["countries"]:
             query_set = query_set.union(students.filter(country__id=country_id))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if len(payload["regions"]):
         for region_id in payload["regions"]:
             query_set = query_set.union(students.filter(region__id=region_id))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     if payload["military_service"] == 1:
         query_set = query_set.union(
             students.exclude(military_service=None).exclude(military_service="")
         )
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
     elif payload["military_service"] == 2:
         query_set = query_set.union(students.filter(military_service=None, gender="M"))
-        students = students.filter(id__in=[student.id for student in query_set.all()])
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
 
     if (
@@ -716,20 +722,35 @@ def advanced_filter(payload: dict, key: str = "gender", value: int = 0):
             students = students.filter(gender="F")
     if key == "region":
         students = students.filter(region=value)
-    return [
-        {
-            "id": student.id,
-            "full_name": student.full_name,
-            "high_school": student.high_school.name,
-        }
-        for student in students
-    ]
+    return StudentFilterSerializer(
+        students.select_related("high_school"), many=True
+    ).data
 
 
 def filter_by_query(data: Manager[Student], query_dict):
     if len(list(query_dict.keys())):
-        key = list(query_dict.keys())[0]
-        value = int(query_dict[list(query_dict.keys())[0]])
+
+        key_list = list(
+            filter(
+                lambda e: e
+                in [
+                    "faculty",
+                    "department",
+                    "specialization",
+                    "region",
+                    "country",
+                    "nationality",
+                    "classificator",
+                    "degree",
+                ],
+                list(query_dict.keys()),
+            )
+        )
+        if len(key_list) > 0:
+            key = key_list[0]
+        else:
+            return data
+        value = int(query_dict[key])
         match key:
             case "faculty":
                 data = data.filter(
@@ -770,7 +791,6 @@ def validate_excel_fields(
                 row["Doglan senesi"].rstrip().lstrip(), "%d.%M.%Y"
             )
         except:
-            print(f'"{row["Doglan senesi"]}"')
             invalid_fields.append(
                 f"Setir №{index + 1}: 'Doglan senesi' meýdançasynda ýalňyşlyk goýberildi"
             )
@@ -789,7 +809,6 @@ def validate_excel_fields(
     if Region.objects.filter(name=row["Welaýaty"]).exists():
         data["region"] = Region.objects.get(name=row["Welaýaty"])
     else:
-        print(row["Welaýaty"])
         invalid_fields.append(
             f"Setir №{index + 1}: 'Welaýaty' meýdançasynda ýalňyşlyk goýberildi"
         )
@@ -924,7 +943,6 @@ def validate_hardcore_excel_fields(
                 row["Doglan senesi"].rstrip().lstrip(), "%d.%M.%Y"
             )
         except:
-            print(f'"{row["Doglan senesi"]}"')
             invalid_fields.append(
                 f"Setir №{index + 1}: 'Doglan senesi' meýdançasynda ýalňyşlyk goýberildi"
             )
@@ -943,7 +961,6 @@ def validate_hardcore_excel_fields(
     if Region.objects.filter(name=row["Welaýaty"]).exists():
         data["region"] = Region.objects.get(name=row["Welaýaty"])
     else:
-        print(row["Welaýaty"])
         invalid_fields.append(
             f"Setir №{index + 1}: 'Welaýaty' meýdançasynda ýalňyşlyk goýberildi"
         )

@@ -71,7 +71,20 @@ class DegreeAdmin(admin.ModelAdmin):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ["full_name"]
+    list_display = ["full_name", "birth_date", "admission_date", "high_school", "id"]
+    search_fields = ["full_name", "phone_number", "passport", "registered_place"]
+    list_filter = [
+        "gender",
+        "family_status",
+        "payment_type",
+        "high_school",
+        "nationality",
+        "country",
+        "region",
+        "is_expelled",
+        "is_obsolete",
+        "active",
+    ]
 
 
 @admin.register(ExpulsionReason)

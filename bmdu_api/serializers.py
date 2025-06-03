@@ -4,7 +4,7 @@ import pytz
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from main.models import Profile
+from main.models import Country, Nationality, Profile, Region
 from main.serializers import CountrySerializer, NationalitySerializer, RegionSerializer
 
 from .models import (
@@ -431,3 +431,77 @@ def advanced_diploma_serializer(diploma_request: DiplomaRequest) -> dict:
         )
 
     return response
+
+
+# Filter serializers
+
+
+class HighSchoolFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "name",
+        )
+        model = HighSchool
+
+
+class FacultyFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "name",
+        )
+        model = Faculty
+
+
+class DepartmentFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "name",
+        )
+        model = Department
+
+
+class SpecializationFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "name",
+        )
+        model = Specialization
+
+
+class RegionFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "name",
+        )
+        model = Region
+
+
+class NationalityFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "name",
+        )
+        model = Nationality
+
+
+class CountryFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "name",
+        )
+        model = Country
+
+
+class StudentFilterSerializer(serializers.ModelSerializer):
+    def get_high_school(self, instance: Student):
+        return instance.high_school.name
+
+    class Meta:
+        fields = ("id", "full_name", "high_school")
