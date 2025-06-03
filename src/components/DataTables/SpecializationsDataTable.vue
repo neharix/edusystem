@@ -55,7 +55,7 @@ const searchQuery = ref('');
 const isSearching = ref(!!route.query.search || false);
 
 const applySearch = () => {
-  router.push({ name: 'specializations-list', query: { ...route.query, search: searchQuery.value.toLowerCase() } }).then(() => {
+  router.push({ name: 'specializations-list', query: { ...route.query, search: searchQuery.value } }).then(() => {
     emit('update')
   });
 };

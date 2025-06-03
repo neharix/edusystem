@@ -53,11 +53,11 @@ const sortOrder = ref(route.query.order || 'asc');
 const currentPage = ref(Number(route.query.page || 1));
 const rowsPerPage = ref(localStorage.getItem("rowsPerPage") || 10);
 const rowsPerPageOptions = [10, 20, 50, 100, 250, 500];
-const searchQuery = ref('');
+const searchQuery = ref(route.query.search || '');
 const isSearching = ref(!!route.query.search || false);
 
 const applySearch = () => {
-  router.push({ name: 'students-list', query: { ...route.query, search: searchQuery.value.toLowerCase() } }).then(() => {
+  router.push({ name: 'students-list', query: { ...route.query, search: searchQuery.value } }).then(() => {
     emit('update')
   });
 };

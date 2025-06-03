@@ -1,3 +1,5 @@
+// eslint-disable no-extra-boolean-cast
+// eslint-disable no-unused-vars
 import { defineStore } from "pinia";
 import axiosInstance from "@/api/axiosInstance.js";
 import { reactive, ref } from "vue";
@@ -846,7 +848,7 @@ export const useDegreesStore = defineStore({
 export const useStudentsStore = defineStore("students", () => {
   const students = ref([]);
   const studentsAdditional = ref([]);
-  const student = reactive({});
+  let student = reactive({});
   let studentInfo = ref({});
   const expelledStudent = reactive({});
   const neutralStudent = reactive({});
@@ -974,16 +976,41 @@ export const useStudentsStore = defineStore("students", () => {
       let column = route.query.column ? route.query.column : "full_name";
       let search = route.query.search ? route.query.search : false;
 
+      const filterFields = [
+        "faculty",
+        "department",
+        "specialization",
+        "region",
+        "country",
+        "nationality",
+        "classificator",
+        "degree",
+      ];
+      let filterQuery = {};
+
+      for (let i = 0; i < filterFields.length; i++) {
+        if (!!route.query[filterFields[i]]) {
+          filterQuery[filterFields[i]] = route.query[filterFields[i]];
+        }
+      }
+
       let page = route.query.page ? route.query.page : 1;
       let pageSize = localStorage.getItem("rowsPerPage");
       let response = null;
       if (search) {
         response = await axiosInstance.get("/students-with-additional/", {
-          params: { page, page_size: pageSize, order, column, search },
+          params: {
+            page,
+            page_size: pageSize,
+            order,
+            column,
+            search,
+            ...filterQuery,
+          },
         });
       } else {
         response = await axiosInstance.get("/students-with-additional/", {
-          params: { page, page_size: pageSize, order, column },
+          params: { page, page_size: pageSize, order, column, ...filterQuery },
         });
       }
       studentsAdditional.value = response.data.results.data;
