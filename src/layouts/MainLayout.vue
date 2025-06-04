@@ -60,7 +60,7 @@
             src="/src/assets/svgs/favicon.svg" alt=""><span class="px-2 select-none">BMDU</span></div>
       </router-link>
       <div class="flex items-center">
-        <TheSpinner class="hidden lg:block" v-if="uxStore.isLoading" />
+        <TheSpinner class="hidden lg:block" v-if="uxStore.isLoading || filterStore.isLoading" />
         <SiteTools :is-dark="isDark" enable-dumper :notifications="role === 'root' && user.notifications.length > 0"
           @toggle-theme="toggleTheme" />
         <UserDropdown v-if="user" />
@@ -91,11 +91,15 @@ import UserSidebar from "@/components/Sidebars/UserSidebar.vue";
 import EmptySidebar from "@/components/Sidebars/EmptySidebar.vue";
 import { useUxStore } from "@/stores/ux.store.js";
 import TheSpinner from "@/components/TheSpinner.vue";
+import { useFilterStore } from "@/stores/api.store";
+import { filter } from "d3";
 
 const uxStore = useUxStore();
 const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
 
 const authStore = useAuthStore();
+const filterStore = useFilterStore();
+
 
 
 const { user, role } = storeToRefs(authStore);

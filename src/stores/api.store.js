@@ -1591,6 +1591,7 @@ export const useFilterStore = defineStore({
     },
     async post(data) {
       try {
+        this.isLoading = true;
         const response = await axiosInstance.post("/filter/", data);
         this.data = response.data;
         sessionStorage.setItem(
@@ -1599,6 +1600,8 @@ export const useFilterStore = defineStore({
         );
       } catch (error) {
         console.error("Error", error);
+      } finally {
+        this.isLoading = false;
       }
     },
     async get() {
