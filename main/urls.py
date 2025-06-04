@@ -20,7 +20,6 @@ urlpatterns = [
     path("v1/mmu/", include("mmu_api.urls")),
     # Special routes
     path("admin/", admin.site.urls),
-    path("__devtools__/", dev_tools, name="dev_tools"),
     path("__devtools__/download-log/", download_log_file, name="download_log_file"),
     path("__devtools__/clear-log/", clear_log_file, name="clear_log_file"),
     path("__devtools__/dump-json-data/", dump_json_data_view, name="get_json_dump"),

@@ -2826,8 +2826,6 @@ def filter_api_view(request: HttpRequest):
         "regions": RegionFilterSerializer(Region.objects.all(), many=True).data,
     }
     if request.method == "POST":
-        t0 = time.time()
-        print("start")
         faculty_ids = [faculty["id"] for faculty in response["faculties"]]
         department_ids = [department["id"] for department in response["departments"]]
         specialization_ids = [
@@ -2940,15 +2938,11 @@ def filter_api_view(request: HttpRequest):
                 id__in=specialization_ids
             )
         ]
-        print(f"before filter: {time.time() - t0:.2f} seconds")
         filter_output = advanced_quantity_filter(request.data)
-        print(f"after filter {time.time() - t0:.2f} seconds")
 
         response["students"] = filter_output["students"]
         response["regions"] = filter_output["regions"]
         response["degrees"] = filter_output["degrees"]
-        response = json.dumps(response)
-        print(f"sending for render: {time.time() - t0:.2f} seconds")
 
         return Response({"output": response})
 

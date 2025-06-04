@@ -1,14 +1,262 @@
+{% load static i18n %} {% get_current_language as LANGUAGE_CODE %} {% get_available_languages as LANGUAGES %} {% get_language_info_list for LANGUAGES as languages %}
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en" class="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Edusystem DevTools</title>
-</head>
-<body>
-    <a href="{% url 'download_log_file' %}">Скачать логи</a>
-    <a href="{% url 'clear_log_file' %}">Очистить логи</a>
-    <a href="{% url 'get_json_dump' %}">Взять дамп(JSON)</a>
-    <a href="{% url 'get_sql_dump' %}">Взять дамп(PSQL)</a>
-</body>
+    <link
+      rel="shortcut icon"
+      href="{% static 'main/img/favicon.ico' %}"
+      type="image/x-icon"
+    />
+    <link
+      href="{% static 'main/css/daisyui.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="{% static 'main/css/daisyui.themes.min.css' %}"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="{% static 'main/js/tailwind.min.js' %}"></script>
+  </head>
+  <body class="select-none bg-neutral-200/60">
+    <div class="w-full min-h-screen flex items-center justify-center">
+      <div class="fixed top-0 navbar bg-base-100 shadow-sm hidden lg:flex">
+        <div class="flex-1 pl-4">
+          <button class="btn btn-ghost" onclick="location.href='/api/admin/'">{% trans 'Admin page' %}</button>
+        </div>
+        <div class="flex-none">
+          <div class="dropdown dropdown-end mr-8">
+            <div tabindex="0" role="button" class="btn btn-ghost w-full flex justify-center">{% trans 'Language' %}</div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-36 p-2 shadow-sm">
+              {% for language in languages %} {% if language.code != LANGUAGE_CODE %}
+              <li>
+                <a href="/{{ language.code }}/api/__devtools__/"
+                  >{{ language.name_local }}</a
+                >
+              </li>
+              {% endif %} {% endfor %}
+            </ul>
+          </div> 
+        </div>
+      </div>
+      <div class="w-full md:w-1/2">
+        <div class="relative lg:top-[-3.5rem] top-[-5.5rem] w-full flex justify-center">
+          <img
+            class="w-24 rounded-2xl"
+            src="{% static 'main/img/logo.jpg' %}"
+          />
+        </div>
+        <ul class="list bg-base-100 rounded-box shadow-md">
+          <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">
+            {% trans 'Dev utils' %}
+            <!-- Утилиты разработчика -->
+          </li>
+
+          <li class="list-row">
+            <div class="text-4xl font-thin opacity-30 tabular-nums">01</div>
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-10"
+                viewBox="0 0 24 24"
+              >
+                <g
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                >
+                  <path d="M8 2v4m4-4v4m4-4v4" />
+                  <rect width="16" height="18" x="4" y="4" rx="2" />
+                  <path d="M8 10h6m-6 4h8m-8 4h5" />
+                </g>
+              </svg>
+            </div>
+            <div class="list-col-grow">
+              <div>{% trans 'Download logs' %}</div>
+              <div class="text-xs font-semibold opacity-60">
+                {% trans 'Download logs from backend server' %}
+              </div>
+            </div>
+            <button
+              class="btn btn-square btn-ghost"
+              onclick="location.href=`{% url 'download_log_file' %}`"
+            >
+              <svg
+                class="size-[1.2em]"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <g
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path d="M6 3L20 12 6 21 6 3z"></path>
+                </g>
+              </svg>
+            </button>
+          </li>
+          <li class="list-row">
+            <div class="text-4xl font-thin opacity-30 tabular-nums">02</div>
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-10"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M8 2v4m4-4v4m4-4v4m0-2h2a2 2 0 0 1 2 2v2m0 4v2m0 4v2a2 2 0 0 1-2 2h-1m-4 0h-2m-4 0H6a2 2 0 0 1-2-2v-2m0-4v-2m0-4V6a2 2 0 0 1 2-2h2m0 6h6m-6 4h8m-8 4h5"
+                />
+              </svg>
+            </div>
+            <div class="list-col-grow">
+              <div>{% trans 'Clear logs' %}</div>
+              <div class="text-xs font-semibold opacity-60">
+                {% trans 'Clear logs of backend server' %}
+              </div>
+            </div>
+            <button
+              class="btn btn-square btn-ghost"
+              onclick="location.href=`{% url 'clear_log_file' %}`"
+            >
+              <svg
+                class="size-[1.2em]"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <g
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path d="M6 3L20 12 6 21 6 3z"></path>
+                </g>
+              </svg>
+            </button>
+          </li>
+
+          <li class="list-row">
+            <div class="text-4xl font-thin opacity-30 tabular-nums">03</div>
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-10"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="M321.1 131.907s-67.561-.396-123.73 0L184.43 240.08l38.965 9.16c9.877-13.375 60.838-23.193 54.973 28.663c0 0 .823 34.482-28.353 29.25c-18.596-3.334-20.513-23.745-20.513-23.745h-49.143c-1.517 78.906 153.806 93.532 147.085-12.343c-2.956-46.571-34.946-82.997-95.034-59.045l4.798-42.02h83.891zM85.054 370.206c-7.475-3.08-12.406-9.09-15.121-15.848c-5.85-17.852-3.926-36.156-3.926-55.685c-.153-20.158-11.021-37.037-27.043-45.072c29.763-14.217 27.602-39.89 27.043-74.586c-.224-15.641 5.877-36.088 19.047-42.019l-9.16-25.589c-34.39 10.38-52.18 30.421-52.341 67.608c-.937 13.476 1.703 28.763-1.309 41.436c-3.868 11.167-11.824 16.656-22.245 16.72v33.005c17.392.292 23.442 14.886 23.554 28.497c.247 16.868-1.181 36.017 2.617 51.323c7.935 25.346 15.36 37.248 49.724 45.944zm25.298-144.695c-17.845-9.35-17.845-32.85 0-42.2s40.273 2.4 40.273 21.1s-22.428 30.45-40.273 21.1m0 118.49c-17.845-9.35-17.845-32.851 0-42.201s40.272 2.4 40.272 21.1s-22.427 30.45-40.272 21.1m316.592 26.205c7.475-3.08 12.406-9.09 15.121-15.848c5.85-17.852 3.926-36.156 3.926-55.685c.153-20.158 11.021-37.037 27.043-45.072c-29.763-14.217-27.602-39.89-27.043-74.586c.224-15.641-5.877-36.088-19.047-42.019l9.16-25.589c36.39 19.04 52.18 30.421 52.341 67.608c.937 13.476-1.703 28.763 1.309 41.436c3.868 11.167 11.824 16.656 22.245 16.72v33.005c-17.392.292-23.442 14.886-23.554 28.497c-.247 16.868 1.182 36.017-2.617 51.323c-7.935 25.346-15.36 37.248-49.724 45.944zm-19.551-32.423c-.305 18.158-8.289 36.908-18.32 50.16q-5.38 7.27-11.63 12.65c-7.72-6.244-15.342-9.46-24.718-11.631c-1.835-14.834 11.3-22.193 13.958-33.15c2.8-16.065 1.6-32.038 1.6-49.143h39.255z"
+                />
+              </svg>
+            </div>
+            <div class="list-col-grow">
+              <div>{% trans 'Get JSON dump' %}</div>
+              <div class="text-xs font-semibold opacity-60">
+                {% trans 'Exports a JSON dump (Django-friendly) and media file archive from the backend server' %}
+              </div>
+            </div>
+            <button
+              class="btn btn-square btn-ghost"
+              onclick="location.href=`{% url 'get_json_dump' %}`"
+            >
+              <svg
+                class="size-[1.2em]"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <g
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path d="M6 3L20 12 6 21 6 3z"></path>
+                </g>
+              </svg>
+            </button>
+          </li>
+          <li class="list-row">
+            <div class="text-4xl font-thin opacity-30 tabular-nums">04</div>
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-10"
+                viewBox="0 0 458 512"
+              >
+                <path
+                  fill="currentColor"
+                  d="m228.502 233.071l-14.428 45.75c-7.693 28.4-7.039 37.358-3.137 43.966c.963 1.624 3.597 6.94 7.278 21.14c5.344 20.554 10.05 51.587 10.165 53.072c-.773 18.97-.355 39.069 1.179 58.313H39.147C17.617 455.312 0 437.695 0 416.166V61.88c0-21.53 17.616-39.15 39.147-39.15h293.008c-44.876 47.605-89.341 137.936-103.653 210.341M435.338 11.136c53.695 47.899.376 157.402-48.565 234.483c-35.586 11.437-77.064 36.696-77.064 36.696s3.45-1.832 16.255-7.203c8.68-3.649 34.598-9.811 50.381-13.41c-26.349 39.726-48.896 67.532-48.896 67.532s-45.97 18.681-60.187 62.14c8.24-46.357 21.913-94.74 41.208-146.3c17.232-46.042 74.796-170.377 117.328-208.788c-46.664 37.193-97.65 115.072-134.4 212.138c-21.751 64.3-33.523 125.992-35.44 177.149c-1.267 33.467 1.626 62.488 8.749 84.632L261.414 512c-6.987-18.132-13.399-49.997-11.865-115.295c-.23-2.913-.367-4.806-.367-4.806s-4.242-28.568-10.343-52.035c-2.702-10.417-5.778-19.836-9.007-25.295c-1.664-2.817.18-14.388 4.824-31.527c7.864 13.692 16.348 28.515 19.607 40.643c0 0-6.284-32.33-16.595-51.197c2.26-7.627 4.96-16.057 8.015-25.07c7.605 13.3 15.361 25.955 18.455 38.63c-3.384-16.193-7.965-32.32-15.101-48.307c12.97-67.496 54.719-155.876 99.696-203.59c24.007-25.617 57.092-48.544 86.605-23.015"
+                />
+              </svg>
+            </div>
+            <div class="list-col-grow">
+              <div>{% trans 'Get SQL dump' %}</div>
+              <div class="text-xs font-semibold opacity-60">
+                {% trans 'Exports a SQL dump from the backend server' %}
+              </div>
+            </div>
+            <button
+              class="btn btn-square btn-ghost"
+              onclick="location.href=`{% url 'get_sql_dump' %}`"
+            >
+              <svg
+                class="size-[1.2em]"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <g
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                  stroke-width="2"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path d="M6 3L20 12 6 21 6 3z"></path>
+                </g>
+              </svg>
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div class="dock flex lg:hidden">
+        <div onclick="location.href='/api/admin/'">
+          <div class="w-full flex justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h2M20 8v11a2 2 0 0 1-2 2h-2m-7-6l3-3l3 3m-3-3v9"/></g></svg>
+          </div>
+          <div class="w-full text-center text-xs">{% trans 'Admin page' %}</div>
+        </div>
+        <div>
+          <div class="dropdown dropdown-top dropdown-center">
+            <div tabindex="0" role="button" class="w-full flex justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 8l6 6m-7 0l6-6l2-3M2 5h12M7 2h1m14 20l-5-10l-5 10m2-4h6"/></svg></div>
+            <div class="w-full text-center text-xs">{% trans 'Language' %}</div>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-36 p-2 shadow-sm">
+              {% for language in languages %} {% if language.code != LANGUAGE_CODE %}
+              <li>
+                <a href="/{{ language.code }}/api/__devtools__/"
+                  >{{ language.name_local }}</a
+                >
+              </li>
+              {% endif %} {% endfor %}
+            </ul>
+          </div>      
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

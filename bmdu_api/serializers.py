@@ -505,3 +505,4 @@ class StudentFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ("id", "full_name", "high_school")
+        model = Student
