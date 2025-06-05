@@ -20,6 +20,7 @@ urlpatterns = [
     # Special routes
     path("dashboard/", dashboard_api_view),
     path("service-toggler/", toggle_service_status),
+    path("delete/", delete_data),
     path("export/", export_data),
     path("import/", import_data),
     # Profile routes

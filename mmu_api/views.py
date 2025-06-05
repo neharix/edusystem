@@ -245,7 +245,6 @@ def delete_data(request: HttpRequest):
             metas.append(users)
         case "education-center":
             data = EducationCenter.objects.filter(id__in=request.data["identificators"])
-
     data.delete()
 
     while len(metas) > 0:
@@ -417,12 +416,53 @@ def education_center_retrieve_update_delete_view(
     match request.method:
         case "GET":
             return Response(EducationCenterSerializer(education_center).data)
-        case "PUT", "PATCH":
-            pass
+        case "PUT":
+            if is_valid_payload(
+                request,
+                [
+                    "name",
+                    "phone_number",
+                    "address",
+                    "region",
+                    "country",
+                    "buildings_count",
+                    "capacity",
+                    "rooms_count",
+                    "books_count",
+                    "lng",
+                    "lat",
+                ],
+            ):
+                try:
+                    region = Region.objects.get(id=request.data["region"])
+                except:
+                    return Response({"detail": "Region not found"}, status=404)
+
+                try:
+                    country = Country.objects.get(id=request.data["country"])
+                except:
+                    return Response({"detail": "Country not found"}, status=404)
+
+                education_center.name = request.data["name"]
+                education_center.phone_number = request.data["phone_number"]
+                education_center.address = request.data["address"]
+                education_center.region = region
+                education_center.country = country
+                education_center.buildings_count = request.data["buildings_count"]
+                education_center.books_count = request.data["books_count"]
+                education_center.rooms_count = request.data["rooms_count"]
+                education_center.capacity = request.data["capacity"]
+                education_center.lng = request.data["lng"]
+                education_center.lat = request.data["lat"]
+                education_center.save()
+                return Response({"detail": "Updated", "id": education_center.id})
+            else:
+                return Response({"detail": "Payload invalid"}, status=400)
+
         case "DELETE":
-            education_center.is_active = False
-            education_center.save()
-            return Response({"detail": "Deactivated", "id": education_center.id})
+            idf = education_center.id
+            education_center.delete()
+            return Response({"detail": "Deactivated", "id": idf})
 
 
 @api_view(http_method_names=["GET"])
