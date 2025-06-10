@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
 const props = defineProps({
   message: String,
@@ -47,7 +47,7 @@ const toastHeaders = {
 <template>
 
   <div v-if="visible"
-       :class="`toast my-2 p-4 bg-white dark:bg-[#171131] w-full dark:text-white rounded-lg shadow-lg transition-all ${toastStyles[type]}`">
+    :class="`toast my-2 p-4 bg-white dark:bg-[#171131] w-full dark:text-white rounded-lg shadow-lg transition-all ${toastStyles[type]}`">
     <h3 class="hidden md:block mb-3 text-base font-semibold select-none">{{ toastHeaders[type] }}</h3>
     <button class="absolute top-3 right-5 font-bold dark:text-white select-none" @click.stop="closeToast">✖</button>
     <div class="flex justify-between text-sm items-center mt-4 md:mt-0">
@@ -66,6 +66,7 @@ const toastHeaders = {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -77,6 +78,7 @@ const toastHeaders = {
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(-20px);

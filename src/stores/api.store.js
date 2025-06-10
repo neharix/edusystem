@@ -848,7 +848,7 @@ export const useDegreesStore = defineStore({
 export const useStudentsStore = defineStore("students", () => {
   const students = ref([]);
   const studentsAdditional = ref([]);
-  let student = reactive({});
+  let student = ref({});
   let studentInfo = ref({});
   const expelledStudent = reactive({});
   const neutralStudent = reactive({});
@@ -897,7 +897,7 @@ export const useStudentsStore = defineStore("students", () => {
   async function getNeutralInfo(id) {
     try {
       const response = await axiosInstance.get(`/neutral-students-info/${id}/`);
-      studentInfo = response.data;
+      studentInfo.value = response.data;
     } catch (error) {
       console.error("Error", error);
     }
@@ -913,7 +913,8 @@ export const useStudentsStore = defineStore("students", () => {
   async function get(id) {
     try {
       const response = await axiosInstance.get(`/students/${id}/`);
-      student = response.data;
+      student.value = response.data;
+      console.log(student);
     } catch (error) {
       console.error("Error", error);
     }

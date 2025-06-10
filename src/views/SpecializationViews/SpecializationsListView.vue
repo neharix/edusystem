@@ -27,6 +27,7 @@ onMounted(() => {
   uxStore.isLoading = true;
   specializationsStore.getAllAdditional().then(() => {
     uxStore.isLoading = false;
+
   })
 })
 
