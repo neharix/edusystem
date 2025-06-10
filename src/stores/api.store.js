@@ -1594,7 +1594,7 @@ export const useFilterStore = defineStore({
       try {
         this.isLoading = true;
         const response = await axiosInstance.post("/filter/", data);
-        this.data = response.data;
+        this.data = response.data.output;
         sessionStorage.setItem(
           "filterOptions",
           JSON.stringify(this.filterOptions)
