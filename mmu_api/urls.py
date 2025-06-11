@@ -57,6 +57,13 @@ urlpatterns = [
     path("nationalities/", nationality_list_view, name="nationality-list"),
     # Country routes
     path("countries/", country_list_view, name="country-list"),
+    # Achievement routes
+    path("achievements/", achievement_list_create_view, name="achievement-list-create"),
+    path(
+        "achievements/<int:achievement_id>/",
+        achievement_retrieve_update_delete_view,
+        name="achievement-retrieve-update-delete",
+    ),
     # File routes
     path("download/<int:file_id>/", download_file),
     path(
@@ -70,5 +77,37 @@ urlpatterns = [
         name="file-retrieve-delete-view",
     ),
     # Specialization routes
-    # path("specializations/", specialization_list_create_view),
+    path(
+        "specializations/",
+        specialization_list_create_view,
+        name="specialization-list-create",
+    ),
+    path(
+        "specializations/<int:specialization_id>/",
+        specialization_retrieve_update_delete_view,
+        name="specialization-retrieve-update-delete",
+    ),
+    # Student routes
+    path(
+        "students/",
+        student_list_create_view,
+        name="student-list-create",
+    ),
+    path(
+        "students/<int:student_id>/",
+        student_retrieve_update_delete_view,
+        name="student-retrieve-update-delete",
+    ),
+    path(
+        "students/<int:student_id>/courses/",
+        get_student_courses,
+        name="student-course-list",
+    ),
+    path(
+        "students/<int:student_id>/certificates/",
+        get_student_certificates,
+        name="student-certificate-list",
+    ),
+    # Certificate routes
+    path("certificates/<int:certificate_id>/", certificate_view),
 ]

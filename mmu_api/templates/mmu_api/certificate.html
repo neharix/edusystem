@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root{
+            --spacing: 1rem;
+        }
+        .flex {
+            display: flex;
+        }
+        .items-center{
+            align-items: center;
+        }
+        .justify-end {
+            justify-content: end;
+        }
+        .justify-center {
+            justify-content: center;
+        }
+        .w-2 {
+            width: calc(var(--spacing) * 2);
+        }
+        .w-4 {
+            width: calc(var(--spacing) * 4);
+        }
+        .w-6 {
+            width: calc(var(--spacing) * 6);
+        }
+        .w-12 {
+            width: calc(var(--spacing) * 12);
+        }
+        .w-24 {
+            width: calc(var(--spacing) * 24);
+        }
+        .w-1\/5 {
+            width: calc(1/5 * 100%);
+        } 
+        .w-2\/5 {
+            width: calc(2/5 * 100%);
+        }
+        .w-1\/6 {
+            width: calc(1/6 * 100%);
+        } 
+        .w-2\/6 {
+            width: calc(2/6 * 100%);
+        } 
+        .w-3\/6 {
+            width: calc(3/6 * 100%);
+        } 
+        .w-4\/6 {
+            width: calc(4/6 * 100%);
+        } 
+        .w-full {
+            width: 100%;
+        }
+        .w-screen {
+            width: 100vw;
+        }
+        .h-screen {
+            height: 100vh;
+        }
+        .min-h-screen {
+            min-height: 100vh;
+        }
+        .h-full {
+            height: 100%;
+        }
+        .bg-white {
+            background-color: #ffffff;
+        }
+        .bg-gray-50{
+            background-color: #f9fafb;
+        }
+        .bg-emerald-400 {
+            background-color: #00d492;
+        }
+        .my-2 {
+            margin-block: calc(var(--spacing) * 2);
+        }
+        .my-4 {
+            margin-block: calc(var(--spacing) * 4);
+        }
+        .p-4{
+            padding: calc(var(--spacing) * 4)
+        }
+        .fixed {
+            position: fixed;
+        }
+        .right-0 {
+            right: calc(var(--spacing) * 0);
+        }
+        .bottom-0 {
+            bottom: calc(var(--spacing) * 0);
+        }
+        .uppercase {
+            text-transform: uppercase;
+        }
+        .text-white {
+            color: #ffffff;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-xl {
+            font-size: 1.25rem;
+        }
+        .text-2xl{
+            font-size: 1.5rem;
+        }
+        .rounded-2xl {
+            border-radius: 1rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen w-screen bg-emerald-400 text-white rounded-2xl">
+    <div class="flex h-screen w-full">
+        <!-- <div class="w-2/6 bg-emerald-400 h-full">
+            <img class="w-24 fixed bottom-0" src="{{ logo_url }}" alt="">
+        </div> -->
+        <div class="w-full" style="padding: 30px;">
+            <h1 class="uppercase text-2xl text-center my-2" style="margin-top:30px;">Türkmenistanyň Bilim ministrligi</h1>
+            <h1 class="uppercase text-2xl text-center my-2" style="margin-top:30px;">Merkezleriň Maglumat Ulgamy</h1>
+            <h1 class="uppercase text-2xl text-center my-2" style="margin-top:30px;">Şahadatnama №{{ certificate.id }}</h1>
+            <p class="my-2 text-center text-xl" style="margin-top:60px; margin-bottom: 50px;">Milli Liderimiziň "Bilimli nesil - kuwwatly Watan" diýen çuň manyly sözlerine jogap edip, {{ certificate.education_center }} okuw merkezinde "{{ certificate.course.direction.name }}" okuwynyň "{{ certificate.course.name }}" boýunça gysga möhletli okuwynyň {{ certificate.course.hours }} sagat özleşdirip, {{ certificate.point }} bal alyp üstünlikli tamamlandygy üçin {{ certificate.student.full_name }} şahadatnama berilýär</p>
+            <div class="w-full flex justify-end" style="margin-top: 350px;">
+                <img style="width: 150px;"  src="data:image/png;base64,{{ qr_code_base64 }}" alt=""></div>
+        </div>
+    </div>
+</body>
+</html>

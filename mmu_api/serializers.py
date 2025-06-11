@@ -1,10 +1,21 @@
 from django.contrib.auth.models import User
-from parler_rest.serializers import TranslatableModelSerializer, TranslatedFieldsField
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
-from main.models import Country, Profile, Region
-
-from .models import EducationCenter, File, Specialization, Staff
+from .models import (
+    Achievement,
+    Certificate,
+    Country,
+    Course,
+    Direction,
+    EducationCenter,
+    File,
+    Nationality,
+    Profile,
+    Region,
+    Specialization,
+    Staff,
+    Student,
+)
 
 
 class UserSerializer(ModelSerializer):
@@ -30,12 +41,17 @@ class FileSerializer(ModelSerializer):
         model = File
 
 
-class SpecializationSerializer(TranslatableModelSerializer):
-    translations = TranslatedFieldsField(shared_model=Specialization)
-
+class SpecializationSerializer(ModelSerializer):
     class Meta:
         model = Specialization
-        fields = ["id", "translations"]
+        fields = "__all__"
+
+
+class SpecializationAdditionalSerializer(ModelSerializer):
+
+    class Meta:
+        fields = ["id", "name"]
+        model = Specialization
 
 
 class CountrySerializer(ModelSerializer):
@@ -48,6 +64,12 @@ class RegionSerializer(ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Region
+
+
+class NationalitySerializer(ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = Nationality
 
 
 class StaffSerializer(ModelSerializer):
@@ -124,3 +146,66 @@ class AboutEducationCenterSerializer(ModelSerializer):
             "capacity",
             "books_count",
         )
+
+
+class AchievementSerializer(ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = Achievement
+
+
+class AchievementAdditionalSerializer(ModelSerializer):
+    def get_students_count(self, instance: Achievement):
+        return 10
+
+    def get_female_count(self, instance: Achievement):
+        return 10
+
+    def get_male_count(self, instance: Achievement):
+        return 10
+
+    students_count = SerializerMethodField()
+    female_count = SerializerMethodField()
+    male_count = SerializerMethodField()
+
+    class Meta:
+        fields = ["id", "name", "students_count", "male_count", "female_count"]
+        model = Achievement
+
+
+class StudentAdditionalSerializer(ModelSerializer):
+
+    class Meta:
+        model = Student
+        fields = ("id", "full_name")
+
+
+class StudentSerializer(ModelSerializer):
+    class Meta:
+        model = Student
+        fields = "__all__"
+
+
+class DirectionSerializer(ModelSerializer):
+    class Meta:
+        model = Direction
+        fields = "__all__"
+
+
+class CourseSerializer(ModelSerializer):
+    education_center = EducationCenterSerializer()
+    direction = DirectionSerializer()
+
+    class Meta:
+        model = Course
+        fields = "__all__"
+
+
+class CertificateSerializer(ModelSerializer):
+    education_center = EducationCenterSerializer()
+    student = StudentSerializer()
+    course = CourseSerializer()
+
+    class Meta:
+        model = Certificate
+        fields = "__all__"

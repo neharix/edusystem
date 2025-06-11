@@ -1,33 +1,62 @@
+import base64
 import io
 import json
 import mimetypes
 import os
 
+import qrcode
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpResponse, StreamingHttpResponse
+from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.templatetags.static import static
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from rest_framework.decorators import api_view
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
+from weasyprint import HTML
 
 from main.decorators import validate_files, validate_payload
-from main.models import Country, Nationality, Profile, Region
+from main.models import Profile
 from main.paginators import ResponsivePageSizePagination
-from main.serializers import CountrySerializer, NationalitySerializer, RegionSerializer
+
+# from main.serializers import CountrySerializer, NationalitySerializer, RegionSerializer
 from main.utils import file_iterator, is_valid_files, is_valid_payload
 
 from .decorators import check_service_status, login_required
-from .models import EducationCenter, File, Specialization, Staff
+from .models import (
+    Achievement,
+    Certificate,
+    Country,
+    Course,
+    EducationCenter,
+    File,
+    Nationality,
+    Region,
+    Specialization,
+    Staff,
+    Student,
+)
 from .serializers import (
     AboutEducationCenterSerializer,
+    AchievementAdditionalSerializer,
+    AchievementSerializer,
+    CertificateSerializer,
+    CountrySerializer,
+    CourseSerializer,
     EducationCenterAdditionalSerializer,
     EducationCenterSerializer,
     FileSerializer,
+    NationalitySerializer,
     ProfileAdditionalSerializer,
+    RegionSerializer,
+    SpecializationAdditionalSerializer,
     SpecializationSerializer,
     StaffSerializer,
+    StudentAdditionalSerializer,
+    StudentSerializer,
 )
 from .utils import action_logger, is_admin, xlsx_exporter, xlsx_importer
 
@@ -245,6 +274,11 @@ def delete_data(request: HttpRequest):
             metas.append(users)
         case "education-center":
             data = EducationCenter.objects.filter(id__in=request.data["identificators"])
+        case "achievement":
+            data = Achievement.objects.filter(id__in=request.data["identificators"])
+        case "specialization":
+            data = Specialization.objects.filter(id__in=request.data["identificators"])
+
     data.delete()
 
     while len(metas) > 0:
@@ -332,10 +366,18 @@ def education_center_list_create_view(request: HttpRequest):
 
             order_by = order + order_key
 
+            filters = {}
+            if request.GET.get("region", False):
+                filters["region__id__exact"] = request.GET["region"]
+            if request.GET.get("country", False):
+                filters["country__id__exact"] = request.GET["country"]
+
             education_centers = (
-                EducationCenter.objects.filter(is_active=True, name__contains=search)
+                EducationCenter.objects.filter(
+                    is_active=True, name__contains=search, **filters
+                )
                 if search
-                else EducationCenter.objects.filter(is_active=True)
+                else EducationCenter.objects.filter(is_active=True, **filters)
             ).order_by(order_by)
 
             paginator = ResponsivePageSizePagination()
@@ -382,7 +424,7 @@ def education_center_list_create_view(request: HttpRequest):
                             return Response({"detail": "Country not found"}, status=404)
 
                         EducationCenter.objects.create(
-                            name=request.data["name"],
+                            name=request.data["name"].strip(),
                             phone_number=request.data["phone_number"],
                             address=request.data["address"],
                             region=region,
@@ -660,6 +702,80 @@ def file_retrieve_delete_view(request: HttpRequest, file_id):
             return Response({"detail": "Success", "id": file_id})
 
 
+# Achievement API views
+
+
+@api_view(http_method_names=["GET", "POST"])
+@login_required(is_admin=True)
+def achievement_list_create_view(request: HttpRequest):
+    match request.method:
+        case "GET":
+            page_size = int(request.GET.get("page_size", 10))
+            order = "-" if request.GET.get("order", "asc") == "desc" else ""
+            order_key = request.GET.get("column", "name")
+            search = request.GET.get("search", False)
+
+            order_by = order + order_key
+
+            achievements = (
+                Achievement.objects.filter(name__contains=search)
+                if search
+                else Achievement.objects.all()
+            ).order_by(order_by)
+
+            paginator = ResponsivePageSizePagination()
+            paginator.page_size = page_size
+            paginated_result = paginator.paginate_queryset(achievements, request)
+            serializer = AchievementAdditionalSerializer(paginated_result, many=True)
+            return paginator.get_paginated_response(
+                {
+                    "data": serializer.data,
+                    "total_pages": paginator.page.paginator.num_pages,
+                }
+            )
+        case "POST":
+            if is_admin(request):
+                if is_valid_payload(request, ["name"]):
+                    if not Achievement.objects.filter(
+                        name=request.data["name"].strip()
+                    ).exists():
+                        Achievement.objects.create(name=request.data["name"].strip())
+                        return Response({"detail": "Success"})
+                    else:
+                        return Response(
+                            {"detail": "Achievement already exist"}, status=400
+                        )
+                else:
+                    return Response({"detail": "Payload invalid"}, status=400)
+            else:
+                return Response({"detail": "Permission denied"}, status=403)
+
+
+@api_view(http_method_names=["GET", "PUT", "PATCH", "DELETE"])
+@login_required()
+def achievement_retrieve_update_delete_view(request: HttpRequest, achievement_id: int):
+    if Achievement.objects.filter(id=achievement_id).exists():
+        achievement = Achievement.objects.get(id=achievement_id)
+    else:
+        return Response({"detail": "Achievement not found"}, status=404)
+
+    match request.method:
+        case "GET":
+            return Response(AchievementSerializer(achievement).data)
+        case "PUT":
+            if is_valid_payload(request, ["name"]):
+                achievement.name = request.data["name"].strip()
+                achievement.save()
+                return Response({"detail": "Updated", "id": achievement.id})
+            else:
+                return Response({"detail": "Payload invalid"}, status=400)
+
+        case "DELETE":
+            idf = achievement.id
+            achievement.delete()
+            return Response({"detail": "Deactivated", "id": idf})
+
+
 # Staff API views
 
 # @api_view(http_method_names=["GET", "POST"])
@@ -671,15 +787,293 @@ def file_retrieve_delete_view(request: HttpRequest, file_id):
 # Specialization API views
 
 
-# @api_view(http_method_names=["GET", "POST"])
-# @login_required()
-# @check_service_status()
-# def specialization_list_create_view(request: HttpRequest):
-#     match request.method:
-#         case "GET":
-#             pass
-#         case "POST":
-#             pass
-#     return Response(
-#         SpecializationSerializer(Specialization.objects.all(), many=True).data
+@api_view(http_method_names=["GET", "POST"])
+@login_required(is_admin=True)
+def specialization_list_create_view(request: HttpRequest):
+    match request.method:
+        case "GET":
+            page_size = int(request.GET.get("page_size", 10))
+            order = "-" if request.GET.get("order", "asc") == "desc" else ""
+            order_key = request.GET.get("column", "name")
+            search = request.GET.get("search", False)
+
+            order_by = order + order_key
+
+            specializations = (
+                Specialization.objects.filter(name__contains=search)
+                if search
+                else Specialization.objects.all()
+            ).order_by(order_by)
+
+            paginator = ResponsivePageSizePagination()
+            paginator.page_size = page_size
+            paginated_result = paginator.paginate_queryset(specializations, request)
+            serializer = SpecializationAdditionalSerializer(paginated_result, many=True)
+            return paginator.get_paginated_response(
+                {
+                    "data": serializer.data,
+                    "total_pages": paginator.page.paginator.num_pages,
+                }
+            )
+        case "POST":
+            if is_admin(request):
+                if is_valid_payload(request, ["name"]):
+                    if not Specialization.objects.filter(
+                        name=request.data["name"].strip()
+                    ).exists():
+                        Specialization.objects.create(name=request.data["name"].strip())
+                        return Response({"detail": "Success"})
+                    else:
+                        return Response(
+                            {"detail": "Specialization already exist"}, status=400
+                        )
+                else:
+                    return Response({"detail": "Payload invalid"}, status=400)
+            else:
+                return Response({"detail": "Permission denied"}, status=403)
+
+
+@api_view(http_method_names=["GET", "PUT", "PATCH", "DELETE"])
+@login_required()
+def specialization_retrieve_update_delete_view(
+    request: HttpRequest, specialization_id: int
+):
+    if Specialization.objects.filter(id=specialization_id).exists():
+        specialization = Specialization.objects.get(id=specialization_id)
+    else:
+        return Response({"detail": "Specialization not found"}, status=404)
+
+    match request.method:
+        case "GET":
+            return Response(SpecializationSerializer(specialization).data)
+        case "PUT":
+            if is_valid_payload(request, ["name"]):
+                specialization.name = request.data["name"].strip()
+                specialization.save()
+                return Response({"detail": "Updated", "id": specialization.id})
+            else:
+                return Response({"detail": "Payload invalid"}, status=400)
+
+        case "DELETE":
+            idf = specialization.id
+            specialization.delete()
+            return Response({"detail": "Deactivated", "id": idf})
+
+
+# Student API views
+
+
+@api_view(http_method_names=["GET", "POST"])
+@login_required(is_admin=True)
+def student_list_create_view(request: HttpRequest):
+    match request.method:
+        case "GET":
+            page_size = int(request.GET.get("page_size", 10))
+            order = "-" if request.GET.get("order", "asc") == "desc" else ""
+            order_key = request.GET.get("column", "full_name")
+            search = request.GET.get("search", False)
+
+            order_by = order + order_key
+
+            filters = {}
+            if request.GET.get("region", False):
+                filters["region__id__exact"] = request.GET["region"]
+            if request.GET.get("country", False):
+                filters["country__id__exact"] = request.GET["country"]
+
+            students = (
+                Student.objects.filter(name__contains=search, **filters)
+                if search
+                else Student.objects.filter(**filters)
+            ).order_by(order_by)
+
+            paginator = ResponsivePageSizePagination()
+            paginator.page_size = page_size
+            paginated_result = paginator.paginate_queryset(students, request)
+            serializer = StudentAdditionalSerializer(paginated_result, many=True)
+            return paginator.get_paginated_response(
+                {
+                    "data": serializer.data,
+                    "total_pages": paginator.page.paginator.num_pages,
+                }
+            )
+        case "POST":
+            if is_admin(request):
+                if is_valid_payload(
+                    request,
+                    [
+                        "name",
+                        "phone_number",
+                        "address",
+                        "region",
+                        "country",
+                        "buildings_count",
+                        "capacity",
+                        "rooms_count",
+                        "books_count",
+                        "lng",
+                        "lat",
+                    ],
+                ):
+                    if not EducationCenter.objects.filter(
+                        name=request.data["name"].strip()
+                    ).exists():
+                        try:
+                            region = Region.objects.get(id=request.data["region"])
+                        except:
+                            return Response({"detail": "Region not found"}, status=404)
+
+                        try:
+                            country = Country.objects.get(id=request.data["country"])
+                        except:
+                            return Response({"detail": "Country not found"}, status=404)
+
+                        EducationCenter.objects.create(
+                            name=request.data["name"].strip(),
+                            phone_number=request.data["phone_number"],
+                            address=request.data["address"],
+                            region=region,
+                            country=country,
+                            buildings_count=request.data["buildings_count"],
+                            rooms_count=request.data["rooms_count"],
+                            capacity=request.data["capacity"],
+                            books_count=request.data["books_count"],
+                        )
+                        return Response({"detail": "Success"})
+                    else:
+                        return Response(
+                            {"detail": "Education center already exist"}, status=400
+                        )
+                else:
+                    return Response({"detail": "Payload invalid"}, status=400)
+            else:
+                return Response({"detail": "Permission denied"}, status=403)
+
+
+@api_view(http_method_names=["GET", "PUT", "PATCH", "DELETE"])
+@login_required()
+def student_retrieve_update_delete_view(request: HttpRequest, student_id: int):
+    if Student.objects.filter(id=student_id).exists():
+        student = Student.objects.get(id=student_id)
+    else:
+        return Response({"detail": "Student not found"}, status=404)
+
+    match request.method:
+        case "GET":
+            return Response(StudentSerializer(student).data)
+        case "PUT":
+            if is_valid_payload(
+                request,
+                [
+                    "name",
+                    "phone_number",
+                    "address",
+                    "region",
+                    "country",
+                    "buildings_count",
+                    "capacity",
+                    "rooms_count",
+                    "books_count",
+                    "lng",
+                    "lat",
+                ],
+            ):
+                # try:
+                #     region = Region.objects.get(id=request.data["region"])
+                # except:
+                #     return Response({"detail": "Region not found"}, status=404)
+
+                # try:
+                #     country = Country.objects.get(id=request.data["country"])
+                # except:
+                #     return Response({"detail": "Country not found"}, status=404)
+
+                # education_center.save()
+                pass
+                return Response({"detail": "Updated", "id": student.id})
+            else:
+                return Response({"detail": "Payload invalid"}, status=400)
+
+        case "DELETE":
+            idf = student.id
+            student.delete()
+            return Response({"detail": "Deactivated", "id": idf})
+
+
+@api_view(http_method_names=["GET"])
+@login_required(is_admin=True)
+def get_student_courses(request: HttpRequest, student_id: int):
+    if Student.objects.filter(id=student_id).exists():
+        student = Student.objects.get(id=student_id)
+    else:
+        return Response({"detail": "Student not found"}, status=404)
+    courses = Course.objects.filter(students__id=student.id)
+
+    return Response(CourseSerializer(courses, many=True).data)
+
+
+@api_view(http_method_names=["GET"])
+@login_required(is_admin=True)
+def get_student_certificates(request: HttpRequest, student_id: int):
+    if Student.objects.filter(id=student_id).exists():
+        student = Student.objects.get(id=student_id)
+    else:
+        return Response({"detail": "Student not found"}, status=404)
+    certificates = Certificate.objects.filter(student=student)
+    return Response(CertificateSerializer(certificates, many=True).data)
+
+
+# def certificate_view(
+#     request,
+#     certificate_id: int,
+# ):
+#     if Certificate.objects.filter(id=certificate_id).exists():
+#         certificate = Certificate.objects.get(id=certificate_id)
+
+#     qr_data = request.build_absolute_uri(f"/certificates/{certificate.id}/")
+#     qr_buffer = io.BytesIO()
+#     qr_img = qrcode.make(qr_data)
+#     qr_img.save(qr_buffer, format="PNG")
+#     qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode("utf-8")
+
+#     # match request.headers["Accept-Language"]:
+#     #     case "ru":
+#     #         header = "Министерство Образования Туркменистана"
+#     #         # desc = f"{}"
+
+#     return render(
+#         request,
+#         "mmu_api/certificate.html",
+#         {"qr_code_base64": qr_base64, "certificate": certificate},
 #     )
+
+
+def certificate_view(
+    request,
+    certificate_id: int,
+):
+    if Certificate.objects.filter(id=certificate_id).exists():
+        certificate = Certificate.objects.get(id=certificate_id)
+
+    qr_data = request.build_absolute_uri(f"/certificates/{certificate.id}/")
+    qr_buffer = io.BytesIO()
+    qr_img = qrcode.make(qr_data)
+    qr_img.save(qr_buffer, format="PNG")
+    qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode("utf-8")
+
+    data = {"qr_code_base64": qr_base64, "certificate": certificate}
+
+    html_string = render_to_string(
+        "mmu_api/certificate.html",
+        data,
+    )
+
+    # Генерация PDF
+    pdf_file = HTML(
+        string=html_string, base_url=request.build_absolute_uri()
+    ).write_pdf()
+
+    # Ответ
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="certificate.pdf"'
+    return response

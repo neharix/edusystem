@@ -10,7 +10,7 @@ from rest_framework.request import HttpRequest
 
 from main.models import Profile
 
-from .models import ActionLog, EducationCenter
+from .models import Achievement, ActionLog, EducationCenter, Specialization
 
 
 def is_admin(request: HttpRequest):
@@ -70,6 +70,18 @@ def xlsx_exporter(model: str, identificators: List[int]):
                     "books_count": item.books_count,
                 }
                 for item in EducationCenter.objects.filter(id__in=identificators)
+            ]
+        case "achievement":
+            fields = ["id", "name"]
+            objects = [
+                {"id": item.id, "name": item.name}
+                for item in Achievement.objects.filter(id__in=identificators)
+            ]
+        case "specialization":
+            fields = ["id", "name"]
+            objects = [
+                {"id": item.id, "name": item.name}
+                for item in Specialization.objects.filter(id__in=identificators)
             ]
 
     row_count = len(objects)

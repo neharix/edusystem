@@ -1,9 +1,38 @@
 import datetime
 
 from django.db import models
-from parler.models import TranslatableModel, TranslatedFields
 
-from main.models import Country, Profile, Region
+from main.models import Profile
+
+
+class Nationality(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["name"]
+
+
+class Country(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["name"]
+
+
+class Region(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["name"]
 
 
 # Create your models here.
@@ -41,8 +70,8 @@ class ActionLog(models.Model):
         return f"{self.user.username} {self.datetime}"
 
 
-class Specialization(TranslatableModel):
-    translations = TranslatedFields(name=models.CharField(max_length=500))
+class Specialization(models.Model):
+    name = models.CharField(max_length=500)
 
     def __str__(self):
         return self.name
@@ -70,8 +99,51 @@ class Staff(models.Model):
         return self.full_name
 
 
-class Course(models.Model):
+class Achievement(models.Model):
     name = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.name
+
+
+class Parent(models.Model):
+    full_name = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.full_name
+
+
+class Direction(models.Model):
+    name = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.name
+
+
+class Student(models.Model):
+    full_name = models.CharField(max_length=500)
+    nationality = models.ForeignKey(
+        Nationality,
+        on_delete=models.SET_NULL,
+        related_name="mmu_student_nationality",
+        null=True,
+    )
+    region = models.ForeignKey(
+        Region,
+        on_delete=models.SET_NULL,
+        related_name="mmu_student_region",
+        null=True,
+    )
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.SET_NULL,
+        related_name="mmu_student_country",
+        null=True,
+    )
+    place_of_residence = models.TextField()
+    phone_number = models.CharField(max_length=250)
+    study_or_working_place = models.TextField()
+    achievements = models.ManyToManyField(Achievement, blank=True)
 
 
 class EducationCenter(models.Model):
@@ -89,8 +161,6 @@ class EducationCenter(models.Model):
 
     workers = models.ManyToManyField(Profile, blank=True)
     staff = models.ManyToManyField(Staff, blank=True)
-
-    courses = models.ManyToManyField(Course, blank=True)
 
     # Material supply fields
     buildings_count = models.PositiveIntegerField(default=0)
@@ -110,23 +180,32 @@ class EducationCenter(models.Model):
     def __str__(self):
         return self.name
 
-
-class EducationCenterCourse(models.Model):
-    education_center = models.ForeignKey(
-        EducationCenter, on_delete=models.SET_NULL, null=True
-    )
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
-
-    hours = models.IntegerField(default=0)
-
-    date_start = models.DateField(null=True, blank=True)
-    date_end = models.DateField(null=True, blank=True)
-    course_time_start = models.TimeField(null=True, blank=True)
-    course_time_end = models.TimeField(null=True, blank=True)
-
     # TODO думаю было бы неплохо создать модель учителей и добавить филд "курсы"
     # teachers = models.ManyToManyField(Teacher)
 
 
-# class Student(models.Model):
-#     full_name = models.CharField(max_length=500)
+class Course(models.Model):
+    education_center = models.ForeignKey(
+        EducationCenter, on_delete=models.SET_NULL, null=True
+    )
+    name = models.CharField(max_length=500)
+    students = models.ManyToManyField(Student)
+    direction = models.ForeignKey(Direction, on_delete=models.SET_NULL, null=True)
+    hours = models.PositiveIntegerField(default=0)
+    date_start = models.DateField(null=True, blank=True)
+    date_end = models.DateField(null=True, blank=True)
+    lesson_time_start = models.TimeField(null=True, blank=True)
+    lesson_time_end = models.TimeField(null=True, blank=True)
+
+
+class Certificate(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True)
+    education_center = models.ForeignKey(
+        EducationCenter, on_delete=models.SET_NULL, null=True
+    )
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True)
+    point = models.PositiveIntegerField(default=0)
+    temp_key = models.CharField(max_length=20)
+
+    def __str__(self):
+        return f"{self.id}.{self.student.full_name} sertifikaty"
