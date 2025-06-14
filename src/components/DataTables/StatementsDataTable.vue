@@ -122,11 +122,6 @@ function onClickOutside(event) {
   }
 }
 
-function openModalWrapper(headerText, content, id) {
-  openModal(headerText, content);
-  selectedItem.value = id;
-}
-
 
 function closeModal() {
   isModalOpen.value = false;
@@ -308,13 +303,17 @@ window.addEventListener("click", onClickOutside);
               item.sender
               }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.type
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+              {{
+                item.type
               }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
-              item.status
-              }}
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
+              <div class="w-max py-2 px-3 transition duration-200 ease-out select-none rounded-lg"
+                :class="{ 'bg-yellow-300 dark:bg-yellow-300/50': item.status === 'Barlagda', 'bg-emerald-300 dark:bg-emerald-500/50': item.status === 'Kabul edildi', 'bg-red-500 dark:bg-red-500/50': item.status === 'Ret edildi' }">
+                {{
+                  item.status
+                }}</div>
             </td>
 
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{

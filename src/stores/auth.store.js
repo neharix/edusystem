@@ -9,6 +9,7 @@ export const useAuthStore = defineStore("auth", {
     token: localStorage.getItem("access_token") || null,
     isLoading: true,
     isLoginSuccessfully: "",
+    notifications: [],
   }),
   getters: {
     isSuperuser: (state) => {
@@ -53,6 +54,9 @@ export const useAuthStore = defineStore("auth", {
           this.role = this.user.is_superuser ? "root" : "user";
         }
         this.isLoading = false;
+        if (this.user.notifications.length > 0) {
+          this.notifications = this.user.notifications;
+        }
       } catch (error) {
         console.error("Failed to fetch user", error);
       }

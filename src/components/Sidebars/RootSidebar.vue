@@ -3,15 +3,33 @@
 import SidebarLink from "@/components/SidebarLink.vue";
 import TabBar from "@/components/TabBar.vue";
 import TabItem from "@/components/TabItem.vue";
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useUxStore } from "@/stores/ux.store.js";
 import { storeToRefs } from "pinia";
+import { useAuthStore } from "@/stores/auth.store";
 
 
 const selectedTab = ref("hs");
 
 const uxStore = useUxStore();
+const authStore = useAuthStore();
+
 const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
+const { notifications } = storeToRefs(authStore);
+
+
+const expulsionStatementsCount = computed(() => {
+  return notifications.value.filter((e) => { return e.type === 'expulsion' }).length
+})
+const reinstateStatementsCount = computed(() => {
+  return notifications.value.filter((e) => { return e.type === 'reinstate' }).length
+})
+const diplomaStatementsCount = computed(() => {
+  return notifications.value.filter((e) => { return e.type === 'diploma' }).length
+})
+const teacherStatementsCount = computed(() => {
+  return notifications.value.filter((e) => { return e.type === 'teacher' }).length
+})
 
 
 </script>
@@ -211,18 +229,22 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
           <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Okuwdan çykarmak</span>
         </sidebar-link>
         <sidebar-link link="/statements">
-          <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+          <div class="flex justify-center relative" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
 
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none">
               <path fill-rule="evenodd" clip-rule="evenodd"
                 d="M9.29289 1.29289C9.48043 1.10536 9.73478 1 10 1H18C19.6569 1 21 2.34315 21 4V20C21 21.6569 19.6569 23 18 23H6C4.34315 23 3 21.6569 3 20V8C3 7.73478 3.10536 7.48043 3.29289 7.29289L9.29289 1.29289ZM18 3H11V8C11 8.55228 10.5523 9 10 9H5V20C5 20.5523 5.44772 21 6 21H18C18.5523 21 19 20.5523 19 20V4C19 3.44772 18.5523 3 18 3ZM6.41421 7H9V4.41421L6.41421 7ZM7 13C7 12.4477 7.44772 12 8 12H16C16.5523 12 17 12.4477 17 13C17 13.5523 16.5523 14 16 14H8C7.44772 14 7 13.5523 7 13ZM7 17C7 16.4477 7.44772 16 8 16H16C16.5523 16 17 16.4477 17 17C17 17.5523 16.5523 18 16 18H8C7.44772 18 7 17.5523 7 17Z"
                 fill="currentColor" />
             </svg>
+            <div v-if="expulsionStatementsCount + reinstateStatementsCount > 0"
+              class="bg-red-500 px-1.5 py-0.5 text-white text-xs rounded-full absolute -top-2 -right-2">{{
+                expulsionStatementsCount + reinstateStatementsCount
+              }}</div>
           </div>
           <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Arzalar</span>
         </sidebar-link>
         <sidebar-link link="/diplomas">
-          <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+          <div class="flex justify-center relative" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
 
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="16" r="3" stroke="currentColor" stroke-width="1.5" />
@@ -238,11 +260,15 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
               <path d="M9 6L15 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
               <path d="M7 9.5H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
             </svg>
+            <div v-if="diplomaStatementsCount > 0"
+              class="bg-red-500 px-1.5 py-0.5 text-white text-xs rounded-full absolute -top-2 -right-2">{{
+                diplomaStatementsCount
+              }}</div>
           </div>
           <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Diplomlar</span>
         </sidebar-link>
         <sidebar-link link="/teachers">
-          <div class="flex justify-center" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
+          <div class="flex justify-center relative" :class="{ 'w-full': !sidebarExpanded && !sidebarHover }">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none">
               <path
                 d="M10.05 2.53004L4.03002 6.46004C2.10002 7.72004 2.10002 10.54 4.03002 11.8L10.05 15.73C11.13 16.44 12.91 16.44 13.99 15.73L19.98 11.8C21.9 10.54 21.9 7.73004 19.98 6.47004L13.99 2.54004C12.91 1.82004 11.13 1.82004 10.05 2.53004Z"
@@ -253,6 +279,11 @@ const { sidebarExpanded, sidebarHover } = storeToRefs(uxStore);
               <path d="M21.4 15V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                 stroke-linejoin="round" />
             </svg>
+            <div v-if="teacherStatementsCount > 0"
+              class="bg-red-500 px-1.5 py-0.5 text-center text-white text-xs rounded-full absolute -top-2 -right-2">
+              {{
+                teacherStatementsCount
+              }}</div>
           </div>
           <span v-if="sidebarExpanded || sidebarHover" class="text-nowrap">Mugallymlar</span>
         </sidebar-link>

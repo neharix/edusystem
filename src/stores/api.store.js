@@ -1576,7 +1576,7 @@ export const useFilterStore = defineStore({
   id: "filter",
   state: () => ({
     data: null,
-    isLoading: true,
+    isLoading: false,
     isfilterOptionsInSession: sessionStorage.getItem("filterOptions")
       ? true
       : false,

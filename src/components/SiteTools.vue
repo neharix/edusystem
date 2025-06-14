@@ -1,17 +1,159 @@
+<script setup>
+import ButtonWithTooltip from "./ButtonWithTooltip.vue";
+import { useAuthStore } from "@/stores/auth.store";
+import DropdownNotification from "./DropdownNotification.vue";
+import { computed, ref } from "vue";
+import { storeToRefs } from "pinia";
+import useConfirmModal from "@/use/useModalWindow";
+import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
+import { useSpecialFunctionsStore, useStudentsStore } from "@/stores/api.store";
+import { useRoute } from "vue-router";
+
+
+const props = defineProps({
+  enableDumper: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  isDark: Boolean,
+  isMobile: Boolean,
+});
+
+const submitFunction = ref(() => { console.log('nothing to do') });
+
+const specialFunctionsStore = useSpecialFunctionsStore();
+const studentsStore = useStudentsStore();
+const authStore = useAuthStore();
+
+const { notifications, user, role } = storeToRefs(authStore);
+
+const route = useRoute();
+
+const { isModalOpen, openModal, header, context } = useConfirmModal();
+
+function getDumpFile() {
+  specialFunctionsStore.getDump().then(() => {
+    let now = new Date();
+    const blob = new Blob([specialFunctionsStore.dump], { type: specialFunctionsStore.dumpContentType })
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = "_blank";
+    link.download = `bmdu-dump-${now.toISOString()}.zip`;
+    link.classList.add('hidden');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  })
+}
+
+function updateStudyYears() {
+  studentsStore.updateStudyYears().then(() => {
+    studentsStore.getAllAdditional();
+  });
+}
+
+function openModalWrap(header, content, func) {
+  submitFunction.value = func;
+  openModal(header, content);
+}
+
+function submitModal(func) {
+  func();
+  isModalOpen.value = false;
+}
+
+
+const diplomas = ref(null);
+
+const statementsVisibility = computed(() => {
+  try {
+    let isVisible = false;
+    for (let notification of user.value.notifications) {
+      if (notification.type === "expulsion" || notification.type === "reinstate") {
+        isVisible = true;
+      }
+    }
+    return isVisible;
+  } catch {
+    return false
+  }
+})
+
+const diplomasVisibility = computed(() => {
+  try {
+    let isVisible = false;
+    for (let notification of user.value.notifications) {
+      if (notification.type === "diploma") {
+        isVisible = true;
+      }
+    }
+    return isVisible;
+  } catch {
+    return false
+  }
+})
+
+const teacherStatementsVisibility = computed(() => {
+  try {
+    let isVisible = false;
+    for (let notification of user.value.notifications) {
+      if (notification.type === "teacher") {
+        isVisible = true;
+      }
+    }
+    return isVisible;
+  } catch {
+    return false
+  }
+})
+
+
+const isOpen = ref(false);
+const isMobileMenuOpen = ref(false);
+
+
+function toggleMenu() {
+  isOpen.value = !isOpen.value;
+}
+
+function toggleMobileMenu() {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+}
+
+function closeMenu() {
+  isOpen.value = false;
+}
+
+function onClickOutside(event) {
+  if (!event.target.closest("#dropdown")) {
+    closeMenu();
+  }
+}
+
+window.addEventListener("click", onClickOutside);
+
+
+const emit = defineEmits(["toggle-theme"]);
+
+</script>
+
 <template>
-  <div :class="class">
+  <div>
     <div class="hidden lg:flex lg:items-center space-x-2">
       <div class="relative inline-block text-left">
         <div>
-          <button v-if="notifications" id="dropdown" @click="toggleMenu"><svg xmlns="http://www.w3.org/2000/svg"
-              class="w-8 mt-1" viewBox="0 0 24 24" fill="none">
-              <path fill-rule="evenodd" clip-rule="evenodd"
-                d="M7.07046 10.26C7.96453 7.86801 9.19303 7.03601 11.2132 7.03601C13.2334 7.03601 14.4619 7.86801 15.356 10.26C15.3728 10.3055 15.3862 10.3524 15.396 10.4L16.5543 15.917C16.6155 16.2008 16.5485 16.4978 16.3719 16.7251C16.1953 16.9525 15.928 17.0858 15.6446 17.088H13.3173C13.37 17.6989 13.1737 18.3048 12.7751 18.7618C12.3764 19.2188 11.811 19.4861 11.2132 19.5C10.6151 19.4861 10.0494 19.2186 9.65063 18.7611C9.25191 18.3037 9.05587 17.6972 9.10918 17.086H6.78186C6.49847 17.0838 6.2312 16.9505 6.0546 16.7231C5.878 16.4958 5.81096 16.1988 5.87218 15.915L7.03048 10.4C7.04027 10.3524 7.05363 10.3055 7.07046 10.26Z"
-                stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" />
-              <path
-                d="M9.10921 16.336C8.69499 16.336 8.35921 16.6718 8.35921 17.086C8.35921 17.5002 8.69499 17.836 9.10921 17.836V16.336ZM13.3173 17.836C13.7315 17.836 14.0673 17.5002 14.0673 17.086C14.0673 16.6718 13.7315 16.336 13.3173 16.336V17.836ZM9.62888 4.75C9.21467 4.75 8.87888 5.08579 8.87888 5.5C8.87888 5.91421 9.21467 6.25 9.62888 6.25V4.75ZM12.7976 6.25C13.2118 6.25 13.5476 5.91421 13.5476 5.5C13.5476 5.08579 13.2118 4.75 12.7976 4.75V6.25ZM9.10921 17.836H13.3173V16.336H9.10921V17.836ZM9.62888 6.25H12.7976V4.75H9.62888V6.25Z"
-                fill="currentColor" />
-            </svg></button>
+          <button v-if="notifications.length > 0" id="dropdown" class="relative" @click="toggleMenu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 mt-1" viewBox="0 0 24 24">
+              <rect width="24" height="24" fill="none" />
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10.268 21a2 2 0 0 0 3.464 0M22 8c0-2.3-.8-4.3-2-6M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326M4 2C2.8 3.7 2 5.7 2 8" />
+            </svg>
+            <div class="bg-red-500 px-1.5 py-0.5 text-white text-xs rounded-full absolute -top-1 -right-1">{{
+              notifications.length
+            }}</div>
+          </button>
           <transition name="fade-scale" @before-enter="el => (el.style.display = 'block')"
             @after-leave="el => (el.style.display = 'none')">
             <div v-show="isOpen"
@@ -36,7 +178,7 @@
               </div>
               <div class="px-2 pt-2 select-none" v-if="teacherStatementsVisibility">
                 <h3 class="uppercase text-center">
-                  MUGALLYMLAR</h3>
+                  Mugallymlar</h3>
               </div>
               <div class="py-1" v-if="teacherStatementsVisibility">
                 <dropdown-notification :types="['teacher']" :redirect-to="`/teachers/view/${notification.id}`"
@@ -228,147 +370,6 @@
     </div>
   </div>
 </template>
-<script setup>
-import ButtonWithTooltip from "./ButtonWithTooltip.vue";
-import { useAuthStore } from "@/stores/auth.store";
-import DropdownNotification from "./DropdownNotification.vue";
-import { computed, ref } from "vue";
-import { storeToRefs } from "pinia";
-import useConfirmModal from "@/use/useModalWindow";
-import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
-import { useSpecialFunctionsStore, useStudentsStore } from "@/stores/api.store";
-import { useRoute } from "vue-router";
-
-
-const props = defineProps({
-  enableDumper: {
-    type: Boolean,
-    required: false,
-    default: false,
-  },
-  isDark: Boolean,
-  isMobile: Boolean,
-  notifications: Boolean,
-  class: String,
-});
-
-const submitFunction = ref(() => { console.log('nothing to do') });
-
-const specialFunctionsStore = useSpecialFunctionsStore();
-const studentsStore = useStudentsStore();
-
-const route = useRoute();
-
-const { isModalOpen, openModal, header, context } = useConfirmModal();
-
-function getDumpFile() {
-  specialFunctionsStore.getDump().then(() => {
-    let now = new Date();
-    const blob = new Blob([specialFunctionsStore.dump], { type: specialFunctionsStore.dumpContentType })
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = "_blank";
-    link.download = `bmdu-dump-${now.toISOString()}.zip`;
-    link.classList.add('hidden');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  })
-}
-
-function updateStudyYears() {
-  studentsStore.updateStudyYears().then(() => {
-    studentsStore.getAllAdditional();
-  });
-}
-
-function openModalWrap(header, content, func) {
-  submitFunction.value = func;
-  openModal(header, content);
-}
-
-function submitModal(func) {
-  func();
-  isModalOpen.value = false;
-}
-
-const authStore = useAuthStore();
-const { user, role } = storeToRefs(authStore);
-
-const diplomas = ref(null);
-
-const statementsVisibility = computed(() => {
-  try {
-    let isVisible = false;
-    for (let notification of user.value.notifications) {
-      if (notification.type === "expulsion" || notification.type === "reinstate") {
-        isVisible = true;
-      }
-    }
-    return isVisible;
-  } catch {
-    return false
-  }
-})
-
-const diplomasVisibility = computed(() => {
-  try {
-    let isVisible = false;
-    for (let notification of user.value.notifications) {
-      if (notification.type === "diploma") {
-        isVisible = true;
-      }
-    }
-    return isVisible;
-  } catch {
-    return false
-  }
-})
-
-const teacherStatementsVisibility = computed(() => {
-  try {
-    let isVisible = false;
-    for (let notification of user.value.notifications) {
-      if (notification.type === "teacher") {
-        isVisible = true;
-      }
-    }
-    return isVisible;
-  } catch {
-    return false
-  }
-})
-
-
-const isOpen = ref(false);
-const isMobileMenuOpen = ref(false);
-
-
-function toggleMenu() {
-  isOpen.value = !isOpen.value;
-}
-
-function toggleMobileMenu() {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value;
-}
-
-function closeMenu() {
-  isOpen.value = false;
-}
-
-function onClickOutside(event) {
-  if (!event.target.closest("#dropdown")) {
-    closeMenu();
-  }
-}
-
-window.addEventListener("click", onClickOutside);
-
-
-const emit = defineEmits(["toggle-theme"]);
-
-</script>
 <style scoped>
 .fade-scale-enter-active,
 .fade-scale-leave-active {
