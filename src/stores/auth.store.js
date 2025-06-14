@@ -54,7 +54,7 @@ export const useAuthStore = defineStore("auth", {
           this.role = this.user.is_superuser ? "root" : "user";
         }
         this.isLoading = false;
-        if (this.user.notifications.length > 0) {
+        if (this.user.notifications) {
           this.notifications = this.user.notifications;
         }
       } catch (error) {
