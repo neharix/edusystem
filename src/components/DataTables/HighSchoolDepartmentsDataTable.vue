@@ -7,7 +7,6 @@ import useToast from "@/use/useToast.js";
 import { useDepartmentsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
-import { useRoute } from "vue-router";
 
 const props = defineProps(["data"])
 const emit = defineEmits(["update"]);
@@ -265,7 +264,7 @@ window.addEventListener("click", onClickOutside);
           <tr v-for="(item, index) in paginatedData" :key="item.id"
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
-              index + 1
+              ((currentPage - 1) * rowsPerPage) + (index + 1)
               }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{

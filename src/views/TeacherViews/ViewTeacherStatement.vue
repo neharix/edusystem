@@ -1,19 +1,14 @@
 <script setup>
 import GridCell from '@/components/GridCell.vue';
-import { useDiplomasStore, useTeacherStatementsStore } from '@/stores/api.store';
+import { useTeacherStatementsStore } from '@/stores/api.store';
 import { storeToRefs } from 'pinia';
 import { onBeforeMount, watch, ref } from 'vue';
-import { Field, Form } from "vee-validate";
-import * as Yup from 'yup';
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
 import { useRoute } from 'vue-router';
 import TheBreadcrumb from '@/components/TheBreadcrumb.vue';
-import HighSchoolDiplomaReportsDataTable from '@/components/DataTables/HighSchoolDiplomaReportsDataTable.vue';
-import HighSchoolDiplomaActionsDataTable from '@/components/DataTables/HighSchoolDiplomaActionsDataTable.vue';
 import VerdictBtnsGroup from '@/components/VerdictBtnsGroup.vue';
 import { useAuthStore } from '@/stores/auth.store';
-import TheSpinner from '@/components/TheSpinner.vue';
 
 const route = useRoute();
 
@@ -22,12 +17,6 @@ const { toasts, addToast } = useToast();
 const authStore = useAuthStore()
 const teacherStatementsStore = useTeacherStatementsStore()
 const { teacherStatement, submitStatus, updateStatus } = storeToRefs(teacherStatementsStore);
-
-const allowingDate = ref(null);
-
-const schema = Yup.object().shape({
-  allowed_until: Yup.date(),
-});
 
 
 
@@ -59,6 +48,13 @@ function giveVerdict(id, verdict) {
     update();
   });
 }
+
+
+async function markAsUnviewed() {
+  await teacherStatementsStore.markAsUnviewed(route.params.id);
+  authStore.fetchUser()
+}
+
 
 const breadcrumbPaths = [
   { path: "/teachers", name: "Mugallymlar" },
@@ -304,7 +300,8 @@ const breadcrumbPaths = [
         </defs>
       </svg>
     </grid-cell>
-    <div class="md:col-span-4 sm:col-span-1">
+    <div
+      class="md:col-span-4 sm:col-span-1 bg-white dark:bg-[#171131ef] shadow-md rounded-lg flex justify-between items-center p-4">
       <div class="flex justify-center" v-if="!teacherStatement.verdict">
         <verdict-btns-group class="mb-4" @submit-click="giveVerdict(route.params.id, 'C')"
           @reject-click="giveVerdict(route.params.id, 'R')"></verdict-btns-group>
@@ -324,6 +321,16 @@ const breadcrumbPaths = [
           Ret edildi
         </h4>
       </div>
+      <button title="Okalmadyk ýaly bellemek" @click="markAsUnviewed()"
+        class="mt-4 active:scale-80 transition-all duration-300 ease-in-out py-2 select-none text-nowrap px-3 my-2 text-[0.7rem] md:text-sm lg:text-sm rounded-lg shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white"><svg
+          xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24">
+          <rect width="24" height="24" fill="none" />
+          <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h12.5" />
+            <path d="m22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7m18 7v4m0 4v.01" />
+          </g>
+        </svg>
+      </button>
     </div>
   </div>
   <teleport to="body">

@@ -106,6 +106,15 @@ onBeforeMount(() => {
   });
 })
 
+
+function markAsUnviewed() {
+  statementsStore.markAsUnviewed(route.params.id, route.meta.statementType).then(() => {
+    statementsStore.get(route.params.id, route.meta.statementType)
+    authStore.fetchUser()
+  })
+}
+
+
 function submitStatement() {
   statementsStore.confirmStatement(route.params.id, route.meta.statementType)
   router.push("/statements");
@@ -127,7 +136,18 @@ const breadcrumbPaths = [
 <template>
   <the-breadcrumb :paths="breadcrumbPaths"></the-breadcrumb>
   <div class="tile">
-    <h3 class="text-xl font-bold mx-2 select-none">Talyp barada maglumat</h3>
+    <div class="flex flex-nowrap items-center">
+      <h3 class="w-full text-xl font-bold mx-2 select-none">Talyp barada maglumat</h3>
+      <button title="Okalmadyk ýaly bellemek" @click="markAsUnviewed()"
+        class="active:scale-80 transition-all duration-300 ease-in-out py-2 select-none text-nowrap px-3 my-2 text-[0.7rem] md:text-sm lg:text-sm rounded-lg shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white"><svg
+          xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24">
+          <rect width="24" height="24" fill="none" />
+          <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h12.5" />
+            <path d="m22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7m18 7v4m0 4v.01" />
+          </g>
+        </svg></button>
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
       <div>
         <p class="info-label">Talybyň ady, familiýasy, atasynyň ady</p>

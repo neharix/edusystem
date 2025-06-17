@@ -33,7 +33,6 @@ const schema = Yup.object().shape({
 
 onBeforeMount(() => {
   diplomasStore.getDiplomaRequestAdvancedById(route.params.id).then(() => {
-    console.log(diplomaRequestAdvanced.value.allowed_until)
     let allowingDt = new Date(diplomaRequestAdvanced.value.allowed_until);
     allowingDt.setHours(allowingDt.getHours() + 5);
     allowingDate.value = allowingDt.toISOString().slice(0, 16)
@@ -82,6 +81,14 @@ function giveVerdict(id, verdict) {
     update();
   });
 }
+
+
+async function markAsUnviewed() {
+  await diplomasStore.markAsUnviewed(route.params.id);
+  authStore.fetchUser()
+  diplomasStore.getDiplomaRequestAdvancedById(route.params.id);
+}
+
 
 const breadcrumbPaths = [
   { path: "/diplomas", name: "Diplomlar" },
@@ -258,18 +265,35 @@ const breadcrumbPaths = [
       </svg>
     </grid-cell>
     <div class="tile md:col-span-2 sm:col-span-1">
-      <div class="flex justify-center" v-if="!diplomaRequestAdvanced.verdict">
+      <div class="flex justify-between" v-if="!diplomaRequestAdvanced.verdict">
         <verdict-btns-group @submit-click="giveVerdict(route.params.id, 'C')"
           @reject-click="giveVerdict(route.params.id, 'R')"></verdict-btns-group>
+        <button title="Okalmadyk ýaly bellemek" @click="markAsUnviewed()"
+          class="mt-4 active:scale-80 transition-all duration-300 ease-in-out py-2 select-none text-nowrap px-3 my-2 text-[0.7rem] md:text-sm lg:text-sm rounded-lg shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white"><svg
+            xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24">
+            <rect width="24" height="24" fill="none" />
+            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+              <path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h12.5" />
+              <path d="m22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7m18 7v4m0 4v.01" />
+            </g>
+          </svg></button>
       </div>
-      <div v-else-if="diplomaRequestAdvanced.verdict === 'C'" class="mt-4 flex justify-center">
+      <div v-else-if="diplomaRequestAdvanced.verdict === 'C'" class="mt-4 flex justify-between">
         <div>
           <h4
             class="px-4 py-2 text-[0.8rem] w-max font-medium bg-emerald-400 hover:bg-emerald-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-emerald-700 border border-gray-200 dark:border-gray-700 rounded-lg select-none">
             Tassyklanyldy
           </h4>
         </div>
-
+        <button title="Okalmadyk ýaly bellemek" @click="markAsUnviewed()"
+          class="active:scale-80 transition-all duration-300 ease-in-out py-2 select-none text-nowrap px-3 my-2 text-[0.7rem] md:text-sm lg:text-sm rounded-lg shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white"><svg
+            xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24">
+            <rect width="24" height="24" fill="none" />
+            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+              <path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h12.5" />
+              <path d="m22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7m18 7v4m0 4v.01" />
+            </g>
+          </svg></button>
       </div>
       <div v-else-if="diplomaRequestAdvanced.verdict === 'R'" class="mt-4 flex justify-center">
         <h4

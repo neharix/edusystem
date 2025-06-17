@@ -1302,6 +1302,15 @@ export const useStatementsStore = defineStore({
         console.error("Error", error);
       }
     },
+    async markAsUnviewed(id, objName) {
+      try {
+        const response = await axiosInstance.post(`/mark-as-unviewed/${id}/`, {
+          obj_name: objName,
+        });
+      } catch {
+        console.error("Error", error);
+      }
+    },
     async confirmStatement(id, type) {
       try {
         const response = await axiosInstance.get(
@@ -1377,6 +1386,15 @@ export const useDiplomasStore = defineStore({
         this.updateStatus = "success";
       } catch (error) {
         this.updateStatus = "error";
+        console.error("Error", error);
+      }
+    },
+    async markAsUnviewed(id) {
+      try {
+        const response = await axiosInstance.post(
+          `/mark-diploma-as-unviewed/${id}/`
+        );
+      } catch {
         console.error("Error", error);
       }
     },
@@ -1529,6 +1547,15 @@ export const useTeacherStatementsStore = defineStore({
           `/verdict-teacher-statement/${id}/${verdict}/`
         );
       } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async markAsUnviewed(id) {
+      try {
+        const response = await axiosInstance.post(
+          `/mark-teacher-statement-as-unviewed/${id}/`
+        );
+      } catch {
         console.error("Error", error);
       }
     },

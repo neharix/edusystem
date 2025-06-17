@@ -126,7 +126,6 @@ function openModalWrapper(headerText, content, id) {
   selectedItem.value = id;
 }
 
-
 function closeModal() {
   isModalOpen.value = false;
   selectedItem.value = null;
@@ -243,9 +242,10 @@ window.addEventListener("click", onClickOutside);
         </thead>
         <tbody>
           <tr v-for="(item, index) in paginatedData" :key="item.id"
-            class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
+            :class="{ 'bg-white dark:bg-[#261953]': !item.is_viewed }"
+            class="transition ease-in hover:ease-out duration-200 bg-gray-200 dark:bg-[#171131ef] hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
-              index + 1
+              ((currentPage - 1) * rowsPerPage) + (index + 1)
               }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
