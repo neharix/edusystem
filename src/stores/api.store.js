@@ -351,6 +351,7 @@ export const useSpecializationsStore = defineStore("specializations", () => {
   const createDepartmentSpecializationsStatus = ref(null);
   const highSchoolSpecializations = ref([]);
   const highSchoolExcSpecializations = ref([]);
+  const currentPage = ref(1);
 
   async function get(id) {
     try {
@@ -385,6 +386,7 @@ export const useSpecializationsStore = defineStore("specializations", () => {
         );
       }
 
+      currentPage.value = response.data.results.current_page;
       specializationsAdditional.value = response.data.results.data;
       dataTablePageCount.value = response.data.results.total_pages;
       console.log(response.data);
@@ -506,6 +508,7 @@ export const useSpecializationsStore = defineStore("specializations", () => {
     highSchoolSpecializations,
     highSchoolExcSpecializations,
     dataTablePageCount,
+    currentPage,
     get,
     getAllAdditional,
     create,
@@ -865,6 +868,8 @@ export const useStudentsStore = defineStore("students", () => {
   const deleteStatus = ref(null);
   const updateStatus = ref(null);
 
+  const currentPage = ref(1);
+
   const route = useRoute();
 
   async function updateStudyYears() {
@@ -1014,6 +1019,7 @@ export const useStudentsStore = defineStore("students", () => {
           params: { page, page_size: pageSize, order, column, ...filterQuery },
         });
       }
+      currentPage.value = response.data.results.current_page;
       studentsAdditional.value = response.data.results.data;
       dataTablePageCount.value = response.data.results.total_pages;
     } catch (error) {
@@ -1103,6 +1109,7 @@ export const useStudentsStore = defineStore("students", () => {
     deleteStatus,
     updateStatus,
     dataTablePageCount,
+    currentPage,
     updateStudyYears,
     resetMistakeVariables,
     resetExcelFormStates,

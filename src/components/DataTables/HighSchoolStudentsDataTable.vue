@@ -9,7 +9,7 @@ import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
 import { useRoute } from 'vue-router';
-
+import DrawerEnd from '../Drawers/DrawerEnd.vue';
 
 const props = defineProps({
   data: Array,
@@ -152,6 +152,7 @@ function submitModal() {
   selectedItem.value = null;
 }
 
+
 watch(currentPage, (newVal) => {
   router.push({ name: 'students-list', query: { ...route.query, page: newVal } }).then(() => {
     emit('update')
@@ -201,6 +202,9 @@ onMounted(() => {
     }
   }
   createStatus.value = null;
+  if (currentPage.value != studentsStore.currentPage) {
+    changePage(studentsStore.currentPage);
+  }
 })
 
 
@@ -240,42 +244,70 @@ window.addEventListener("click", onClickOutside);
             </transition>
           </div>
         </div>
-
-        <div class="lg:w-1/3 md:w-1/3 w-2/3 flex items-center space-x-2">
-          <button @click="resetTable" :class="{ 'opacity-0': !isSearching }" :disabled="!isSearching"
-            class="p-2 text-sm rounded-xl shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="w-6 h-6"
-              viewBox="0 0 24 24" version="1.1">
-              <title>Reload</title>
-              <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                <g id="Reload">
-                  <rect id="Rectangle" fill-rule="nonzero" x="0" y="0" width="24" height="24">
-
-                  </rect>
-                  <path
-                    d="M4,13 C4,17.4183 7.58172,21 12,21 C16.4183,21 20,17.4183 20,13 C20,8.58172 16.4183,5 12,5 C10.4407,5 8.98566,5.44609 7.75543,6.21762"
-                    id="Path" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-
-                  </path>
-                  <path
-                    d="M9.2384,1.89795 L7.49856,5.83917 C7.27552,6.34441 7.50429,6.9348 8.00954,7.15784 L11.9508,8.89768"
-                    id="Path" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-
-                  </path>
-                </g>
-              </g>
-            </svg>
-          </button>
-          <input v-model="searchQuery" type="text" @keyup.enter="applySearch" placeholder="Gözleg"
-            class="w-full dark:text-gray-300 transition duration-200 ease-in bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none" />
-        </div>
+        <!-- <div>
+          <drawer-end>
+            <template #btn><svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24">
+                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M22 3H2l8 9.46V19l4 2v-8.54z" />
+              </svg></template>
+<template #content>
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold text-xl">Filterler</p>
+                <button class="btn-primary flex items-center space-x-2" @click="resetFilter('all')"><svg
+                    xmlns="http://www.w3.org/2000/svg" class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg><span>Täzelemek</span></button>
+              </div>
+              <hr class="hr">
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Welaýatlar</p>
+                <button class="btn-primary" @click="resetFilter('region')"><svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('region', item.id)"
+                  :class="{ 'btn-secondary': route.query.region != item.id, 'btn-primary': route.query.region == item.id, }"
+                  v-for="item in regions" :key="item.id">{{ item.name }}</button>
+              </div>
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Ýurtlar</p>
+                <button class="btn-primary" @click="resetFilter('country')"><svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('country', item.id)"
+                  :class="{ 'btn-secondary': route.query.country != item.id, 'btn-primary': route.query.country == item.id, }"
+                  v-for="item in countries" :key="item.id">{{ item.name }}</button>
+              </div>
+            </template>
+</drawer-end>
+</div> -->
       </div>
       <div class="mx-4 pb-4 flex">
-        <input v-model="searchQuery" type="text" @keyup.enter="applySearch" placeholder="search"
+        <input v-model="searchQuery" type="text" @keyup.enter="applySearch" placeholder="Gözleg"
           :class="{ 'rounded-l-md': isSearching, 'rounded-md': !isSearching }"
-          class="w-full text-[0.8rem] md:text-sm dark:text-gray-300 transition duration-200 ease-in bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 focus:ring focus:ring-emerald-300 dark:focus:ring-emerald-800 focus:outline-none" />
+          class="w-full text-[0.8rem] md:text-sm dark:text-gray-300 transition duration-200 ease-in bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 focus:ring focus:ring-blue-300 dark:focus:ring-violet-800 focus:outline-none" />
         <button @click="resetTable" v-if="isSearching"
-          class="py-2 select-none text-nowrap px-3 text-[0.7rem] md:text-sm rounded-r-md shadow-md bg-emerald-500 dark:bg-emerald-900 text-white ring-0 ring-emerald-200 dark:ring-emerald-800 active:ring-4 duration-100 ease-in active:scale-95">
+          class="py-2 select-none text-nowrap px-3 text-[0.7rem] md:text-sm rounded-r-md shadow-md dark:border-violet-500/50 bg-blue-500 dark:bg-violet-600 text-white ring-0 ring-blue-400 dark:ring-violet-800 active:ring-4 duration-100 ease-in active:scale-95">
           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="w-6 h-6"
             viewBox="0 0 24 24" version="1.1">
             <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
