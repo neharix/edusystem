@@ -9,7 +9,7 @@ const { data } = useDashboard();
 </script>
 
 <template>
-  <div class="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
+  <div class="grid md:grid-cols-3 sm:grid-cols-2 gap-8">
     <grid-cell link="/faculties" label="Fakultetler" :data-value="data.faculties_count"
       icon-bg-class="bg-green-200 dark:bg-green-500/75">
       <svg class="w-6 h-8 stroke-green-500 dark:stroke-green-900" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -34,14 +34,7 @@ const { data } = useDashboard();
           d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0 1 16.5 7.605" />
       </svg>
     </grid-cell>
-    <grid-cell link="/nationalizations" label="Milletler" :data-value="data.nationalities_count"
-      icon-bg-class="bg-red-200 dark:bg-red-500/75">
-      <svg class="w-6 h-8 stroke-red-500 dark:stroke-red-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-        <circle cx="12" cy="10" r="3"></circle>
-      </svg>
-    </grid-cell>
+
     <grid-cell link="/students" label="Talyplar" :data-value="data.students_count"
       icon-bg-class="bg-sky-200 dark:bg-sky-500/75">
       <svg class="w-6 h-8 stroke-sky-500 dark:stroke-sky-900" xmlns="http://www.w3.org/2000/svg" width="14" height="14"

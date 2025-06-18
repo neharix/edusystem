@@ -66,7 +66,9 @@ const breadcrumbPaths = [
       <the-spinner class="w-24"></the-spinner>
     </div>
     <div v-else>
-      <students-data-table :data="studentsAdditional" :total-pages="dataTablePageCount"
+      <students-data-table v-if="role === 'root'" :data="studentsAdditional" :total-pages="dataTablePageCount"
+        @update="updateData"></students-data-table>
+        <students-data-table v-else :data="studentsAdditional" :total-pages="dataTablePageCount"
         @update="updateData"></students-data-table>
     </div>
   </div>

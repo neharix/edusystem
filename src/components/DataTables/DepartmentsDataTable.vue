@@ -435,6 +435,18 @@ window.addEventListener("click", onClickOutside);
       </svg>
     </button>
   </div>
+  <div class="flex items-center justify-center">
+    <input placeholder="#" type="number" v-model.number="customPage"
+      class="w-14 dark:text-gray-300 transition duration-200 ease-in bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-l-full focus:ring focus:ring-blue-200 focus:outline-none">
+    <button @click="changePage(customPage)"
+      class="p-4 py-2 my-2 rounded-r-full border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white">
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M11 16L15 12M15 12L11 8M15 12H3M4.51555 17C6.13007 19.412 8.87958 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C8.87958 3 6.13007 4.58803 4.51555 7"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  </div>
   <teleport to="body">
     <div class="toast-container w-5/6 fixed top-25
        md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">
