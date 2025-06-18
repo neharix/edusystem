@@ -369,10 +369,12 @@ def dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser:
         male_graduates = 0
         female_graduates = 0
-        for specialization in Specialization.objects.filter(active=True):
+        for specialization in Specialization.objects.filter(active=True).select_related(
+            "degree"
+        ):
             for d_specialization in DepartmentSpecialization.objects.filter(
                 specialization=specialization
-            ):
+            ).select_related("specialization"):
                 male_graduates += Student.objects.filter(
                     specialization=d_specialization,
                     study_year=str(specialization.degree.duration),
@@ -434,6 +436,28 @@ def dashboard_api_view(request: HttpRequest):
         )
     elif request.user.is_authenticated:
         high_school = HighSchool.objects.get(manager__user=request.user)
+        male_graduates = 0
+        female_graduates = 0
+        for d_specialization in DepartmentSpecialization.objects.filter(
+            faculty_department__high_school_faculty__high_school=high_school,
+        ).select_related("specialization", "specialization__degree"):
+            male_graduates += Student.objects.filter(
+                specialization=d_specialization,
+                study_year=str(d_specialization.specialization.degree.duration),
+                gender="M",
+                active=True,
+                is_expelled=False,
+                is_obsolete=False,
+            ).count()
+            female_graduates += Student.objects.filter(
+                specialization=d_specialization,
+                study_year=str(d_specialization.specialization.degree.duration),
+                gender="F",
+                active=True,
+                is_expelled=False,
+                is_obsolete=False,
+            ).count()
+
         return Response(
             {
                 "faculties_count": HighSchoolFaculty.objects.filter(
@@ -465,6 +489,8 @@ def dashboard_api_view(request: HttpRequest):
                     is_expelled=False,
                     is_obsolete=False,
                 ).count(),
+                "male_graduates": male_graduates,
+                "female_graduates": female_graduates,
                 "admissions": [
                     {
                         "year": year,
