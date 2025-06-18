@@ -52,3 +52,11 @@
 .t-base tbody tr th {
   @apply text-center p-3 border border-gray-300 dark:border-[#32237cef] select-none;
 }
+
+.btn-primary {
+  @apply py-2 select-none px-3 my-2 text-[0.7rem] md:text-sm lg:text-sm rounded-lg shadow-md border-none dark:border-violet-500/50 border-1 bg-blue-500 dark:bg-violet-600 text-white;
+}
+
+.btn-secondary {
+  @apply py-2 select-none px-3 my-2 text-[0.7rem] md:text-sm lg:text-sm rounded-lg shadow-md border-none dark:border-violet-500/50 border-1 dark:bg-violet-900/75 bg-blue-300 text-white;
+}

@@ -149,6 +149,17 @@ export const useFacultiesStore = defineStore({
         console.error("Error", error);
       }
     },
+
+    async getAllViaUser() {
+      try {
+        const response = await axiosInstance.get(
+          "/high-school-faculties-via-user/"
+        );
+        this.highSchoolFaculties = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
     async getAllAdditional() {
       try {
         const response = await axiosInstance.get("/faculties-with-additional/");
@@ -254,6 +265,16 @@ export const useDepartmentsStore = defineStore({
       try {
         const response = await axiosInstance.get("/departments/");
         this.departments = response.data;
+      } catch (error) {
+        console.error("Error", error);
+      }
+    },
+    async getAllViaUser() {
+      try {
+        const response = await axiosInstance.get(
+          "/high-school-departments-via-user/"
+        );
+        this.highSchoolDepartments = response.data;
       } catch (error) {
         console.error("Error", error);
       }
@@ -394,6 +415,16 @@ export const useSpecializationsStore = defineStore("specializations", () => {
       console.error("Error", error);
     }
   }
+  async function getAllViaUser() {
+    try {
+      const response = await axiosInstance.get(
+        "/high-school-specializations-via-user/"
+      );
+      this.highSchoolSpecializations = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
   async function create(data) {
     let formData = {};
     if (data.classificator === 0) {
@@ -510,6 +541,7 @@ export const useSpecializationsStore = defineStore("specializations", () => {
     dataTablePageCount,
     currentPage,
     get,
+    getAllViaUser,
     getAllAdditional,
     create,
     _delete,
@@ -869,6 +901,7 @@ export const useStudentsStore = defineStore("students", () => {
   const updateStatus = ref(null);
 
   const currentPage = ref(1);
+  const objCount = ref(0);
 
   const route = useRoute();
 
@@ -986,12 +1019,15 @@ export const useStudentsStore = defineStore("students", () => {
         "faculty",
         "department",
         "specialization",
+        "gender",
         "region",
         "country",
         "nationality",
         "classificator",
         "degree",
+        "study_year",
       ];
+
       let filterQuery = {};
 
       for (let i = 0; i < filterFields.length; i++) {
@@ -1016,9 +1052,16 @@ export const useStudentsStore = defineStore("students", () => {
         });
       } else {
         response = await axiosInstance.get("/students-with-additional/", {
-          params: { page, page_size: pageSize, order, column, ...filterQuery },
+          params: {
+            page,
+            page_size: pageSize,
+            order,
+            column,
+            ...filterQuery,
+          },
         });
       }
+      objCount.value = response.data.count;
       currentPage.value = response.data.results.current_page;
       studentsAdditional.value = response.data.results.data;
       dataTablePageCount.value = response.data.results.total_pages;
@@ -1110,6 +1153,7 @@ export const useStudentsStore = defineStore("students", () => {
     updateStatus,
     dataTablePageCount,
     currentPage,
+    objCount,
     updateStudyYears,
     resetMistakeVariables,
     resetExcelFormStates,

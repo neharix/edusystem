@@ -4,7 +4,7 @@ import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
 import useToast from "@/use/useToast.js";
-import { useStudentsStore } from "@/stores/api.store.js";
+import { useClassificatorsStore, useCountriesStore, useDegreesStore, useDepartmentsStore, useFacultiesStore, useNationalizationsStore, useRegionsStore, useSpecializationsStore, useStudentsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
@@ -36,6 +36,24 @@ const studentsStore = useStudentsStore();
 const { deleteStatus, updateStatus, createStatus } = storeToRefs(studentsStore);
 const authStore = useAuthStore();
 
+const facultiesStore = useFacultiesStore();
+const departmentsStore = useDepartmentsStore();
+const specializationsStore = useSpecializationsStore();
+const countriesStore = useCountriesStore();
+const regionsStore = useRegionsStore();
+const nationalitiesStore = useNationalizationsStore();
+const classificatorsStore = useClassificatorsStore();
+const degreesStore = useDegreesStore();
+const { highSchoolFaculties } = storeToRefs(facultiesStore);
+const { highSchoolDepartments } = storeToRefs(departmentsStore);
+const { highSchoolSpecializations } = storeToRefs(specializationsStore);
+const { countries } = storeToRefs(countriesStore);
+const { regions } = storeToRefs(regionsStore);
+const { nationalizations } = storeToRefs(nationalitiesStore);
+const { classificators } = storeToRefs(classificatorsStore);
+const { degrees } = storeToRefs(degreesStore);
+
+
 const data = ref([]);
 const filteredData = ref([]);
 const selectedItem = ref(null);
@@ -56,6 +74,7 @@ const rowsPerPageOptions = [10, 20, 50, 100, 250, 500];
 const searchQuery = ref(route.query.search || '');
 const isSearching = ref(!!route.query.search || false);
 const customPage = ref(currentPage.value);
+
 
 
 
@@ -185,6 +204,15 @@ watch(deleteStatus, (newVal, oldVal) => {
 })
 
 onMounted(() => {
+  facultiesStore.getAllViaUser();
+  departmentsStore.getAllViaUser();
+  specializationsStore.getAllViaUser();
+  countriesStore.getAll();
+  regionsStore.getAll();
+  nationalitiesStore.getAll();
+  classificatorsStore.getAll();
+  degreesStore.getAll();
+
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
       addToast('Talyp üstünlikli üýtgedildi', 'success');
@@ -206,6 +234,49 @@ onMounted(() => {
     changePage(studentsStore.currentPage);
   }
 })
+
+
+async function toggleFilter(key, value) {
+  let query = route.query;
+
+  if (value == route.query[key]) {
+    delete query[key];
+    console.log(query);
+    await router.push({ name: 'students-list', query: query })
+    emit('update');
+  } else {
+    query[key] = value;
+    console.log(query);
+    await router.push({ name: 'students-list', query: query })
+    emit('update');
+  }
+}
+
+async function resetFilter(key) {
+  let query = route.query;
+  switch (key) {
+    case 'all':
+      delete query['faculty'];
+      delete query['department'];
+      delete query['specialization'];
+      delete query['region'];
+      delete query['country'];
+      delete query['gender'];
+      delete query['nationality'];
+      delete query['classificator'];
+      delete query['degree'];
+      delete query['study_year'];
+      break;
+    default:
+      delete query[key]
+      break;
+  }
+  console.log(query);
+  router.push({ name: 'students-list', query: query }).then(() => {
+    emit('update');
+  })
+}
+
 
 
 window.addEventListener("click", onClickOutside);
@@ -244,15 +315,15 @@ window.addEventListener("click", onClickOutside);
             </transition>
           </div>
         </div>
-        <!-- <div>
+        <div>
           <drawer-end>
             <template #btn><svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24">
                 <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M22 3H2l8 9.46V19l4 2v-8.54z" />
               </svg></template>
-<template #content>
+            <template #content>
               <div class="flex justify-between items-center">
-                <p class="text-black dark:text-white m-2 select-none font-semibold text-xl">Filterler</p>
+                <p class="text-black dark:text-white m-2 select-none font-semibold text-xl">Süzgüçler</p>
                 <button class="btn-primary flex items-center space-x-2" @click="resetFilter('all')"><svg
                     xmlns="http://www.w3.org/2000/svg" class="w-4" viewBox="0 0 24 24">
                     <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -264,6 +335,58 @@ window.addEventListener("click", onClickOutside);
                   </svg><span>Täzelemek</span></button>
               </div>
               <hr class="hr">
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Fakultetler</p>
+                <button class="btn-primary" @click="resetFilter('faculty')"><svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('faculty', item.id)"
+                  :class="{ 'btn-secondary': route.query.faculty != item.id, 'btn-primary': route.query.faculty == item.id, }"
+                  v-for="item in highSchoolFaculties" :key="item.id">{{ item.faculty.name }}</button>
+              </div>
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Kafedralar</p>
+                <button class="btn-primary" @click="resetFilter('department')"><svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('department', item.id)"
+                  :class="{ 'btn-secondary': route.query.department != item.id, 'btn-primary': route.query.department == item.id, }"
+                  v-for="item in highSchoolDepartments" :key="item.id">{{ item.department.name }}</button>
+              </div>
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Hünärler</p>
+                <button class="btn-primary" @click="resetFilter('specialization')"><svg
+                    xmlns="http://www.w3.org/2000/svg" class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('specialization', item.id)"
+                  :class="{ 'btn-secondary': route.query.specialization != item.id, 'btn-primary': route.query.specialization == item.id, }"
+                  v-for="item in highSchoolSpecializations" :key="item.id">{{ item.name }}</button>
+              </div>
+
               <div class="flex justify-between items-center">
                 <p class="text-black dark:text-white m-2 select-none font-semibold">Welaýatlar</p>
                 <button class="btn-primary" @click="resetFilter('region')"><svg xmlns="http://www.w3.org/2000/svg"
@@ -298,9 +421,97 @@ window.addEventListener("click", onClickOutside);
                   :class="{ 'btn-secondary': route.query.country != item.id, 'btn-primary': route.query.country == item.id, }"
                   v-for="item in countries" :key="item.id">{{ item.name }}</button>
               </div>
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Milletler</p>
+                <button class="btn-primary" @click="resetFilter('nationality')"><svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('nationality', item.id)"
+                  :class="{ 'btn-secondary': route.query.nationality != item.id, 'btn-primary': route.query.nationality == item.id, }"
+                  v-for="item in nationalizations" :key="item.id">{{ item.name }}</button>
+              </div>
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Hünär derejeleri</p>
+                <button class="btn-primary" @click="resetFilter('degree')"><svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('degree', item.id)"
+                  :class="{ 'btn-secondary': route.query.degree != item.id, 'btn-primary': route.query.degree == item.id, }"
+                  v-for="item in degrees" :key="item.id">{{ item.name }} ({{ item.duration }} ýyl)</button>
+              </div>
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Klassifikatorlar</p>
+                <button class="btn-primary" @click="resetFilter('classificator')"><svg
+                    xmlns="http://www.w3.org/2000/svg" class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('classificator', item.id)"
+                  :class="{ 'btn-secondary': route.query.classificator != item.id, 'btn-primary': route.query.classificator == item.id, }"
+                  v-for="item in classificators" :key="item.id">{{ item.name }}</button>
+              </div>
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Kurslar</p>
+                <button class="btn-primary" @click="resetFilter('study_year')"><svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('study_year', item.id)"
+                  :class="{ 'btn-secondary': route.query.study_year != item.id, 'btn-primary': route.query.study_year == item.id, }"
+                  v-for="item in [{ id: 1, name: 'I kurs' }, { id: 2, name: 'II kurs' }, { id: 3, name: 'III kurs' }, { id: 4, name: 'IV kurs' }, { id: 5, name: 'V kurs' }, { id: 6, name: 'VI kurs' }, { id: 7, name: 'VII kurs' }, { id: 'DÖB', name: 'DÖB' }]"
+                  :key="item.id">{{ item.name }}</button>
+              </div>
+
+              <div class="flex justify-between items-center">
+                <p class="text-black dark:text-white m-2 select-none font-semibold">Jynsy</p>
+                <button class="btn-primary" @click="resetFilter('gender')"><svg xmlns="http://www.w3.org/2000/svg"
+                    class="w-4" viewBox="0 0 24 24">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2">
+                      <path d="M21 12a9 9 0 0 0-9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5m-5 4a9 9 0 0 0 9 9a9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                      <path d="M16 16h5v5" />
+                    </g>
+                  </svg></button>
+              </div>
+              <div>
+                <button class="m-2" @click="toggleFilter('gender', item.id)"
+                  :class="{ 'btn-secondary': route.query.gender != item.id, 'btn-primary': route.query.gender == item.id, }"
+                  v-for="item in [{ id: 'M', name: 'Oglan' }, { id: 'F', name: 'Gyz' }]" :key="item.id">{{ item.name
+                  }}</button>
+              </div>
             </template>
-</drawer-end>
-</div> -->
+          </drawer-end>
+        </div>
       </div>
       <div class="mx-4 pb-4 flex">
         <input v-model="searchQuery" type="text" @keyup.enter="applySearch" placeholder="Gözleg"
@@ -381,11 +592,11 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               ((currentPage - 1) * rowsPerPage) + (index + 1)
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.full_name
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
               v-if="authStore.role === 'root' && route.name === 'students-list'">{{
