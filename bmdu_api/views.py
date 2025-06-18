@@ -392,7 +392,7 @@ def dashboard_api_view(request: HttpRequest):
             {
                 "high_schools_count": HighSchool.objects.filter(active=True).count(),
                 "faculties_count": HighSchoolFaculty.objects.filter().count(),
-                "departments_count": Department.objects.filter(active=True).count(),
+                "departments_count": FacultyDepartment.objects.filter().count(),
                 "specializations_count": Specialization.objects.filter(
                     active=True
                 ).count(),
@@ -1225,12 +1225,18 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
 
         paginator = ResponsivePageSizePagination()
         paginator.page_size = page_size
-        paginated_result = paginator.paginate_queryset(data, request)
-
+        try:
+            paginated_result = paginator.paginate_queryset(data, request)
+        except NotFound:
+            request._request.GET._mutable = True
+            request._request.GET["page"] = 1
+            request._request.GET._mutable = False
+            paginated_result = paginator.paginate_queryset(data, request)
         return paginator.get_paginated_response(
             {
                 "data": paginated_result,
                 "total_pages": paginator.page.paginator.num_pages,
+                "current_page": request._request.GET["page"],
             }
         )
 
@@ -1321,12 +1327,18 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
 
         paginator = ResponsivePageSizePagination()
         paginator.page_size = page_size
-        paginated_result = paginator.paginate_queryset(data, request)
-
+        try:
+            paginated_result = paginator.paginate_queryset(data, request)
+        except NotFound:
+            request._request.GET._mutable = True
+            request._request.GET["page"] = 1
+            request._request.GET._mutable = False
+            paginated_result = paginator.paginate_queryset(data, request)
         return paginator.get_paginated_response(
             {
                 "data": paginated_result,
                 "total_pages": paginator.page.paginator.num_pages,
+                "current_page": request._request.GET["page"],
             }
         )
 
@@ -1676,10 +1688,21 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
         result = filter_by_query(students, request.GET).order_by(order_by)
         paginator = ResponsivePageSizePagination()
         paginator.page_size = page_size
-        paginated_result = paginator.paginate_queryset(result, request)
+        try:
+            paginated_result = paginator.paginate_queryset(result, request)
+        except NotFound:
+            request._request.GET._mutable = True
+            request._request.GET["page"] = 1
+            request._request.GET._mutable = False
+            paginated_result = paginator.paginate_queryset(result, request)
         serializer = StudentAdditionalSerializerForAdmin(paginated_result, many=True)
+
         return paginator.get_paginated_response(
-            {"data": serializer.data, "total_pages": paginator.page.paginator.num_pages}
+            {
+                "data": serializer.data,
+                "total_pages": paginator.page.paginator.num_pages,
+                "current_page": request._request.GET["page"],
+            }
         )
     else:
         order = "-" if request.GET.get("order", "asc") == "desc" else ""
@@ -1706,11 +1729,20 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
             )
         paginator = ResponsivePageSizePagination()
         paginator.page_size = int(request.GET.get("page_size", 10))
-
-        paginated_result = paginator.paginate_queryset(students, request)
+        try:
+            paginated_result = paginator.paginate_queryset(students, request)
+        except NotFound:
+            request._request.GET._mutable = True
+            request._request.GET["page"] = 1
+            request._request.GET._mutable = False
+            paginated_result = paginator.paginate_queryset(students, request)
         serializer = StudentAdditionalSerializerForUser(paginated_result, many=True)
         return paginator.get_paginated_response(
-            {"data": serializer.data, "total_pages": paginator.page.paginator.num_pages}
+            {
+                "data": serializer.data,
+                "total_pages": paginator.page.paginator.num_pages,
+                "current_page": request._request.GET["page"],
+            }
         )
 
 
