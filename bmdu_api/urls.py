@@ -326,7 +326,17 @@ urlpatterns = [
     path(
         "mark-as-viewed/<int:obj_id>/", mark_as_viewed_api_view, name="mark-as-viewed"
     ),
+    path(
+        "mark-as-unviewed/<int:obj_id>/",
+        mark_as_unviewed_api_view,
+        name="mark-as-unviewed",
+    ),
     # Diploma routes
+    path(
+        "mark-diploma-as-unviewed/<int:diploma_request_id>/",
+        mark_diploma_request_as_unviewed_api_view,
+        name="mark-diploma-as-unviewed",
+    ),
     path(
         "diploma-request-by-user/",
         get_diploma_request_by_user_api_view,
@@ -389,6 +399,11 @@ urlpatterns = [
         name="diploma-request-verdict",
     ),
     # Teacher statement routes
+    path(
+        "mark-teacher-statement-as-unviewed/<int:teacher_statement_id>/",
+        mark_teacher_statement_as_unviewed_api_view,
+        name="mark-teacher-statement-as-unviewed",
+    ),
     path(
         "create-teacher-statement/",
         create_teacher_statement_api_view,

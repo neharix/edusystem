@@ -1,10 +1,8 @@
 import datetime
 import io
-import json
 import os
 import subprocess
 import sys
-import time
 import zipfile
 
 import pandas as pd
@@ -20,6 +18,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.views.decorators.cache import cache_page
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import NotFound
 from rest_framework.generics import (
     ListAPIView,
     ListCreateAPIView,
@@ -392,7 +391,7 @@ def dashboard_api_view(request: HttpRequest):
         return Response(
             {
                 "high_schools_count": HighSchool.objects.filter(active=True).count(),
-                "faculties_count": Faculty.objects.filter(active=True).count(),
+                "faculties_count": HighSchoolFaculty.objects.filter().count(),
                 "departments_count": Department.objects.filter(active=True).count(),
                 "specializations_count": Specialization.objects.filter(
                     active=True
@@ -444,8 +443,6 @@ def dashboard_api_view(request: HttpRequest):
                 "specializations_count": DepartmentSpecialization.objects.filter(
                     faculty_department__high_school_faculty__high_school=high_school
                 ).count(),
-                # FIXME
-                "nationalities_count": Nationality.objects.all().count(),
                 "students_count": Student.objects.filter(
                     active=True,
                     high_school=high_school,
@@ -686,17 +683,9 @@ def get_high_school_departments_api_view(
         )
 
     elif mode == "exc":
-        high_school_department_identificators = [
-            faculty_department.department.id
-            for faculty_department in FacultyDepartment.objects.filter(
-                high_school_faculty__high_school=high_school
-            )
-        ]
         return Response(
             DepartmentSerializer(
-                Department.objects.exclude(
-                    id__in=high_school_department_identificators
-                ).filter(active=True),
+                Department.objects.filter(active=True),
                 many=True,
             ).data
         )
@@ -737,17 +726,9 @@ def get_high_school_specializations_api_view(
         )
 
     elif mode == "exc":
-        high_school_specialization_identificators = [
-            department_specialization.specialization.id
-            for department_specialization in DepartmentSpecialization.objects.filter(
-                faculty_department__high_school_faculty__high_school=high_school
-            )
-        ]
         return Response(
             SpecializationSerializer(
-                Specialization.objects.exclude(
-                    id__in=high_school_specialization_identificators
-                ).filter(active=True),
+                Specialization.objects.filter(active=True),
                 many=True,
             ).data
         )
@@ -1673,7 +1654,6 @@ def validate_students_from_excel_api_view(request: HttpRequest):
 
 @permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
-@cache_page(60 * 2)
 def get_students_with_additional_data_api_view(request: HttpRequest):
     page_size = int(request.GET.get("page_size", 10))
     search = request.GET.get("search", False)
@@ -1726,6 +1706,7 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
             )
         paginator = ResponsivePageSizePagination()
         paginator.page_size = int(request.GET.get("page_size", 10))
+
         paginated_result = paginator.paginate_queryset(students, request)
         serializer = StudentAdditionalSerializerForUser(paginated_result, many=True)
         return paginator.get_paginated_response(
@@ -2137,6 +2118,9 @@ def get_statements_api_view(request: HttpRequest):
                 "request_date": expulsion_request.request_date.astimezone(
                     pytz.timezone("Asia/Ashgabat")
                 ).strftime("%d.%m.%Y %H:%M:%S"),
+                "is_viewed": expulsion_request.viewed_by.filter(
+                    id=request.user.id
+                ).exists(),
             }
         )
     for reinstate_request in ReinstateRequest.objects.filter(is_obsolete=False):
@@ -2159,6 +2143,9 @@ def get_statements_api_view(request: HttpRequest):
                 "request_date": reinstate_request.request_date.astimezone(
                     pytz.timezone("Asia/Ashgabat")
                 ).strftime("%d.%m.%Y %H:%M:%S"),
+                "is_viewed": reinstate_request.viewed_by.filter(
+                    id=request.user.id
+                ).exists(),
             }
         )
     response.sort(key=lambda e: e["request_date"])
@@ -2205,6 +2192,7 @@ def get_statement_api_view(
             "request_date": statement.request_date.astimezone(
                 pytz.timezone("Asia/Ashgabat")
             ).strftime("%d.%m.%Y %H:%M:%S"),
+            "is_viewed": statement.viewed_by.filter(id=request.user.id).exists(),
         }
         if statement_type == "expulsion"
         else {
@@ -2217,6 +2205,7 @@ def get_statement_api_view(
             "request_date": statement.request_date.astimezone(
                 pytz.timezone("Asia/Ashgabat")
             ).strftime("%d.%m.%Y %H:%M:%S"),
+            "is_viewed": statement.viewed_by.filter(id=request.user.id).exists(),
         }
     )
     return Response(response)
@@ -2270,6 +2259,26 @@ def mark_as_viewed_api_view(request: HttpRequest, obj_id: int):
     return Response({"detail": "Success"})
 
 
+@permission_classes([IsAuthenticated])
+@api_view(http_method_names=["POST"])
+@validate_payload(["obj_name"])
+def mark_as_unviewed_api_view(request: HttpRequest, obj_id: int):
+    object_name = request.data["obj_name"]
+    if object_name == "expulsion":
+        if ExpulsionRequest.objects.filter(id=obj_id).exists():
+            obj = ExpulsionRequest.objects.get(id=obj_id)
+        else:
+            return Response({"detail": "Expulsion request not found"}, status=404)
+    elif object_name == "reinstate":
+        if ReinstateRequest.objects.filter(id=obj_id).exists():
+            obj = ReinstateRequest.objects.get(id=obj_id)
+        else:
+            return Response({"detail": "Reinstate request not found"}, status=404)
+
+    obj.viewed_by.remove(request.user)
+    return Response({"detail": "Success"})
+
+
 # Diploma API views
 
 
@@ -2318,6 +2327,19 @@ def get_diploma_request_by_high_school_api_view(
     else:
         return Response({"null": True})
     return Response(advanced_diploma_serializer(diploma_request))
+
+
+@permission_classes([IsAuthenticated])
+@api_view(http_method_names=["POST"])
+def mark_diploma_request_as_unviewed_api_view(
+    request: HttpRequest, diploma_request_id: int
+):
+    if DiplomaRequest.objects.filter(id=diploma_request_id).exists():
+        diploma_request = DiplomaRequest.objects.get(id=diploma_request_id)
+    else:
+        return Response({"detail": "Diploma request not found"}, status=404)
+    diploma_request.viewed_by.remove(request.user)
+    return Response({"detail": "Success"})
 
 
 @permission_classes([IsAuthenticated])
@@ -2389,6 +2411,9 @@ def get_diplomas_for_table_api_view(request: HttpRequest):
                 "sender": HighSchool.objects.get(
                     manager__user=diploma_request.sender
                 ).name,
+                "is_viewed": diploma_request.viewed_by.filter(
+                    id=request.user.id
+                ).exists(),
             }
         )
     return Response(response)
@@ -2587,6 +2612,19 @@ class DiplomaRequestsAPIView(RetrieveUpdateDestroyAPIView):
 
 
 @permission_classes([IsAuthenticated])
+@api_view(http_method_names=["POST"])
+def mark_teacher_statement_as_unviewed_api_view(
+    request: HttpRequest, teacher_statement_id: int
+):
+    if TeacherStatement.objects.filter(id=teacher_statement_id).exists():
+        teacher_statement = TeacherStatement.objects.get(id=teacher_statement_id)
+    else:
+        return Response({"detail": "Teacher statement not found"}, status=404)
+    teacher_statement.viewed_by.remove(request.user)
+    return Response({"detail": "Success"})
+
+
+@permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_teacher_statement_by_user_api_view(request: HttpRequest):
     if TeacherStatement.objects.filter(sender=request.user, is_obsolete=False).exists():
@@ -2616,7 +2654,9 @@ def get_teacher_statement_by_id_api_view(
 
     teacher_statement.viewed_by.add(request.user)
     teacher_statement.save()
-    return Response(TeacherStatementSerializer(teacher_statement).data)
+    return Response(
+        TeacherStatementSerializer(teacher_statement, context={"request": request}).data
+    )
 
 
 @permission_classes([IsAuthenticated])
@@ -2689,6 +2729,9 @@ def get_teacher_statements_for_table_api_view(request: HttpRequest):
                     "senior_teachers": teacher_statement.senior_teachers,
                     "teachers": teacher_statement.teachers,
                     "intern_teachers": teacher_statement.intern_teachers,
+                    "is_viewed": teacher_statement.viewed_by.filter(
+                        id=request.user.id
+                    ).exists(),
                 }
             )
         else:
@@ -2711,6 +2754,9 @@ def get_teacher_statements_for_table_api_view(request: HttpRequest):
                     "senior_teachers": 0,
                     "teachers": 0,
                     "intern_teachers": 0,
+                    "is_viewed": teacher_statement.viewed_by.filter(
+                        id=request.user.id
+                    ).exists(),
                 }
             )
 

@@ -3,6 +3,7 @@ import datetime
 import pytz
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework.request import HttpRequest
 
 from main.models import Country, Nationality, Profile, Region
 from main.serializers import CountrySerializer, NationalitySerializer, RegionSerializer
@@ -372,9 +373,38 @@ class DiplomaRequestSerializer(serializers.ModelSerializer):
 
 
 class TeacherStatementSerializer(serializers.ModelSerializer):
+    def get_is_viewed(self, instance: TeacherStatement):
+        request: HttpRequest = self.context.get("request", None)
+        return instance.viewed_by.filter(id=request.user.id).exists()
+
+    is_viewed = serializers.SerializerMethodField()
+
     class Meta:
         model = TeacherStatement
-        fields = "__all__"
+        fields = [
+            "workload_1_25",
+            "workload_1_00",
+            "workload_0_75",
+            "workload_0_50",
+            "doctor_degree",
+            "candidate_degree",
+            "professor",
+            "docent",
+            "department_head",
+            "professor_job",
+            "docent_job",
+            "senior_teachers",
+            "teachers",
+            "intern_teachers",
+            "sender",
+            "allowed_until",
+            "viewed_by",
+            "is_obsolete",
+            "request_date",
+            "verdict_date",
+            "verdict",
+            "is_viewed",
+        ]
 
 
 # Custom function serializers

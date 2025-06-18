@@ -16,7 +16,6 @@ from django.views.decorators.cache import cache_page
 from rest_framework.decorators import api_view
 from rest_framework.request import HttpRequest
 from rest_framework.response import Response
-from weasyprint import HTML
 
 from main.decorators import validate_files, validate_payload
 from main.models import Profile
@@ -59,6 +58,9 @@ from .serializers import (
     StudentSerializer,
 )
 from .utils import action_logger, is_admin, xlsx_exporter, xlsx_importer
+
+# from weasyprint import HTML
+
 
 # Create your views here.
 
@@ -1023,31 +1025,6 @@ def get_student_certificates(request: HttpRequest, student_id: int):
     return Response(CertificateSerializer(certificates, many=True).data)
 
 
-# def certificate_view(
-#     request,
-#     certificate_id: int,
-# ):
-#     if Certificate.objects.filter(id=certificate_id).exists():
-#         certificate = Certificate.objects.get(id=certificate_id)
-
-#     qr_data = request.build_absolute_uri(f"/certificates/{certificate.id}/")
-#     qr_buffer = io.BytesIO()
-#     qr_img = qrcode.make(qr_data)
-#     qr_img.save(qr_buffer, format="PNG")
-#     qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode("utf-8")
-
-#     # match request.headers["Accept-Language"]:
-#     #     case "ru":
-#     #         header = "Министерство Образования Туркменистана"
-#     #         # desc = f"{}"
-
-#     return render(
-#         request,
-#         "mmu_api/certificate.html",
-#         {"qr_code_base64": qr_base64, "certificate": certificate},
-#     )
-
-
 def certificate_view(
     request,
     certificate_id: int,
@@ -1061,19 +1038,44 @@ def certificate_view(
     qr_img.save(qr_buffer, format="PNG")
     qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode("utf-8")
 
-    data = {"qr_code_base64": qr_base64, "certificate": certificate}
+    # match request.headers["Accept-Language"]:
+    #     case "ru":
+    #         header = "Министерство Образования Туркменистана"
+    #         # desc = f"{}"
 
-    html_string = render_to_string(
+    return render(
+        request,
         "mmu_api/certificate.html",
-        data,
+        {"qr_code_base64": qr_base64, "certificate": certificate},
     )
 
-    # Генерация PDF
-    pdf_file = HTML(
-        string=html_string, base_url=request.build_absolute_uri()
-    ).write_pdf()
 
-    # Ответ
-    response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = 'inline; filename="certificate.pdf"'
-    return response
+# def certificate_view(
+#     request,
+#     certificate_id: int,
+# ):
+#     if Certificate.objects.filter(id=certificate_id).exists():
+#         certificate = Certificate.objects.get(id=certificate_id)
+
+#     qr_data = request.build_absolute_uri(f"/api/v1/mmu/certificates/{certificate.id}/")
+#     qr_buffer = io.BytesIO()
+#     qr_img = qrcode.make(qr_data)
+#     qr_img.save(qr_buffer, format="PNG")
+#     qr_base64 = base64.b64encode(qr_buffer.getvalue()).decode("utf-8")
+
+#     data = {"qr_code_base64": qr_base64, "certificate": certificate}
+
+#     html_string = render_to_string(
+#         "mmu_api/certificate.html",
+#         data,
+#     )
+
+#     # Генерация PDF
+#     pdf_file = HTML(
+#         string=html_string, base_url=request.build_absolute_uri()
+#     ).write_pdf()
+
+#     # Ответ
+#     response = HttpResponse(pdf_file, content_type="application/pdf")
+#     response["Content-Disposition"] = 'inline; filename="certificate.pdf"'
+#     return response
