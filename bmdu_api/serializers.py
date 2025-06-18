@@ -49,9 +49,25 @@ class FacultySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class HighSchoolFacultySerializer(serializers.ModelSerializer):
+    faculty = FacultySerializer()
+
+    class Meta:
+        model = HighSchoolFaculty
+        fields = "__all__"
+
+
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
+        fields = "__all__"
+
+
+class FacultyDepartmentSerializer(serializers.ModelSerializer):
+    department = DepartmentSerializer()
+
+    class Meta:
+        model = FacultyDepartment
         fields = "__all__"
 
 

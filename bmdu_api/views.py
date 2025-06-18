@@ -68,10 +68,12 @@ from .serializers import (
     ExpelledStudentInfoSerializer,
     ExpulsionReasonSerializer,
     ExpulsionRequestSerializer,
+    FacultyDepartmentSerializer,
     FacultyFilterSerializer,
     FacultySerializer,
     GraduateAdditionalSerializer,
     GraduateInfoSerializer,
+    HighSchoolFacultySerializer,
     HighSchoolFilterSerializer,
     HighSchoolSerializer,
     NationalityFilterSerializer,
@@ -693,6 +695,23 @@ def get_high_school_departments_api_view(
 
 @permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
+def get_high_school_departments_via_user_api_view(request: HttpRequest):
+    if not request.user.is_superuser:
+        high_school = HighSchool.objects.get(manager__user=request.user)
+
+        return Response(
+            FacultyDepartmentSerializer(
+                FacultyDepartment.objects.filter(
+                    high_school_faculty__high_school=high_school
+                ),
+                many=True,
+            ).data
+        )
+    return Response({"detail": "Only for managers"}, status=403)
+
+
+@permission_classes([IsAuthenticated])
+@api_view(http_method_names=["GET"])
 def get_high_school_specializations_api_view(
     request: HttpRequest, high_school_id: int, mode: str
 ):
@@ -732,6 +751,27 @@ def get_high_school_specializations_api_view(
                 many=True,
             ).data
         )
+
+
+@permission_classes([IsAuthenticated])
+@api_view(http_method_names=["GET"])
+def get_high_school_specializations_via_user_api_view(request: HttpRequest):
+    if not request.user.is_superuser:
+        high_school = HighSchool.objects.get(manager__user=request.user)
+
+        return Response(
+            SpecializationSerializer(
+                Specialization.objects.filter(
+                    id__in=list(
+                        DepartmentSpecialization.objects.filter(
+                            faculty_department__high_school_faculty__high_school=high_school
+                        ).values_list("specialization__id", flat=True)
+                    )
+                ),
+                many=True,
+            ).data
+        )
+    return Response({"detail": "Only for managers"}, status=403)
 
 
 @permission_classes([IsAuthenticated])
@@ -841,6 +881,20 @@ def get_faculties_with_additional_data_api_view(request: HttpRequest):
                 }
             )
         return Response(response)
+
+
+@permission_classes([IsAuthenticated])
+@api_view(http_method_names=["GET"])
+def get_high_school_faculties_via_user_api_view(request: HttpRequest):
+    if not request.user.is_superuser:
+        high_school = HighSchool.objects.get(manager__user=request.user)
+
+        return Response(
+            HighSchoolFacultySerializer(
+                HighSchoolFaculty.objects.filter(high_school=high_school), many=True
+            ).data
+        )
+    return Response({"detail": "Only for managers"}, status=403)
 
 
 @permission_classes([IsAuthenticated])
@@ -1705,11 +1759,44 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
             }
         )
     else:
+        filters = {}
+
+        if request.GET.get("faculty", False):
+            filters[
+                "specialization__faculty_department__high_school_faculty__id__exact"
+            ] = request.GET["faculty"]
+        if request.GET.get("department", False):
+            filters["specialization__faculty_department__id__exact"] = request.GET[
+                "department"
+            ]
+        if request.GET.get("specialization", False):
+            filters["specialization__specialization__id__exact"] = request.GET[
+                "specialization"
+            ]
+        if request.GET.get("region", False):
+            filters["region__id__exact"] = request.GET["region"]
+        if request.GET.get("country", False):
+            filters["country__id__exact"] = request.GET["country"]
+        if request.GET.get("nationality", False):
+            filters["nationality__id__exact"] = request.GET["nationality"]
+        if request.GET.get("degree", False):
+            filters["specialization__specialization__degree__id__exact"] = request.GET[
+                "degree"
+            ]
+        if request.GET.get("classificator", False):
+            filters["specialization__specialization__classificator__id__exact"] = (
+                request.GET["classificator"]
+            )
+        if request.GET.get("gender", False):
+            filters["gender__exact"] = request.GET["gender"]
+        if request.GET.get("study_year", False):
+            filters["study_year__exact"] = str(request.GET["study_year"])
+
         order = "-" if request.GET.get("order", "asc") == "desc" else ""
         order_key = request.GET.get("column", "full_name")
         match order_key:
             case "faculty":
-                order_key = "specialization__specialization__faculty_department__high_school_faculty__faculty__name"
+                order_key = "specialization__faculty_department__high_school_faculty__faculty__name"
         order_by = order + order_key
 
         if search:
@@ -1719,6 +1806,7 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
                 active=True,
                 is_expelled=False,
                 is_obsolete=False,
+                **filters,
             ).order_by(order_by)
         else:
             students = Student.objects.filter(
@@ -1726,7 +1814,8 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
                 active=True,
                 is_expelled=False,
                 is_obsolete=False,
-            )
+                **filters,
+            ).order_by(order_by)
         paginator = ResponsivePageSizePagination()
         paginator.page_size = int(request.GET.get("page_size", 10))
         try:

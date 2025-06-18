@@ -97,6 +97,11 @@ urlpatterns = [
         create_high_school_faculty_api_view,
         name="create-high-school-faculties-api-view",
     ),
+    path(
+        "high-school-faculties-via-user/",
+        get_high_school_faculties_via_user_api_view,
+        name="high-school-faculties-via-user-api-view",
+    ),
     # Department routes
     path(
         "departments-with-additional/",
@@ -122,6 +127,11 @@ urlpatterns = [
         "create-faculty-departments/",
         create_faculty_departments_api_view,
         name="create-faculty-departments-api-view",
+    ),
+    path(
+        "high-school-departments-via-user/",
+        get_high_school_departments_via_user_api_view,
+        name="high-school-departments-via-user-api-view",
     ),
     # Degree routes
     path(
@@ -175,6 +185,11 @@ urlpatterns = [
         "update-specialization/<int:id>/",
         put_specialization_api_view,
         name="put-specialization-api-view",
+    ),
+    path(
+        "high-school-specializations-via-user/",
+        get_high_school_specializations_via_user_api_view,
+        name="high-school-specializations-via-user-api-view",
     ),
     path(
         "specializations/<int:id>/",
