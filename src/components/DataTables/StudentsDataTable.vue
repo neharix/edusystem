@@ -55,6 +55,7 @@ const rowsPerPage = ref(localStorage.getItem("rowsPerPage") || 10);
 const rowsPerPageOptions = [10, 20, 50, 100, 250, 500];
 const searchQuery = ref(route.query.search || '');
 const isSearching = ref(!!route.query.search || false);
+const customPage = ref(currentPage.value);
 
 const applySearch = () => {
   router.push({ name: 'students-list', query: { ...route.query, search: searchQuery.value } }).then(() => {

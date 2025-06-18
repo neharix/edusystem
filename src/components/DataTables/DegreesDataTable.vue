@@ -43,6 +43,7 @@ const rowsPerPage = ref(10);
 const rowsPerPageOptions = [10, 20, 50, 100];
 const searchQuery = ref('');
 const isSearching = ref(false);
+const customPage = ref(currentPage.value);
 
 const applySearch = () => {
   filteredData.value = data.value.filter((item) =>

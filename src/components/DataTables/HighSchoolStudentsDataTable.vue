@@ -55,6 +55,9 @@ const rowsPerPage = ref(localStorage.getItem("rowsPerPage") || 10);
 const rowsPerPageOptions = [10, 20, 50, 100, 250, 500];
 const searchQuery = ref(route.query.search || '');
 const isSearching = ref(!!route.query.search || false);
+const customPage = ref(currentPage.value);
+
+
 
 const applySearch = () => {
   router.push({ name: 'students-list', query: { ...route.query, search: searchQuery.value } }).then(() => {
@@ -266,6 +269,31 @@ window.addEventListener("click", onClickOutside);
           <input v-model="searchQuery" type="text" @keyup.enter="applySearch" placeholder="Gözleg"
             class="w-full dark:text-gray-300 transition duration-200 ease-in bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring focus:ring-blue-200 focus:outline-none" />
         </div>
+      </div>
+      <div class="mx-4 pb-4 flex">
+        <input v-model="searchQuery" type="text" @keyup.enter="applySearch" placeholder="search"
+          :class="{ 'rounded-l-md': isSearching, 'rounded-md': !isSearching }"
+          class="w-full text-[0.8rem] md:text-sm dark:text-gray-300 transition duration-200 ease-in bg-transparent px-4 py-2 border border-gray-300 dark:border-gray-700 focus:ring focus:ring-emerald-300 dark:focus:ring-emerald-800 focus:outline-none" />
+        <button @click="resetTable" v-if="isSearching"
+          class="py-2 select-none text-nowrap px-3 text-[0.7rem] md:text-sm rounded-r-md shadow-md bg-emerald-500 dark:bg-emerald-900 text-white ring-0 ring-emerald-200 dark:ring-emerald-800 active:ring-4 duration-100 ease-in active:scale-95">
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="w-6 h-6"
+            viewBox="0 0 24 24" version="1.1">
+            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+              <g id="Reload">
+                <rect id="Rectangle" fill-rule="nonzero" x="0" y="0" width="24" height="24">
+                </rect>
+                <path
+                  d="M4,13 C4,17.4183 7.58172,21 12,21 C16.4183,21 20,17.4183 20,13 C20,8.58172 16.4183,5 12,5 C10.4407,5 8.98566,5.44609 7.75543,6.21762"
+                  id="Path" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                </path>
+                <path
+                  d="M9.2384,1.89795 L7.49856,5.83917 C7.27552,6.34441 7.50429,6.9348 8.00954,7.15784 L11.9508,8.89768"
+                  id="Path" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                </path>
+              </g>
+            </g>
+          </svg>
+        </button>
       </div>
     </div>
     <div class="w-full overflow-x-auto rounded-b-lg">

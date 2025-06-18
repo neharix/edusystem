@@ -5,9 +5,9 @@ import TheBreadcrumb from "@/components/TheBreadcrumb.vue";
 import { onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth.store.js";
 import StudentsDataTable from "@/components/DataTables/StudentsDataTable.vue";
+import HighSchoolStudentsDataTable from "@/components/DataTables/HighSchoolStudentsDataTable.vue";
 import { useUxStore } from "@/stores/ux.store";
 import TheSpinner from "@/components/TheSpinner.vue";
-
 
 const uxStore = useUxStore();
 
@@ -68,8 +68,8 @@ const breadcrumbPaths = [
     <div v-else>
       <students-data-table v-if="role === 'root'" :data="studentsAdditional" :total-pages="dataTablePageCount"
         @update="updateData"></students-data-table>
-        <students-data-table v-else :data="studentsAdditional" :total-pages="dataTablePageCount"
-        @update="updateData"></students-data-table>
+      <high-school-students-data-table v-else :data="studentsAdditional" :total-pages="dataTablePageCount"
+        @update="updateData"></high-school-students-data-table>
     </div>
   </div>
 </template>

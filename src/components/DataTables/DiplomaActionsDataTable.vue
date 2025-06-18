@@ -36,6 +36,7 @@ const sortOrder = ref('asc');
 const currentPage = ref(1);
 const rowsPerPage = ref(10);
 const rowsPerPageOptions = [10, 20, 50, 100];
+const customPage = ref(currentPage.value);
 
 
 const sortedData = computed(() => {
