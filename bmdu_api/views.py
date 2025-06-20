@@ -395,8 +395,10 @@ def dashboard_api_view(request: HttpRequest):
         return Response(
             {
                 "high_schools_count": HighSchool.objects.filter(active=True).count(),
-                "faculties_count": HighSchoolFaculty.objects.filter().count(),
-                "departments_count": FacultyDepartment.objects.filter().count(),
+                "faculties_count": HighSchoolFaculty.objects.all().count(),
+                "departments_count": FacultyDepartment.objects.filter(
+                    is_visible=True
+                ).count(),
                 "specializations_count": Specialization.objects.filter(
                     active=True
                 ).count(),
@@ -464,7 +466,7 @@ def dashboard_api_view(request: HttpRequest):
                     high_school=high_school
                 ).count(),
                 "departments_count": FacultyDepartment.objects.filter(
-                    high_school_faculty__high_school=high_school
+                    high_school_faculty__high_school=high_school, is_visible=True
                 ).count(),
                 "specializations_count": DepartmentSpecialization.objects.filter(
                     faculty_department__high_school_faculty__high_school=high_school
@@ -705,7 +707,8 @@ def get_high_school_departments_api_view(
                     "faculty": faculty_department.high_school_faculty.faculty.name,
                 }
                 for faculty_department in FacultyDepartment.objects.filter(
-                    high_school_faculty__high_school=high_school
+                    high_school_faculty__high_school=high_school,
+                    is_visible=True,
                 )
             ]
         )
@@ -713,7 +716,7 @@ def get_high_school_departments_api_view(
     elif mode == "exc":
         return Response(
             DepartmentSerializer(
-                Department.objects.filter(active=True),
+                Department.objects.filter(active=True, is_visible=True),
                 many=True,
             ).data
         )
@@ -903,6 +906,7 @@ def get_faculties_with_additional_data_api_view(request: HttpRequest):
                     "departments_count": FacultyDepartment.objects.filter(
                         high_school_faculty__faculty=faculty,
                         high_school_faculty__high_school=high_school,
+                        is_visible=True,
                     ).count(),
                 }
             )
@@ -984,7 +988,7 @@ class FacultyRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 def get_departments_with_additional_data_api_view(request: HttpRequest):
     response = []
     if request.user.is_superuser:
-        departments = Department.objects.filter(active=True)
+        departments = Department.objects.filter(active=True, is_visible=True)
         for department in departments:
             male_count, female_count = 0, 0
             for f_department in FacultyDepartment.objects.filter(department=department):
@@ -1095,14 +1099,14 @@ def create_faculty_departments_api_view(request: HttpRequest):
 
 
 class DepartmentListCreateAPIView(ListCreateAPIView):
-    queryset = Department.objects.all()
+    queryset = Department.objects.filter(is_visible=True)
     permission_classes = [IsAuthenticated]
     serializer_class = DepartmentSerializer
     lookup_field = "id"
 
 
 class DepartmentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Department.objects.all()
+    queryset = Department.objects.filter(is_visible=True)
     permission_classes = [IsAuthenticated]
     serializer_class = DepartmentSerializer
     lookup_field = "id"
@@ -1432,13 +1436,17 @@ def create_department_specializations_api_view(request: HttpRequest):
     else:
         return Response({"detail": "High school doesn't exist"}, status=404)
 
-    if Department.objects.filter(id=request.data["department"]).exists():
+    if Department.objects.filter(
+        id=request.data["department"], is_visible=True
+    ).exists():
         department = Department.objects.get(id=request.data["department"])
     else:
-        return Response({"detail": "Faculty doesn't exist"}, status=404)
+        return Response({"detail": "Department doesn't exist"}, status=404)
 
     if FacultyDepartment.objects.filter(
-        high_school_faculty__high_school=high_school, department=department
+        high_school_faculty__high_school=high_school,
+        department=department,
+        is_visible=True,
     ):
         faculty_department = FacultyDepartment.objects.get(
             high_school_faculty__high_school=high_school, department=department
@@ -1534,6 +1542,7 @@ def import_students_from_excel_api_view(request: HttpRequest):
                 f"Setir №{index + 1}: '{','.join(row_status[1])}' meýdançasy boş bolup bilmez"
             )
         else:
+            # FIXME TDLU import нужно фиксить
             # FIXME тут тоже нужна корректировочка
             if high_school.abbreviation == "TOHU":
                 row_validation, inv_fields, data = validate_hardcore_excel_fields(
@@ -2990,7 +2999,7 @@ def filter_api_view(request: HttpRequest):
             Faculty.objects.filter(active=True), many=True
         ).data,
         "departments": DepartmentFilterSerializer(
-            Department.objects.filter(active=True), many=True
+            Department.objects.filter(active=True, is_visible=True), many=True
         ).data,
         "specializations": SpecializationFilterSerializer(
             Specialization.objects.filter(active=True), many=True
@@ -3048,6 +3057,7 @@ def filter_api_view(request: HttpRequest):
                             faculty_department.department.id
                             for faculty_department in FacultyDepartment.objects.filter(
                                 high_school_faculty__high_school__id=high_school_id,
+                                is_visible=True,
                             )
                         ],
                         active=True,
@@ -3080,6 +3090,7 @@ def filter_api_view(request: HttpRequest):
                             faculty_department.department.id
                             for faculty_department in FacultyDepartment.objects.filter(
                                 high_school_faculty__faculty__id=faculty_id,
+                                is_visible=True,
                             )
                         ],
                         active=True,

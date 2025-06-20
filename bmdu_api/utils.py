@@ -275,7 +275,7 @@ def create_hardcore_example(row_count: int, high_school: HighSchool) -> Workbook
         id__in=[
             _department.department.id
             for _department in FacultyDepartment.objects.filter(
-                high_school_faculty__high_school=high_school
+                high_school_faculty__high_school=high_school, is_visible=True
             )
         ],
     ):

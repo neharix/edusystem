@@ -43,6 +43,7 @@ class Department(models.Model):
     name = models.CharField(max_length=500)
     abbreviation = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
+    is_visible = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -52,7 +53,10 @@ class FacultyDepartment(models.Model):
     high_school_faculty = models.ForeignKey(
         "HighSchoolFaculty", on_delete=models.CASCADE
     )
-    department = models.ForeignKey("Department", on_delete=models.CASCADE)
+    department = models.ForeignKey(
+        "Department", on_delete=models.CASCADE, null=True, blank=True
+    )
+    is_visible = models.BooleanField(default=True)
 
     def __str__(self):
         return self.department.name
