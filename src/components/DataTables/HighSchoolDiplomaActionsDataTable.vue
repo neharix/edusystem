@@ -2,10 +2,7 @@
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
 import useConfirmModal from "@/use/useModalWindow.js";
 import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
 import { useDiplomasStore } from "@/stores/api.store.js";
-import { storeToRefs } from "pinia";
-import router from "@/router/index.js";
 import ConfirmModal from '../Modals/ConfirmModal.vue';
 
 const props = defineProps(["data"])
@@ -17,7 +14,6 @@ watch(props, (newVal, oldVal) => {
 })
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
-const { toasts, addToast } = useToast();
 const diplomasStore = useDiplomasStore();
 
 const data = ref([]);
@@ -92,13 +88,6 @@ function toggleMenu() {
 function closeMenu() {
   isOpen.value = false;
 }
-
-function onClickOutside(event) {
-  if (!event.target.closest("#dropdown")) {
-    closeMenu();
-  }
-}
-
 
 function openModalWrapper(headerText, content, id) {
   openModal(headerText, content);
@@ -215,11 +204,11 @@ function submitModal() {
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               ((currentPage - 1) * rowsPerPage) + (index + 1)
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.sender
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               {{
@@ -233,7 +222,7 @@ function submitModal() {
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.request_date
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-full flex items-center justify-center" v-if="item.verdict === 'C'">
@@ -315,45 +304,6 @@ function submitModal() {
       </svg>
     </button>
   </div>
-  <teleport to="body">
-    <div class="toast-container w-5/6 fixed top-25
-       md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">
-      <TransitionGroup name="toast">
-        <the-toast v-for="toast in toasts" :key="toast.id" :message="toast.message" :type="toast.type"
-          :duration="toast.duration" :onClose="() => (toasts = toasts.filter((t) => t.id !== toast.id))"></the-toast>
-      </TransitionGroup>
-    </div>
-  </teleport>
 </template>
 
-<style scoped>
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fade-scale-enter-from,
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.fade-scale-enter-to,
-.fade-scale-leave-from {
-  opacity: 1;
-  transform: scale(1);
-}
-
-
-.toast-move,
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-</style>
+<style scoped></style>

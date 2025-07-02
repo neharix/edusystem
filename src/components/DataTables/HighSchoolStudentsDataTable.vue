@@ -10,6 +10,7 @@ import router from "@/router/index.js";
 import { useAuthStore } from "@/stores/auth.store.js";
 import { useRoute } from 'vue-router';
 import DrawerEnd from '../Drawers/DrawerEnd.vue';
+import { useUxStore } from '@/stores/ux.store';
 
 const props = defineProps({
   data: Array,
@@ -35,6 +36,7 @@ const { toasts, addToast } = useToast();
 const studentsStore = useStudentsStore();
 const { deleteStatus, updateStatus, createStatus } = storeToRefs(studentsStore);
 const authStore = useAuthStore();
+const uxStore = useUxStore();
 
 const facultiesStore = useFacultiesStore();
 const departmentsStore = useDepartmentsStore();
@@ -93,10 +95,6 @@ const resetTable = () => {
     isSearching.value = false;
   });
 };
-
-
-
-// const totalPages = computed(() => Math.ceil(sortedData.value.length / rowsPerPage.value));
 
 const changePage = (page) => {
   if (page >= 1 && page <= props.totalPages) {
@@ -195,9 +193,9 @@ watch(sortOrder, (newVal) => {
 watch(deleteStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Talyp üstünlikli ýok edildi', 'success');
+      uxStore.addToast('Talyp üstünlikli ýok edildi', 'success');
     } else if (newVal === 'error') {
-      addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      uxStore.addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   deleteStatus.value = null;
@@ -215,18 +213,18 @@ onMounted(() => {
 
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
-      addToast('Talyp üstünlikli üýtgedildi', 'success');
+      uxStore.addToast('Talyp üstünlikli üýtgedildi', 'success');
     } else if (updateStatus.value === 'error') {
-      addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      uxStore.addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   updateStatus.value = null;
 
   if (createStatus.value) {
     if (createStatus.value === 'success') {
-      addToast('Talyplar üstünlikli hasaba alyndy!', 'success');
+      uxStore.addToast('Talyplar üstünlikli hasaba alyndy!', 'success');
     } else if (createStatus.value === 'error') {
-      addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      uxStore.addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   createStatus.value = null;
@@ -720,45 +718,6 @@ window.addEventListener("click", onClickOutside);
       </svg>
     </button>
   </div>
-  <teleport to="body">
-    <div class="toast-container w-5/6 fixed top-25
-       md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">
-      <TransitionGroup name="toast">
-        <the-toast v-for="toast in toasts" :key="toast.id" :message="toast.message" :type="toast.type"
-          :duration="toast.duration" :onClose="() => (toasts = toasts.filter((t) => t.id !== toast.id))"></the-toast>
-      </TransitionGroup>
-    </div>
-  </teleport>
 </template>
 
-<style scoped>
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fade-scale-enter-from,
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.fade-scale-enter-to,
-.fade-scale-leave-from {
-  opacity: 1;
-  transform: scale(1);
-}
-
-
-.toast-move,
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-</style>
+<style scoped></style>

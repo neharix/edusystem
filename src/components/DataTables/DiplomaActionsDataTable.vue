@@ -1,11 +1,5 @@
 <script setup>
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
-import useConfirmModal from "@/use/useModalWindow.js";
-import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
-import { useDiplomasStore } from "@/stores/api.store.js";
-import { storeToRefs } from "pinia";
-import router from "@/router/index.js";
 
 
 const props = defineProps(["data"])
@@ -16,13 +10,9 @@ watch(props, (newVal, oldVal) => {
   filteredData.value = [...data.value];
 })
 
-const { isModalOpen, openModal, header, context } = useConfirmModal();
-const { toasts, addToast } = useToast();
-const diplomasStore = useDiplomasStore();
 
 const data = ref([]);
 const filteredData = ref([]);
-const selectedItem = ref(null);
 
 if (props.data.length > 0) {
   data.value = props.data;
@@ -260,45 +250,6 @@ function onClickOutside(event) {
       </svg>
     </button>
   </div>
-  <teleport to="body">
-    <div class="toast-container w-5/6 fixed top-25
-       md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">
-      <TransitionGroup name="toast">
-        <the-toast v-for="toast in toasts" :key="toast.id" :message="toast.message" :type="toast.type"
-          :duration="toast.duration" :onClose="() => (toasts = toasts.filter((t) => t.id !== toast.id))"></the-toast>
-      </TransitionGroup>
-    </div>
-  </teleport>
 </template>
 
-<style scoped>
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fade-scale-enter-from,
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.fade-scale-enter-to,
-.fade-scale-leave-from {
-  opacity: 1;
-  transform: scale(1);
-}
-
-
-.toast-move,
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-</style>
+<style scoped></style>

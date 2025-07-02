@@ -1,5 +1,6 @@
 <template>
   <component :is="layout"></component>
+  <toast-container></toast-container>
 </template>
 
 <script setup>
@@ -8,7 +9,7 @@ import { useRoute } from "vue-router";
 import LoaderLayout from "@/layouts/LoaderLayout.vue";
 import { useAuthStore } from "@/stores/auth.store.js";
 import router from "@/router/index.js";
-
+import ToastContainer from "./components/ToastContainer.vue";
 
 const layout = shallowRef(LoaderLayout)
 const layoutName = ref('LoaderLayout');

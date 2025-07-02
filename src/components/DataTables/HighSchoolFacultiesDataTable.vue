@@ -2,12 +2,11 @@
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
 import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
-import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
-import { useFacultiesStore, useHighSchoolsStore } from "@/stores/api.store.js";
+import { useFacultiesStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
 import { useRoute } from "vue-router";
+import { useUxStore } from '@/stores/ux.store';
 
 const route = useRoute();
 const props = defineProps(["data"])
@@ -19,9 +18,9 @@ watch(props, (newVal, oldVal) => {
 })
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
-const { toasts, addToast } = useToast();
 const facultiesStore = useFacultiesStore();
 const { removeStatus, updateStatus } = storeToRefs(facultiesStore);
+const uxStore = useUxStore();
 
 const data = ref([]);
 const filteredData = ref([]);
@@ -145,9 +144,9 @@ function submitModal() {
 watch(removeStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Fakultet ÝOM-dan üstünlikli ýok edildi', 'success');
+      uxStore.addToast('Fakultet ÝOM-dan üstünlikli ýok edildi', 'success');
     } else if (newVal === 'error') {
-      addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      uxStore.addToast('Ýok etme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   removeStatus.value = null;
@@ -156,9 +155,9 @@ watch(removeStatus, (newVal, oldVal) => {
 onMounted(() => {
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
-      addToast('Fakultet üstünlikli üýtgedildi', 'success');
+      uxStore.addToast('Fakultet üstünlikli üýtgedildi', 'success');
     } else if (updateStatus.value === 'error') {
-      addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      uxStore.addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   updateStatus.value = null;
@@ -359,45 +358,6 @@ window.addEventListener("click", onClickOutside);
       </svg>
     </button>
   </div>
-  <teleport to="body">
-    <div class="toast-container w-5/6 fixed top-25
-       md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">
-      <TransitionGroup name="toast">
-        <the-toast v-for="toast in toasts" :key="toast.id" :message="toast.message" :type="toast.type"
-          :duration="toast.duration" :onClose="() => (toasts = toasts.filter((t) => t.id !== toast.id))"></the-toast>
-      </TransitionGroup>
-    </div>
-  </teleport>
 </template>
 
-<style scoped>
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fade-scale-enter-from,
-.fade-scale-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.fade-scale-enter-to,
-.fade-scale-leave-from {
-  opacity: 1;
-  transform: scale(1);
-}
-
-
-.toast-move,
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-</style>
+<style scoped></style>
