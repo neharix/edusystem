@@ -9,6 +9,7 @@ import pandas as pd
 import pytz
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.db import models
 from django.db.models import Count, Q
 from django.http import FileResponse
 from django.http import HttpRequest as DjangoHttpRequest
@@ -369,6 +370,24 @@ def dashboard_api_view(request: HttpRequest):
     if request.user.is_superuser:
         male_graduates = 0
         female_graduates = 0
+
+        # e_s = DepartmentSpecialization.objects.filter(
+        #     faculty_department__high_school_faculty__high_school__is_complex_branched=False
+        # ).count()
+        # p_s = (
+        #     DepartmentSpecialization.objects.filter(
+        #         faculty_department__high_school_faculty__high_school__is_complex_branched=True
+        #     )
+        #     .values("specialization")
+        #     .annotate(count=models.Count("id"))
+        #     .filter(count__gt=1)
+        # )
+        # specialization_ids = [item["specialization"] for item in p_s]
+
+        # result_qs = DepartmentSpecialization.objects.filter(
+        #     specialization__id__in=specialization_ids
+        # ).count()
+
         for specialization in Specialization.objects.filter(active=True).select_related(
             "degree"
         ):
@@ -438,11 +457,33 @@ def dashboard_api_view(request: HttpRequest):
         )
     elif request.user.is_authenticated:
         high_school = HighSchool.objects.get(manager__user=request.user)
+
         male_graduates = 0
         female_graduates = 0
-        for d_specialization in DepartmentSpecialization.objects.filter(
-            faculty_department__high_school_faculty__high_school=high_school,
-        ).select_related("specialization", "specialization__degree"):
+
+        department_specializations = DepartmentSpecialization.objects.filter(
+            faculty_department__high_school_faculty__high_school=high_school
+        ).select_related("specialization", "specialization__degree")
+
+        specializations = {}
+
+        if high_school.is_complex_branched:
+            for d_specialization in department_specializations.filter(
+                is_common_shell=False
+            ):
+                if not d_specialization.specialization in specializations.keys():
+                    specializations[d_specialization.specialization] = [
+                        d_specialization.id
+                    ]
+                else:
+                    specializations[d_specialization.specialization].append(
+                        d_specialization.id
+                    )
+            specializations_count = len(specializations.keys())
+        else:
+            specializations_count = department_specializations.count()
+
+        for d_specialization in department_specializations:
             male_graduates += Student.objects.filter(
                 specialization=d_specialization,
                 study_year=str(d_specialization.specialization.degree.duration),
@@ -468,9 +509,7 @@ def dashboard_api_view(request: HttpRequest):
                 "departments_count": FacultyDepartment.objects.filter(
                     high_school_faculty__high_school=high_school, is_visible=True
                 ).count(),
-                "specializations_count": DepartmentSpecialization.objects.filter(
-                    faculty_department__high_school_faculty__high_school=high_school
-                ).count(),
+                "specializations_count": specializations_count,
                 "students_count": Student.objects.filter(
                     active=True,
                     high_school=high_school,
@@ -1327,77 +1366,63 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
     else:
         high_school = HighSchool.objects.get(manager__user=request.user)
         order_key = request.GET.get("column", "name")
-        match order_key:
-            case "name":
-                order_key = "specialization__name"
-            case "department":
-                order_key = "faculty_department__department__name"
-        order_by = order + order_key
 
         if search:
-            specializations = (
-                DepartmentSpecialization.objects.filter(
-                    faculty_department__high_school_faculty__high_school=high_school,
-                    specialization__name__contains=search,
-                )
-                .annotate(
-                    male_count=Count(
-                        "student",
-                        filter=Q(
-                            student__gender="M",
-                            student__is_expelled=False,
-                            student__is_obsolete=False,
-                        ),
+            specializations = DepartmentSpecialization.objects.filter(
+                faculty_department__high_school_faculty__high_school=high_school,
+                specialization__name__contains=search,
+            ).annotate(
+                male_count=Count(
+                    "student",
+                    filter=Q(
+                        student__gender="M",
+                        student__is_expelled=False,
+                        student__is_obsolete=False,
                     ),
-                    female_count=Count(
-                        "student",
-                        filter=Q(
-                            student__gender="F",
-                            student__is_expelled=False,
-                            student__is_obsolete=False,
-                        ),
+                ),
+                female_count=Count(
+                    "student",
+                    filter=Q(
+                        student__gender="F",
+                        student__is_expelled=False,
+                        student__is_obsolete=False,
                     ),
-                    students_count=Count(
-                        "student",
-                        filter=Q(
-                            student__is_expelled=False,
-                            student__is_obsolete=False,
-                        ),
+                ),
+                students_count=Count(
+                    "student",
+                    filter=Q(
+                        student__is_expelled=False,
+                        student__is_obsolete=False,
                     ),
-                )
-                .order_by(order_by)
+                ),
             )
         else:
-            specializations = (
-                DepartmentSpecialization.objects.filter(
-                    faculty_department__high_school_faculty__high_school=high_school
-                )
-                .annotate(
-                    male_count=Count(
-                        "student",
-                        filter=Q(
-                            student__gender="M",
-                            student__is_expelled=False,
-                            student__is_obsolete=False,
-                        ),
+            specializations = DepartmentSpecialization.objects.filter(
+                faculty_department__high_school_faculty__high_school=high_school
+            ).annotate(
+                male_count=Count(
+                    "student",
+                    filter=Q(
+                        student__gender="M",
+                        student__is_expelled=False,
+                        student__is_obsolete=False,
                     ),
-                    female_count=Count(
-                        "student",
-                        filter=Q(
-                            student__gender="F",
-                            student__is_expelled=False,
-                            student__is_obsolete=False,
-                        ),
+                ),
+                female_count=Count(
+                    "student",
+                    filter=Q(
+                        student__gender="F",
+                        student__is_expelled=False,
+                        student__is_obsolete=False,
                     ),
-                    students_count=Count(
-                        "student",
-                        filter=Q(
-                            student__is_expelled=False,
-                            student__is_obsolete=False,
-                        ),
+                ),
+                students_count=Count(
+                    "student",
+                    filter=Q(
+                        student__is_expelled=False,
+                        student__is_obsolete=False,
                     ),
-                )
-                .order_by(order_by)
+                ),
             )
 
         serializer = DepartmentSpecializationAdditionalSerializer(
@@ -1405,10 +1430,28 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
         )
         data = serializer.data
 
+        if high_school.is_complex_branched:
+            n_data = []
+            for item in data:
+                if item["name"] in list(map(lambda e: e["name"], n_data)):
+                    idx = list(map(lambda e: e["name"], n_data)).index(item["name"])                    
+                    n_data[idx]["male_count"] += item["male_count"]
+                    n_data[idx]["female_count"] += item["female_count"]
+                    n_data[idx]["students_count"] += item["students_count"]
+                    if n_data[idx].get("departments", False):
+                        print(n_data[idx]['name'])
+                        n_data[idx]["departments"].append(item["department"])
+                    else:
+                        n_data[idx]["is_common_name"] = True
+                        n_data[idx]["departments"] = [n_data[idx]["department"],item["department"]]
+                        del n_data[idx]["department"]
+                else:
+                    n_data.append(item)
+            data = n_data
+
         sort_key = order_key
         reverse = order.startswith("-")
         data = sorted(data, key=lambda x: x.get(sort_key, ""), reverse=reverse)
-
         paginator = ResponsivePageSizePagination()
         paginator.page_size = page_size
         try:

@@ -18,6 +18,8 @@ class HighSchool(models.Model):
     lat = models.FloatField(blank=True, default=37.95)
     lng = models.FloatField(blank=True, default=58.38)
 
+    is_complex_branched = models.BooleanField(default=False)
+
     def __str__(self):
         return self.name
 
@@ -97,9 +99,13 @@ class Specialization(models.Model):
 
 class DepartmentSpecialization(models.Model):
     faculty_department = models.ForeignKey(
-        "FacultyDepartment", on_delete=models.CASCADE
+        "FacultyDepartment", on_delete=models.CASCADE, null=True, blank=True
     )
-    specialization = models.ForeignKey("Specialization", on_delete=models.CASCADE)
+    specialization = models.ForeignKey(
+        "Specialization", on_delete=models.CASCADE, null=True, blank=True
+    )
+    is_common_shell = models.BooleanField(default=False)
+    parts = models.ManyToManyField("DepartmentSpecialization", blank=True)
 
     def __str__(self):
         return self.specialization.name
