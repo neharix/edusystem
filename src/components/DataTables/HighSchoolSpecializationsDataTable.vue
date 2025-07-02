@@ -153,6 +153,7 @@ watch(removeStatus, (newVal, oldVal) => {
 })
 
 onMounted(() => {
+  console.log(data.value);
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
       uxStore.addToast('Hünär üstünlikli üýtgedildi', 'success');
@@ -270,19 +271,19 @@ window.addEventListener("click", onClickOutside);
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in paginatedData" :key="item.id"
+          <tr v-for="(item, index) in paginatedData" :key="index"
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               ((currentPage - 1) * rowsPerPage) + (index + 1)
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.name
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.department
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-max py-2 px-3 transition duration-200 ease-out select-none rounded-lg"

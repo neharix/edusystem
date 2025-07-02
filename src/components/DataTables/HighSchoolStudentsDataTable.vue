@@ -2,8 +2,6 @@
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
 import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
-import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
 import { useClassificatorsStore, useCountriesStore, useDegreesStore, useDepartmentsStore, useFacultiesStore, useNationalizationsStore, useRegionsStore, useSpecializationsStore, useStudentsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
@@ -32,7 +30,6 @@ watch(props, (newVal, oldVal) => {
 const route = useRoute();
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
-const { toasts, addToast } = useToast();
 const studentsStore = useStudentsStore();
 const { deleteStatus, updateStatus, createStatus } = storeToRefs(studentsStore);
 const authStore = useAuthStore();
@@ -590,11 +587,11 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               ((currentPage - 1) * rowsPerPage) + (index + 1)
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.full_name
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
               v-if="authStore.role === 'root' && route.name === 'students-list'">{{

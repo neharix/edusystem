@@ -17,7 +17,6 @@ watch(props, (newVal, oldVal) => {
 })
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
-const { toasts, addToast } = useToast();
 const teacherStatementsStore = useTeacherStatementsStore();
 const { deactivateStatus } = storeToRefs(teacherStatementsStore);
 const uxStore = useUxStore();

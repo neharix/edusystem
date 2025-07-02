@@ -4,17 +4,15 @@ import { useDiplomasStore } from '@/stores/api.store';
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 import router from '@/router';
-import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
 import { useUxStore } from '@/stores/ux.store';
 import TheSpinner from '@/components/TheSpinner.vue';
 
 
-const { toasts, addToast } = useToast();
 
 const diplomasStore = useDiplomasStore();
 const { diplomaRequestAdvanced, createStatus, updateStatus } = storeToRefs(diplomasStore);
 const uxStore = useUxStore();
+const { addToast } = storeToRefs(uxStore)
 
 onMounted(() => {
   if (createStatus.value) {
@@ -233,13 +231,4 @@ onMounted(() => {
       </div>
     </div>
   </div>
-  <teleport to="body">
-    <div class="toast-container w-5/6 fixed top-25
-       md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">
-      <TransitionGroup name="toast">
-        <the-toast v-for="toast in toasts" :key="toast.id" :message="toast.message" :type="toast.type"
-          :duration="toast.duration" :onClose="() => (toasts = toasts.filter((t) => t.id !== toast.id))"></the-toast>
-      </TransitionGroup>
-    </div>
-  </teleport>
 </template>

@@ -2,8 +2,6 @@
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
 import ConfirmModal from "@/components/Modals/ConfirmModal.vue";
 import useConfirmModal from "@/use/useModalWindow.js";
-import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
 import { useReinstateRequestsStore, useStudentsStore } from "@/stores/api.store.js";
 import { storeToRefs } from "pinia";
 import router from "@/router/index.js";
@@ -19,7 +17,6 @@ watch(props, (newVal, oldVal) => {
 })
 
 const { isModalOpen, openModal, header, context } = useConfirmModal();
-const { toasts, addToast } = useToast();
 const studentsStore = useStudentsStore();
 const reinstateRequestStore = useReinstateRequestsStore();
 const { createStatus } = storeToRefs(reinstateRequestStore);

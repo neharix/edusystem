@@ -4,9 +4,7 @@ import TheBreadcrumb from '@/components/TheBreadcrumb.vue';
 import { storeToRefs } from 'pinia';
 import { onBeforeMount, reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import router from '@/router';
 import ReinstateStatement from '@/components/Forms/ReinstateStatement.vue';
-import { useAuthStore } from '@/stores/auth.store';
 
 
 const route = useRoute();

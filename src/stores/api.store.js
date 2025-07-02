@@ -885,7 +885,7 @@ export const useStudentsStore = defineStore("students", () => {
   const studentsAdditional = ref([]);
   let student = ref({});
   let studentInfo = ref({});
-  const expelledStudent = reactive({});
+  const expelledStudent = ref({});
   const neutralStudent = reactive({});
   const expelledStudentsAdditional = ref([]);
 

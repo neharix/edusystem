@@ -174,6 +174,7 @@ watch(deleteStatus, (newVal, oldVal) => {
 })
 
 onMounted(() => {
+  console.log(data.value);
   if (updateStatus.value) {
     if (updateStatus.value === 'success') {
       uxStore.addToast('Hünär üstünlikli üýtgedildi', 'success');
@@ -335,16 +336,22 @@ window.addEventListener("click", onClickOutside);
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               ((currentPage - 1) * rowsPerPage) + (index + 1)
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.name
-            }}
+              }}
             </td>
-            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
-              v-if="authStore.role === 'user'">{{
+            <td class="border-y border-gray-300 dark:border-[#32237cef] py-2 px-5 break-words text-[0.8rem]"
+              v-if="authStore.role === 'user' && !item.is_common_name">{{
                 item.department
               }}
+            </td>
+            <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]"
+              v-else-if="authStore.role === 'user' && item.is_common_name">
+              <div :title="item.departments.join('\n')"
+                class="w-max py-2 px-3 transition duration-200 ease-out select-none rounded-lg hover:bg-emerald-500 dark:hover:bg-emerald-700 hover:text-white">
+                Birnäçe kafedrasy bar</div>
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-max py-2 px-3 transition duration-200 ease-out select-none rounded-lg"
@@ -357,7 +364,7 @@ window.addEventListener("click", onClickOutside);
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.male_count
-            }}
+              }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               {{ item.female_count }}

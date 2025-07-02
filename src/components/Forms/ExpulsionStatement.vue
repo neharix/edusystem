@@ -7,11 +7,9 @@ import { storeToRefs } from "pinia";
 import { Field, Form } from "vee-validate";
 import TheSpinner from "@/components/TheSpinner.vue";
 import { useRoute } from "vue-router";
-import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
+import { useUxStore } from "@/stores/ux.store";
 
 
-const { toasts, addToast } = useToast();
 const route = useRoute()
 const expulsionReasonsStore = useExpulsionReasonsStore();
 const { expulsionReasons } = storeToRefs(expulsionReasonsStore);
@@ -19,7 +17,8 @@ const expulsionRequestsStore = useExpulsionRequestsStore();
 const { createStatus } = storeToRefs(expulsionRequestsStore)
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
-
+const uxStore = useUxStore();
+const { addToast } = storeToRefs(uxStore);
 
 const reason = ref(0);
 
@@ -90,13 +89,4 @@ function onSubmit(values, { setErrors }) {
       </div>
     </Form>
   </div>
-  <teleport to="body">
-    <div class="toast-container w-5/6 fixed top-25
-       md:top-auto md:bottom-5 right-5 md:w-1/4 flex flex-col-reverse space-y-2">
-      <TransitionGroup name="toast">
-        <the-toast v-for="toast in toasts" :key="toast.id" :message="toast.message" :type="toast.type"
-          :duration="toast.duration" :onClose="() => (toasts = toasts.filter((t) => t.id !== toast.id))"></the-toast>
-      </TransitionGroup>
-    </div>
-  </teleport>
 </template>
