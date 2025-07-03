@@ -50,9 +50,9 @@ class Command(BaseCommand):
             match app_name:
                 case "all":
                     load_quene = (
-                        "main_country.json",
-                        "main_nationality.json",
-                        "main_region.json",
+                        "bmdu_api_country.json",
+                        "bmdu_api_nationality.json",
+                        "bmdu_api_region.json",
                         "bmdu_api_classificator.json",
                         "bmdu_api_degree.json",
                         "bmdu_api_highschool.json",
@@ -89,9 +89,9 @@ class Command(BaseCommand):
                     )
                 case "bmdu":
                     load_quene = (
-                        "main_country.json",
-                        "main_nationality.json",
-                        "main_region.json",
+                        "bmdu_api_country.json",
+                        "bmdu_api_nationality.json",
+                        "bmdu_api_region.json",
                         "bmdu_api_classificator.json",
                         "bmdu_api_degree.json",
                         "bmdu_api_highschool.json",

@@ -9,8 +9,6 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.worksheet.worksheet import Worksheet
 from pandas.core.series import Series
 
-from main.models import Country, Nationality, Region
-
 from .models import *
 from .serializers import StudentFilterSerializer
 
@@ -473,6 +471,13 @@ def advanced_quantity_filter(payload: dict):
             query_set = query_set.union(students.filter(study_year=study_year))
         students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
+    if len(payload["degrees"]):
+        for degree_id in payload["degrees"]:
+            query_set = query_set.union(
+                students.filter(specialization__specialization__degree__id=degree_id)
+            )
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
+        query_set = Student.objects.none()
     if len(payload["payment_types"]):
         for payment_type_id in payload["payment_types"]:
             payment_type = "P" if payment_type_id == 1 else "B"
@@ -508,14 +513,7 @@ def advanced_quantity_filter(payload: dict):
         query_set = query_set.union(students.filter(military_service=None, gender="M"))
         students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()
-
-    print(
-        students.select_related(
-            "region",
-            "country",
-            "nationality",
-        )
-    )
+    
     degrees = [
         {
             "name": "Bakalawr",
@@ -620,7 +618,7 @@ def advanced_quantity_filter(payload: dict):
             }
             for region in Region.objects.all()
         ],
-        "degrees": degrees,
+        "degrees_output": degrees,
     }
 
 
@@ -654,6 +652,13 @@ def advanced_filter(payload: dict, key: str = "gender", value: int = 0):
         for specialization_id in payload["specializations"]:
             query_set = query_set.union(
                 students.filter(specialization__specialization__id=specialization_id)
+            )
+        students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
+        query_set = Student.objects.none()
+    if len(payload["degrees"]):
+        for degree_id in payload["degrees"]:
+            query_set = query_set.union(
+                students.filter(specialization__specialization__degree__id=degree_id)
             )
         students = students.filter(id__in=list(query_set.values_list("id", flat=True)))
         query_set = Student.objects.none()

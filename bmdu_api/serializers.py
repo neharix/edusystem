@@ -5,11 +5,11 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.request import HttpRequest
 
-from main.models import Country, Nationality, Profile, Region
-from main.serializers import CountrySerializer, NationalitySerializer, RegionSerializer
+from main.models import Profile
 
 from .models import (
     Classificator,
+    Country,
     Degree,
     Department,
     DepartmentSpecialization,
@@ -22,12 +22,31 @@ from .models import (
     FacultyDepartment,
     HighSchool,
     HighSchoolFaculty,
+    Nationality,
+    Region,
     ReinstateRequest,
     Specialization,
     Student,
     TeacherStatement,
 )
 
+
+class NationalitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Nationality
+        fields = "__all__"
+
+
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = "__all__"
+
+
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = "__all__"
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,6 +111,17 @@ class DegreeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Degree
         fields = "__all__"
+
+
+class DegreeFilterSerializer(serializers.ModelSerializer):
+    def get_name(self, instance: Degree):
+        return f"{instance.name} ({instance.duration} ýyl)"
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Degree
+        fields = ["id", "name"]
+
 
 
 class ClassificatorSerializer(serializers.ModelSerializer):

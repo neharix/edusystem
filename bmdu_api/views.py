@@ -32,14 +32,14 @@ from rest_framework.request import HttpRequest
 from rest_framework.response import Response
 
 from main.decorators import validate_files, validate_payload
-from main.models import Country, Nationality, Profile, Region
+from main.models import Profile
 from main.paginators import ResponsivePageSizePagination
-from main.serializers import CountrySerializer, NationalitySerializer, RegionSerializer
 from main.utils import get_app_models
 
 from .models import (
     AnnualUpdateReport,
     Classificator,
+    Country,
     Degree,
     Department,
     DepartmentSpecialization,
@@ -52,6 +52,8 @@ from .models import (
     FacultyDepartment,
     HighSchool,
     HighSchoolFaculty,
+    Nationality,
+    Region,
     ReinstateRequest,
     Specialization,
     Student,
@@ -61,6 +63,7 @@ from .serializers import (
     ClassificatorSerializer,
     CountryFilterSerializer,
     CountrySerializer,
+    DegreeFilterSerializer,
     DegreeSerializer,
     DepartmentFilterSerializer,
     DepartmentSerializer,
@@ -465,23 +468,23 @@ def dashboard_api_view(request: HttpRequest):
             faculty_department__high_school_faculty__high_school=high_school
         ).select_related("specialization", "specialization__degree")
 
-        specializations = {}
+        # specializations = {}
 
-        if high_school.is_complex_branched:
-            for d_specialization in department_specializations.filter(
-                is_common_shell=False
-            ):
-                if not d_specialization.specialization in specializations.keys():
-                    specializations[d_specialization.specialization] = [
-                        d_specialization.id
-                    ]
-                else:
-                    specializations[d_specialization.specialization].append(
-                        d_specialization.id
-                    )
-            specializations_count = len(specializations.keys())
-        else:
-            specializations_count = department_specializations.count()
+        # if high_school.is_complex_branched:
+        #     for d_specialization in department_specializations.filter(
+        #         is_common_shell=False
+        #     ):
+        #         if not d_specialization.specialization in specializations.keys():
+        #             specializations[d_specialization.specialization] = [
+        #                 d_specialization.id
+        #             ]
+        #         else:
+        #             specializations[d_specialization.specialization].append(
+        #                 d_specialization.id
+        #             )
+        #     specializations_count = len(specializations.keys())
+        # else:
+        #     specializations_count = department_specializations.count()
 
         for d_specialization in department_specializations:
             male_graduates += Student.objects.filter(
@@ -509,7 +512,7 @@ def dashboard_api_view(request: HttpRequest):
                 "departments_count": FacultyDepartment.objects.filter(
                     high_school_faculty__high_school=high_school, is_visible=True
                 ).count(),
-                "specializations_count": specializations_count,
+                "specializations_count": department_specializations.count(),
                 "students_count": Student.objects.filter(
                     active=True,
                     high_school=high_school,
@@ -1430,24 +1433,24 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
         )
         data = serializer.data
 
-        if high_school.is_complex_branched:
-            n_data = []
-            for item in data:
-                if item["name"] in list(map(lambda e: e["name"], n_data)):
-                    idx = list(map(lambda e: e["name"], n_data)).index(item["name"])                    
-                    n_data[idx]["male_count"] += item["male_count"]
-                    n_data[idx]["female_count"] += item["female_count"]
-                    n_data[idx]["students_count"] += item["students_count"]
-                    if n_data[idx].get("departments", False):
-                        print(n_data[idx]['name'])
-                        n_data[idx]["departments"].append(item["department"])
-                    else:
-                        n_data[idx]["is_common_name"] = True
-                        n_data[idx]["departments"] = [n_data[idx]["department"],item["department"]]
-                        del n_data[idx]["department"]
-                else:
-                    n_data.append(item)
-            data = n_data
+        # if high_school.is_complex_branched:
+        #     n_data = []
+        #     for item in data:
+        #         if item["name"] in list(map(lambda e: e["name"], n_data)):
+        #             idx = list(map(lambda e: e["name"], n_data)).index(item["name"])                    
+        #             n_data[idx]["male_count"] += item["male_count"]
+        #             n_data[idx]["female_count"] += item["female_count"]
+        #             n_data[idx]["students_count"] += item["students_count"]
+        #             if n_data[idx].get("departments", False):
+        #                 print(n_data[idx]['name'])
+        #                 n_data[idx]["departments"].append(item["department"])
+        #             else:
+        #                 n_data[idx]["is_common_name"] = True
+        #                 n_data[idx]["departments"] = [n_data[idx]["department"],item["department"]]
+        #                 del n_data[idx]["department"]
+        #         else:
+        #             n_data.append(item)
+        #     data = n_data
 
         sort_key = order_key
         reverse = order.startswith("-")
@@ -3006,6 +3009,7 @@ def verdict_teacher_statement_api_view(
         "departments",
         "specializations",
         "study_years",
+        "degrees",
         "payment_types",
         "genders",
         "nationalities",
@@ -3021,7 +3025,7 @@ def filter_api_view(request: HttpRequest):
             {"name": "Oglan", "count": 0, "query": 1},
             {"name": "Gyz", "count": 0, "query": 2},
         ],
-        "degrees": [
+        "degrees_output": [
             {"name": "Bakalawr", "count": 0},
             {"name": "Hünärmen", "count": 0},
             {"name": "Aspirantura", "count": 0},
@@ -3047,6 +3051,7 @@ def filter_api_view(request: HttpRequest):
         "specializations": SpecializationFilterSerializer(
             Specialization.objects.filter(active=True), many=True
         ).data,
+        "degrees": DegreeFilterSerializer(Degree.objects.all(), many=True).data,
         "study_years": [
             {"id": 1, "name": "I kurs"},
             {"id": 2, "name": "II kurs"},
@@ -3189,7 +3194,7 @@ def filter_api_view(request: HttpRequest):
 
         response["students"] = filter_output["students"]
         response["regions"] = filter_output["regions"]
-        response["degrees"] = filter_output["degrees"]
+        response["degrees_output"] = filter_output["degrees_output"]
 
         return Response({"output": response})
 
@@ -3206,6 +3211,7 @@ def filter_api_view(request: HttpRequest):
         "specializations",
         "study_years",
         "payment_types",
+        "degrees",
         "genders",
         "nationalities",
         "regions",

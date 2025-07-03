@@ -3,6 +3,26 @@ from django.contrib import admin
 from .models import *
 
 
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ["name", "id"]
+    readonly_fields = ("id",)
+    search_fields = ["name"]
+
+
+@admin.register(Region)
+class RegionAdmin(admin.ModelAdmin):
+    list_display = ["name", "id"]
+    readonly_fields = ("id",)
+    search_fields = ["name"]
+
+
+@admin.register(Nationality)
+class NationalityAdmin(admin.ModelAdmin):
+    list_display = ["name", "id"]
+    readonly_fields = ("id",)
+    search_fields = ["name"]
+
 @admin.register(AnnualUpdateReport)
 class AnnualUpdateReportAdmin(admin.ModelAdmin):
     list_display = ["updated_at", "id"]

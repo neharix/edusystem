@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import Country, Nationality, Profile, Region
+from .models import Profile
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -18,20 +18,3 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         return data
 
-
-class NationalitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Nationality
-        fields = "__all__"
-
-
-class CountrySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Country
-        fields = "__all__"
-
-
-class RegionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Region
-        fields = "__all__"

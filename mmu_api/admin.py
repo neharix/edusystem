@@ -1,6 +1,5 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
-from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from .models import (
     Achievement,
@@ -31,28 +30,28 @@ from .resources import (
 
 
 @admin.register(Country)
-class CountryAdmin(UnfoldModelAdmin):
+class CountryAdmin(admin.ModelAdmin):
     list_display = ["name", "id"]
     readonly_fields = ("id",)
     search_fields = ["name"]
 
 
 @admin.register(Region)
-class RegionAdmin(UnfoldModelAdmin):
+class RegionAdmin(admin.ModelAdmin):
     list_display = ["name", "id"]
     readonly_fields = ("id",)
     search_fields = ["name"]
 
 
 @admin.register(Nationality)
-class NationalityAdmin(UnfoldModelAdmin):
+class NationalityAdmin(admin.ModelAdmin):
     list_display = ["name", "id"]
     readonly_fields = ("id",)
     search_fields = ["name"]
 
 
 @admin.register(EducationCenter)
-class EducationCenterAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class EducationCenterAdmin(ImportExportModelAdmin):
     list_display = [
         "name",
         "phone_number",
@@ -70,7 +69,7 @@ class EducationCenterAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(File)
-class FileAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class FileAdmin(ImportExportModelAdmin):
     list_display = ["name", "id", "content", "uploader", "to", "to_storage"]
     search_fields = ["name", "content"]
     list_filter = ["is_active"]
@@ -79,7 +78,7 @@ class FileAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(Staff)
-class StaffAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class StaffAdmin(ImportExportModelAdmin):
     list_display = [
         "full_name",
         "id",
@@ -102,7 +101,7 @@ class StaffAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(Specialization)
-class SpecializationAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class SpecializationAdmin(ImportExportModelAdmin):
     list_display = ["name", "id"]
     search_fields = ["name"]
     readonly_fields = ("id",)
@@ -110,7 +109,7 @@ class SpecializationAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(Achievement)
-class AchievementAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class AchievementAdmin(ImportExportModelAdmin):
     list_display = ["name", "id"]
     search_fields = ["name"]
     readonly_fields = ("id",)
@@ -118,7 +117,7 @@ class AchievementAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(Direction)
-class DirectionAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class DirectionAdmin(ImportExportModelAdmin):
     list_display = ["name", "id"]
     search_fields = ["name"]
     readonly_fields = ("id",)
@@ -126,7 +125,7 @@ class DirectionAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(Course)
-class CourseAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class CourseAdmin(ImportExportModelAdmin):
     list_display = ["name", "id"]
     search_fields = ["name"]
     readonly_fields = ("id",)
@@ -134,14 +133,14 @@ class CourseAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(Certificate)
-class CertificateAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class CertificateAdmin(ImportExportModelAdmin):
     list_display = ["student", "education_center"]
     readonly_fields = ("id",)
     resource_classes = [CertificateResource]
 
 
 @admin.register(Student)
-class StudentAdmin(UnfoldModelAdmin, ImportExportModelAdmin):
+class StudentAdmin(ImportExportModelAdmin):
     list_display = [
         "full_name",
         "phone_number",
