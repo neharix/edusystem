@@ -41,6 +41,7 @@ export const useAuthStore = defineStore("auth", {
       this.token = null;
       this.user = null;
       this.role = "empty";
+      this.notifications = [];
       localStorage.removeItem("access_token");
       delete axiosInstance.defaults.headers["Authorization"];
       router.push("/login");

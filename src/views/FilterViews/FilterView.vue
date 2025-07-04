@@ -43,6 +43,10 @@ function updateStudyYears(arr) {
   filterOptions.value.study_years = arr;
   filterStore.post(filterOptions.value);
 }
+function updateDegrees(arr) {
+  filterOptions.value.degrees = arr;
+  filterStore.post(filterOptions.value);
+}
 function updatePaymentTypes(arr) {
   filterOptions.value.payment_types = arr;
   filterStore.post(filterOptions.value);
@@ -76,10 +80,12 @@ onBeforeMount(() => {
     departments: [],
     specializations: [],
     study_years: [],
+    degrees: [],
     payment_types: [],
     genders: [],
     nationalities: [],
     regions: [],
+
     countries: [],
     military_service: 0,
   }
@@ -119,7 +125,7 @@ onBeforeMount(() => {
   </div>
   <h3 class="text-xl font-semibold mx-2 my-8 select-none">Hünär derejeleri boýunça</h3>
   <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-    <grid-cell v-for="item in data.degrees" :label="item.name" :data-value="item.count"
+    <grid-cell v-for="item in data.degrees_output" :label="item.name" :data-value="item.count"
       icon-bg-class="bg-yellow-200 dark:bg-yellow-500/75">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 stroke-yellow-500 dark:stroke-yellow-900" viewBox="0 0 24 24"
         fill="transparent" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -158,6 +164,11 @@ onBeforeMount(() => {
       <p class="info-label">Kursy</p>
       <multiple-select :data="data.study_years" @update="updateStudyYears"
         empty-label="Kurs tapylmady"></multiple-select>
+    </div>
+    <div class="my-6">
+      <p class="info-label">Hünär derejesi</p>
+      <multiple-select :data="data.degrees" @update="updateDegrees"
+        empty-label="Hünär derejesi tapylmady"></multiple-select>
     </div>
     <div class="my-6">
       <p class="info-label">Töleg görnüşi</p>

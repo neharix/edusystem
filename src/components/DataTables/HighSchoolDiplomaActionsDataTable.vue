@@ -1,7 +1,6 @@
 <script setup>
 import { computed, defineProps, onMounted, ref, watch } from 'vue';
 import useConfirmModal from "@/use/useModalWindow.js";
-import TheToast from "@/components/TheToast.vue";
 import { useDiplomasStore } from "@/stores/api.store.js";
 import ConfirmModal from '../Modals/ConfirmModal.vue';
 
@@ -204,11 +203,11 @@ function submitModal() {
             class="transition ease-in hover:ease-out duration-200 hover:bg-gray-100 dark:hover:bg-[#261953]">
             <td class="border-y border-gray-300 dark:border-[#32237cef] px-4 py-2 break-words text-[0.8rem]">{{
               ((currentPage - 1) * rowsPerPage) + (index + 1)
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.sender
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               {{
@@ -222,7 +221,7 @@ function submitModal() {
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">{{
               item.request_date
-              }}
+            }}
             </td>
             <td class="border-y border-gray-300 dark:border-[#32237cef] p-2 break-words text-[0.8rem]">
               <div class="w-full flex items-center justify-center" v-if="item.verdict === 'C'">

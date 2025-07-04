@@ -368,11 +368,13 @@ export const useSpecializationsStore = defineStore("specializations", () => {
   const deleteStatus = ref(null);
   const removeStatus = ref(null);
   const updateStatus = ref(null);
+  const joinStatus = ref(null);
   const dataTablePageCount = ref(1);
   const createDepartmentSpecializationsStatus = ref(null);
   const highSchoolSpecializations = ref([]);
   const highSchoolExcSpecializations = ref([]);
   const currentPage = ref(1);
+  const objectsCount = ref(0);
 
   async function get(id) {
     try {
@@ -410,6 +412,7 @@ export const useSpecializationsStore = defineStore("specializations", () => {
       currentPage.value = response.data.results.current_page;
       specializationsAdditional.value = response.data.results.data;
       dataTablePageCount.value = response.data.results.total_pages;
+      objectsCount.value = response.data.count;
       console.log(response.data);
     } catch (error) {
       console.error("Error", error);
@@ -486,6 +489,15 @@ export const useSpecializationsStore = defineStore("specializations", () => {
       updateStatus.value = "error";
     }
   }
+  async function join(data) {
+    try {
+      const response = await axiosInstance.post("/join-specializations/", data);
+      joinStatus.value = "success";
+    } catch (error) {
+      console.error("Error", error);
+      joinStatus.value = "error";
+    }
+  }
   async function getHighSchoolSpecializations(highSchoolId) {
     try {
       const response = await axiosInstance.get(
@@ -535,17 +547,20 @@ export const useSpecializationsStore = defineStore("specializations", () => {
     deleteStatus,
     removeStatus,
     updateStatus,
+    joinStatus,
     createDepartmentSpecializationsStatus,
     highSchoolSpecializations,
     highSchoolExcSpecializations,
     dataTablePageCount,
     currentPage,
+    objectsCount,
     get,
     getAllViaUser,
     getAllAdditional,
     create,
     _delete,
     put,
+    join,
     getHighSchoolSpecializations,
     getHighSchoolExcSpecializations,
     createDepartmentSpecialization,

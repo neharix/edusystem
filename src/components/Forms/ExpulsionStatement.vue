@@ -18,14 +18,12 @@ const { createStatus } = storeToRefs(expulsionRequestsStore)
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 const uxStore = useUxStore();
-const { addToast } = storeToRefs(uxStore);
 
 const reason = ref(0);
 
 const schema = Yup.object().shape({
   reason: Yup.number().required('Sebäp hökmän girizmeli'),
   detail: Yup.string().trim().required('Bellik, buýruk nomer,senesi hökmän görkezilmeli'),
-
 });
 
 onBeforeMount(() => {
@@ -41,9 +39,9 @@ function onSubmit(values, { setErrors }) {
   return expulsionRequestsStore.create({ student: route.params.id, sender: user.value.id, reason, detail }).then(() => {
     if (createStatus.value) {
       if (createStatus.value === 'success') {
-        addToast('Arza üstünlikli hasaba alyndy', 'success');
+        uxStore.addToast('Arza üstünlikli hasaba alyndy', 'success');
       } else if (createStatus.value === 'error') {
-        addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
+        uxStore.addToast('Hasaba alma prosesinde ýalňyşlyk ýüze çykdy', 'error');
       }
     }
     createStatus.value = null;
@@ -57,7 +55,7 @@ function onSubmit(values, { setErrors }) {
     <h3 class="text-xl font-bold mx-2 select-none">Talyby okuwdan boşatmak barada arza</h3>
     <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ errors, isSubmitting }" class="space-y-4 my-4">
       <div>
-        <label for="region" class="info-label">Okuwdan boşatmak sebäbi</label>
+        <label for="reason" class="info-label">Okuwdan boşatmak sebäbi</label>
         <Field as="select" name="reason" id="reason"
           class="w-full border border-gray-300 dark:border-gray-700 rounded-md p-2 focus:outline-none select-none"
           v-model="reason">
@@ -85,7 +83,7 @@ function onSubmit(values, { setErrors }) {
       </div>
       <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm select-none">{{
         errors.apiError
-      }}
+        }}
       </div>
     </Form>
   </div>

@@ -152,7 +152,7 @@ const emit = defineEmits(["toggle-theme"]);
             </svg>
             <div class="bg-red-500 px-1.5 py-0.5 text-white text-xs rounded-full absolute -top-1 -right-1">{{
               notifications.length
-            }}</div>
+              }}</div>
           </button>
           <transition name="fade-scale" @before-enter="el => (el.style.display = 'block')"
             @after-leave="el => (el.style.display = 'none')">
@@ -230,8 +230,8 @@ const emit = defineEmits(["toggle-theme"]);
       <button-with-tooltip @clicked="emit('toggle-theme')" position-classes="right-20"
         :text-value="isDark ? 'Ýagty tema' : 'Garaňky tema'" class="flex items-center p-2 dark:text-gray-100 rounded">
         <template #btn-content>
-          <svg viewBox="0 0 24 24" class="w-6 h-6 m-0" :class="{ hidden: isDark }" fill="none"
-            xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" class="w-6 h-6 m-0 text-gray-800 dark:text-white" :class="{ hidden: isDark }"
+            fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M11 1C11 0.447715 11.4477 0 12 0C12.5523 0 13 0.447715 13 1V3C13 3.55228 12.5523 4 12 4C11.4477 4 11 3.55228 11 3V1Z"
               fill="currentColor" />

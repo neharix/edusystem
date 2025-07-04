@@ -5,8 +5,6 @@ import { storeToRefs } from 'pinia';
 import { onBeforeMount, watch, ref } from 'vue';
 import { Field, Form } from "vee-validate";
 import * as Yup from 'yup';
-import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
 import { useRoute } from 'vue-router';
 import TheBreadcrumb from '@/components/TheBreadcrumb.vue';
 import HighSchoolDiplomaReportsDataTable from '@/components/DataTables/HighSchoolDiplomaReportsDataTable.vue';
@@ -14,13 +12,13 @@ import HighSchoolDiplomaActionsDataTable from '@/components/DataTables/HighSchoo
 import VerdictBtnsGroup from '@/components/VerdictBtnsGroup.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import TheSpinner from '@/components/TheSpinner.vue';
+import { useUxStore } from '@/stores/ux.store';
 
 const route = useRoute();
 
-const { toasts, addToast } = useToast();
-
 const authStore = useAuthStore()
 const diplomasStore = useDiplomasStore();
+const uxStore = useUxStore();
 const { diplomaRequestAdvanced, highSchoolDiplomaActions, submitStatus, updateStatus } = storeToRefs(diplomasStore);
 
 const allowingDate = ref(null);
@@ -56,9 +54,9 @@ function onSubmit(values, { setErrors }) {
 watch(submitStatus, (newVal) => {
   if (submitStatus.value) {
     if (submitStatus.value === 'success') {
-      addToast('Hasabat üstünlikli tassyklandy', 'success');
+      uxStore.addToast('Hasabat üstünlikli tassyklandy', 'success');
     } else if (submitStatus.value === 'error') {
-      addToast('Tassyklama prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      uxStore.addToast('Tassyklama prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   submitStatus.value = null;
@@ -67,9 +65,9 @@ watch(submitStatus, (newVal) => {
 watch(updateStatus, (newVal, oldVal) => {
   if (newVal) {
     if (newVal === 'success') {
-      addToast('Hasabat üstünlikli üýtgedildi', 'success');
+      uxStore.addToast('Hasabat üstünlikli üýtgedildi', 'success');
     } else if (newVal === 'error') {
-      addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      uxStore.addToast('Üýtgetme prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   updateStatus.value = null;
@@ -322,7 +320,7 @@ const breadcrumbPaths = [
         </div>
         <div v-if="errors.apiError" class="text-center text-red-500 mt-3 mb-0 text-sm select-none">{{
           errors.apiError
-        }}
+          }}
         </div>
       </Form>
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <teleport to="body">
+  <teleport to="#modals">
     <transition name="fade">
       <div v-if="isOpen" class="absolute z-40 inset-0 flex items-center justify-center bg-black/75" @click.self="close">
         <transition name="modal">

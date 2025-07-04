@@ -3,18 +3,17 @@ import GridCell from '@/components/GridCell.vue';
 import { useTeacherStatementsStore } from '@/stores/api.store';
 import { storeToRefs } from 'pinia';
 import { onBeforeMount, watch, ref } from 'vue';
-import TheToast from "@/components/TheToast.vue";
-import useToast from "@/use/useToast.js";
 import { useRoute } from 'vue-router';
 import TheBreadcrumb from '@/components/TheBreadcrumb.vue';
 import VerdictBtnsGroup from '@/components/VerdictBtnsGroup.vue';
 import { useAuthStore } from '@/stores/auth.store';
+import { useUxStore } from '@/stores/ux.store';
 
 const route = useRoute();
 
-const { toasts, addToast } = useToast();
 
 const authStore = useAuthStore()
+const uxStore = useUxStore()
 const teacherStatementsStore = useTeacherStatementsStore()
 const { teacherStatement, submitStatus, updateStatus } = storeToRefs(teacherStatementsStore);
 
@@ -34,9 +33,9 @@ function update() {
 watch(submitStatus, (newVal) => {
   if (submitStatus.value) {
     if (submitStatus.value === 'success') {
-      addToast('Hasabat üstünlikli tassyklandy', 'success');
+      uxStore.addToast('Hasabat üstünlikli tassyklandy', 'success');
     } else if (submitStatus.value === 'error') {
-      addToast('Tassyklama prosesinde ýalňyşlyk ýüze çykdy', 'error');
+      uxStore.addToast('Tassyklama prosesinde ýalňyşlyk ýüze çykdy', 'error');
     }
   }
   submitStatus.value = null;

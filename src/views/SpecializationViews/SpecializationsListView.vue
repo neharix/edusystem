@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/auth.store.js";
 import SpecializationsDataTable from "@/components/DataTables/SpecializationsDataTable.vue";
 import { useUxStore } from "@/stores/ux.store";
 import TheSpinner from "@/components/TheSpinner.vue";
+import HighSchoolUserSpecializationsDataTable from "@/components/DataTables/HighSchoolUserSpecializationsDataTable.vue";
 
 const authStore = useAuthStore()
 const specializationsStore = useSpecializationsStore();
@@ -45,8 +46,10 @@ const breadcrumbPaths = [
       <the-spinner class="w-24"></the-spinner>
     </div>
     <div v-else>
-      <specializations-data-table :data="specializationsAdditional" :total-pages="dataTablePageCount"
-        @update="updateData"></specializations-data-table>
+      <specializations-data-table v-if="role === 'root'" :data="specializationsAdditional"
+        :total-pages="dataTablePageCount" @update="updateData"></specializations-data-table>
+      <high-school-user-specializations-data-table v-else :data="specializationsAdditional"
+        :total-pages="dataTablePageCount" @update="updateData"></high-school-user-specializations-data-table>
     </div>
   </div>
 </template>
