@@ -182,6 +182,11 @@ urlpatterns = [
         name="specialization-list-create",
     ),
     path(
+        "join-specializations/",
+        join_department_specializations_api_view,
+        name="join-department-specializations-api-view",
+    ),
+    path(
         "update-specialization/<int:id>/",
         put_specialization_api_view,
         name="put-specialization-api-view",

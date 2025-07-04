@@ -1,4 +1,5 @@
 import datetime
+import typing
 
 import pytz
 from django.contrib.auth.models import User
@@ -257,18 +258,30 @@ class DepartmentSpecializationInfoSerializer(serializers.ModelSerializer):
 
 class DepartmentSpecializationAdditionalSerializer(serializers.ModelSerializer):
 
-    def get_name(self, instance):
-        return instance.specialization.name
+    def get_name(self, instance: DepartmentSpecialization):
+        if instance.specialization:
+            return instance.specialization.name
+        else:
+            return instance.shell_name
+        
+    def get_department(self, instance: DepartmentSpecialization) -> str | typing.List[str]:
+        if instance.faculty_department:
+            return instance.faculty_department.department.name
+        else:
+            departments = list(set(list(instance.parts.all().values_list("faculty_department__department__name", flat=True))))
+            return departments if len(departments) > 1 else departments[0]
 
-    def get_department(self, instance):
-        return instance.faculty_department.department.name
+    def get_classificator(self, instance: DepartmentSpecialization):
+        if instance.specialization:
+            return (
+                instance.specialization.classificator.name
+                if instance.specialization.classificator
+                else "Ýok"
+            )
+        else:
+            classificators = list(set(list(instance.parts.all().values_list("specialization__classificator__name", flat=True))))
+            return classificators if len(classificators) > 1 else classificators[0]
 
-    def get_classificator(self, instance):
-        return (
-            instance.specialization.classificator.name
-            if instance.specialization.classificator
-            else "Ýok"
-        )
 
     name = serializers.SerializerMethodField()
     department = serializers.SerializerMethodField()
@@ -287,6 +300,7 @@ class DepartmentSpecializationAdditionalSerializer(serializers.ModelSerializer):
             "male_count",
             "female_count",
             "students_count",
+            "identification_status"
         )
 
 

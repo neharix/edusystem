@@ -57,7 +57,7 @@ class FacultyDepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(DepartmentSpecialization)
 class DepartmentSpecializationAdmin(admin.ModelAdmin):
-    list_display = ["faculty_department", "specialization", "id"]
+    list_display = ["faculty_department", "specialization", "shell_name", "id"]
     readonly_fields = ("id",)
 
 

@@ -289,12 +289,12 @@ def get_user_data(request: HttpRequest):
             }
         )
     else:
+        high_school = HighSchool.objects.get(manager__user=request.user)
         return Response(
             {
                 "id": request.user.id,
-                "manager_of": HighSchool.objects.get(
-                    manager__user=request.user
-                ).abbreviation,
+                "manager_of": high_school.abbreviation,
+                "is_complex_branched": high_school.is_complex_branched,
                 "email": request.user.email,
                 "is_superuser": request.user.is_superuser,
             }
@@ -374,29 +374,17 @@ def dashboard_api_view(request: HttpRequest):
         male_graduates = 0
         female_graduates = 0
 
-        # e_s = DepartmentSpecialization.objects.filter(
-        #     faculty_department__high_school_faculty__high_school__is_complex_branched=False
-        # ).count()
-        # p_s = (
-        #     DepartmentSpecialization.objects.filter(
-        #         faculty_department__high_school_faculty__high_school__is_complex_branched=True
-        #     )
-        #     .values("specialization")
-        #     .annotate(count=models.Count("id"))
-        #     .filter(count__gt=1)
-        # )
-        # specialization_ids = [item["specialization"] for item in p_s]
+        department_specializations = DepartmentSpecialization.objects.all().select_related("specialization", "specialization__degree")
+        ddsc = len(department_specializations.filter(identification_status="D"))
+        csdsc = len(department_specializations.filter(identification_status="CS"))
 
-        # result_qs = DepartmentSpecialization.objects.filter(
-        #     specialization__id__in=specialization_ids
-        # ).count()
 
         for specialization in Specialization.objects.filter(active=True).select_related(
             "degree"
         ):
-            for d_specialization in DepartmentSpecialization.objects.filter(
+            for d_specialization in department_specializations.filter(
                 specialization=specialization
-            ).select_related("specialization"):
+            ):
                 male_graduates += Student.objects.filter(
                     specialization=d_specialization,
                     study_year=str(specialization.degree.duration),
@@ -421,9 +409,7 @@ def dashboard_api_view(request: HttpRequest):
                 "departments_count": FacultyDepartment.objects.filter(
                     is_visible=True
                 ).count(),
-                "specializations_count": Specialization.objects.filter(
-                    active=True
-                ).count(),
+                "specializations_count": ddsc + csdsc,
                 "nationalities_count": Nationality.objects.all().count(),
                 "students_count": Student.objects.filter(
                     active=True, is_expelled=False, is_obsolete=False
@@ -467,6 +453,11 @@ def dashboard_api_view(request: HttpRequest):
         department_specializations = DepartmentSpecialization.objects.filter(
             faculty_department__high_school_faculty__high_school=high_school
         ).select_related("specialization", "specialization__degree")
+
+        ddsc = len(department_specializations.filter(identification_status="D"))
+        pds = department_specializations.filter(identification_status="P")
+        csdsc = DepartmentSpecialization.objects.filter(parts__in=pds, identification_status="CS").distinct().count()
+
 
         # specializations = {}
 
@@ -512,7 +503,7 @@ def dashboard_api_view(request: HttpRequest):
                 "departments_count": FacultyDepartment.objects.filter(
                     high_school_faculty__high_school=high_school, is_visible=True
                 ).count(),
-                "specializations_count": department_specializations.count(),
+                "specializations_count": ddsc + csdsc,
                 "students_count": Student.objects.filter(
                     active=True,
                     high_school=high_school,
@@ -572,6 +563,7 @@ def create_high_school_api_view(request: HttpRequest):
     )
     profile = Profile.objects.get(user=user)
     profile.password = request.data["password"]
+    profile.allowed_service = "bmdu"
     profile.save()
     high_school = HighSchool.objects.create(
         name=request.data["high_school_name"],
@@ -1427,6 +1419,50 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
                     ),
                 ),
             )
+        if high_school.is_complex_branched:
+            defaults = specializations.filter(identification_status="D")
+            particles = specializations.filter(identification_status="P")
+            shells = (
+                DepartmentSpecialization.objects.filter(
+                    identification_status="CS", parts__in=particles
+                )
+                .prefetch_related("parts")
+                .annotate(
+                    male_count=Count(
+                        "student",
+                        filter=Q(
+                            student__gender="M",
+                            student__is_expelled=False,
+                            student__is_obsolete=False,
+                        ),
+                    ),
+                    female_count=Count(
+                        "student",
+                        filter=Q(
+                            student__gender="F",
+                            student__is_expelled=False,
+                            student__is_obsolete=False,
+                        ),
+                    ),
+                    students_count=Count(
+                        "student",
+                        filter=Q(
+                            student__is_expelled=False,
+                            student__is_obsolete=False,
+                        ),
+                    ),
+                )
+            )
+            for shell in shells:
+                part_ids = list(shell.parts.all().values_list("id", flat=True))
+                related_particles = particles.filter(id__in=part_ids)
+
+                for dp in related_particles:
+                    shell.students_count += dp.students_count
+                    shell.male_count += dp.male_count
+                    shell.female_count += dp.female_count
+
+            specializations = list(shells) + list(defaults)
 
         serializer = DepartmentSpecializationAdditionalSerializer(
             specializations, many=True
@@ -1437,7 +1473,7 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
         #     n_data = []
         #     for item in data:
         #         if item["name"] in list(map(lambda e: e["name"], n_data)):
-        #             idx = list(map(lambda e: e["name"], n_data)).index(item["name"])                    
+        #             idx = list(map(lambda e: e["name"], n_data)).index(item["name"])
         #             n_data[idx]["male_count"] += item["male_count"]
         #             n_data[idx]["female_count"] += item["female_count"]
         #             n_data[idx]["students_count"] += item["students_count"]
@@ -1471,6 +1507,33 @@ def get_specializations_with_additional_data_api_view(request: HttpRequest):
                 "current_page": request._request.GET["page"],
             }
         )
+
+
+@permission_classes([IsAuthenticated])
+@api_view(http_method_names=["POST"])
+@validate_payload(keys=["name", "specializations"])
+def join_department_specializations_api_view(request: HttpRequest):
+    if HighSchool.objects.filter(manager__user=request.user).exists():
+        high_school = HighSchool.objects.get(manager__user=request.user)
+        department_specializations = DepartmentSpecialization.objects.filter(
+            id__in=request.data.get("specializations", []),
+            faculty_department__high_school_faculty__high_school=high_school,
+            identification_status="D",
+        )
+        if len(department_specializations) > 1:
+            shell = DepartmentSpecialization.objects.create(
+                identification_status="CS", shell_name=request.data["name"]
+            )
+            shell.parts.set(department_specializations)
+            shell.refresh_from_db()
+            department_specializations.update(identification_status="P")
+            return Response({"detail": "Success"})
+        else:
+            return Response(
+                {"detail": "Specialization count will be greater than 1"}, status=400
+            )
+    else:
+        return Response({"detail": "Permission denied"}, status=403)
 
 
 @permission_classes([IsAuthenticated])

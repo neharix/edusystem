@@ -129,17 +129,25 @@ class Specialization(models.Model):
 
 
 class DepartmentSpecialization(models.Model):
+    class IdentificationStatus(models.TextChoices):
+        PARTICLE = "P", "Bölek"
+        COMMON_SHELL = "CS", "Umumylaşdyrlan"
+        DEFAULT = "D", "Ýönekeý"
+
     faculty_department = models.ForeignKey(
         "FacultyDepartment", on_delete=models.CASCADE, null=True, blank=True
     )
     specialization = models.ForeignKey(
         "Specialization", on_delete=models.CASCADE, null=True, blank=True
     )
-    is_common_shell = models.BooleanField(default=False)
+    identification_status = models.CharField(max_length=2, choices=IdentificationStatus.choices, default="D")
     parts = models.ManyToManyField("DepartmentSpecialization", blank=True)
+    shell_name = models.CharField(max_length=500, blank=True, null=True)
 
     def __str__(self):
-        return self.specialization.name
+        if self.specialization:
+            return self.specialization.name
+        return self.shell_name
 
 
 class Student(models.Model):
