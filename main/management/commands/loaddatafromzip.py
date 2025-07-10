@@ -35,7 +35,6 @@ class Command(BaseCommand):
 
             media_archive_path = os.path.join(tmpdir, "media_files.zip")
 
-            # Всегда лоадим auth_user и main_profile
             priority_files = ["auth_user.json", "main_profile.json"]
             loaded_files = set()
 
@@ -46,7 +45,6 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(f"Загружено: {filename}"))
                     loaded_files.add(filename)
 
-            # Загружаем остальные, если соответствуют выбранному приложению
             match app_name:
                 case "all":
                     load_quene = (

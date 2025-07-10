@@ -518,80 +518,80 @@ def advanced_quantity_filter(payload: dict):
         {
             "name": "Bakalawr",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="bakalawr"
+                specialization__specialization__degree__name__icontains="bakalawr"
             ).count(),
         },
         {
             "name": "Hünärmen",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="hünärmen"
+                specialization__specialization__degree__name__icontains="hünärmen"
             ).count(),
         },
         {
             "name": "Aspirantura",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="aspirantura"
+                specialization__specialization__degree__name__icontains="aspirantura"
             ).count(),
         },
         {
             "name": "Magistratura",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="magistratura"
+                specialization__specialization__degree__name__icontains="magistratura"
             ).count(),
         },
         {
             "name": "Bakalawr tölegli",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="bakalawr",
+                specialization__specialization__degree__name__icontains="bakalawr",
                 payment_type="P",
             ).count(),
         },
         {
             "name": "Hünärmen tölegli",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="hünärmen",
+                specialization__specialization__degree__name__icontains="hünärmen",
                 payment_type="P",
             ).count(),
         },
         {
             "name": "Aspirantura tölegli",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="aspirantura",
+                specialization__specialization__degree__name__icontains="aspirantura",
                 payment_type="P",
             ).count(),
         },
         {
             "name": "Magistratura tölegli",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="magistratura",
+                specialization__specialization__degree__name__icontains="magistratura",
                 payment_type="P",
             ).count(),
         },
         {
             "name": "Bakalawr tölegsiz",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="bakalawr",
+                specialization__specialization__degree__name__icontains="bakalawr",
                 payment_type="B",
             ).count(),
         },
         {
             "name": "Hünärmen tölegsiz",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="hünärmen",
+                specialization__specialization__degree__name__icontains="hünärmen",
                 payment_type="B",
             ).count(),
         },
         {
             "name": "Aspirantura tölegsiz",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="aspirantura",
+                specialization__specialization__degree__name__icontains="aspirantura",
                 payment_type="B",
             ).count(),
         },
         {
             "name": "Magistratura tölegsiz",
             "count": students.filter(
-                specialization__specialization__degree__name__contains="magistratura",
+                specialization__specialization__degree__name__icontains="magistratura",
                 payment_type="B",
             ).count(),
         },

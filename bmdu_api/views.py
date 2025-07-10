@@ -1052,7 +1052,8 @@ def get_departments_with_additional_data_api_view(request: HttpRequest):
         response = []
         high_school = HighSchool.objects.get(manager__user=request.user)
         departments = FacultyDepartment.objects.filter(
-            high_school_faculty__high_school=high_school
+            high_school_faculty__high_school=high_school,
+            is_visible=True,
         )
         for department in departments:
             male_count = Student.objects.filter(
@@ -2267,6 +2268,14 @@ class ExpulsionRequestListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ExpulsionRequestSerializer
     lookup_field = "id"
+
+
+    def post(self, request: HttpRequest, *args, **kwargs):
+        now = timezone.now()
+        if not ExpulsionRequest.objects.filter(student__id=request.data.get('student'), request_date__year=now.year, request_date__month=now.month).exists():
+            return self.create(request, *args, **kwargs)
+        else:
+            return Response({"detail": "Already registered"}, status=400)
 
 
 class ExpulsionRequestRetrieveAPIView(RetrieveAPIView):
