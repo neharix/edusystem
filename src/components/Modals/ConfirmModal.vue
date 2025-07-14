@@ -4,8 +4,8 @@
       <div v-if="isOpen" class="absolute z-40 inset-0 flex items-center justify-center bg-black/75" @click.self="close">
         <transition name="modal">
           <div v-if="isOpen" class="bg-white dark:bg-[#171131] p-6 rounded-2xl shadow-xl w-96">
-            <h2 class="select-none dark:text-white mb-3 text-xl font-bold">{{ header }}</h2>
-            <p class="select-none dark:text-white">{{ context }}</p>
+            <h2 class="select-none text-black dark:text-white mb-3 text-xl font-bold">{{ header }}</h2>
+            <p class="select-none text-gray-800 dark:text-white">{{ context }}</p>
             <div class="flex justify-end mt-5 space-x-2">
               <button @click="close"
                 class="select-none px-4 py-2 text-[0.8rem] font-medium bg-red-400 hover:bg-red-500 transition ease-in hover:ease-out duration-200 text-white dark:bg-pink-900 dark:hover:bg-pink-600 border border-gray-200 rounded-lg focus:z-10 focus:ring-2 focus:ring-red-500 dark:border-gray-700  dark:focus:ring-pink-500">

@@ -4,7 +4,7 @@
       <div v-if="isOpen" class="absolute z-40 inset-0 flex items-center justify-center bg-black/75" @click.self="close">
         <transition name="modal">
           <div v-if="isOpen" class="bg-white dark:bg-[#171131] p-6 rounded-2xl shadow-xl w-96">
-            <h2 class="dark:text-white mb-3 text-xl font-bold">{{ header }}</h2>
+            <h2 class="text-black dark:text-white mb-3 text-xl font-bold">{{ header }}</h2>
             <div v-html="context"></div>
             <div class="flex justify-end mt-5 space-x-2">
               <button @click="close"

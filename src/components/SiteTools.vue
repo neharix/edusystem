@@ -190,30 +190,6 @@ const emit = defineEmits(["toggle-theme"]);
           </transition>
         </div>
       </div>
-      <button-with-tooltip v-if="route.name === 'students-list' && role === 'root'" position-classes="right-32"
-        text-value="Kursy üýtgetme"
-        @clicked="openModalWrap('Kursy üýtgetme', 'Ähli talyplaryň kursunyň üýtgetdilmegini tassyklaýarsyňyzmy?', updateStudyYears)">
-        <template #btn-content>
-          <svg xmlns="http://www.w3.org/2000/svg" id="Layer_2" data-name="Layer 2" viewBox="0 0 788 788" class="w-6">
-            <defs>
-            </defs>
-            <g id="Background">
-              <path class="cls-2" stroke-width="2rem" fill="currentColor"
-                d="M647.81,373.23h-50.67c-1.44,0-2.61,1.17-2.61,2.61v225.07c0,3.06-2.48,5.53-5.53,5.53h-19c-3.06,0-5.53-2.48-5.53-5.53v-225.07c0-1.44-1.17-2.61-2.61-2.61h-49.95c-5.51,0-9.12-5.78-6.7-10.73l74.65-152.68,74.65,152.68c2.42,4.95-1.18,10.73-6.7,10.73Z" />
-            </g>
-            <g id="Objects">
-              <g>
-                <path class="cls-1" fill="currentColor" stroke-width="0px"
-                  d="M309.79,395.95c-62.41,0-113.19-50.77-113.19-113.19s50.77-113.19,113.19-113.19,113.19,50.78,113.19,113.19-50.77,113.19-113.19,113.19ZM309.79,186.82c-52.91,0-95.95,43.04-95.95,95.95s43.04,95.95,95.95,95.95,95.95-43.04,95.95-95.95-43.04-95.95-95.95-95.95Z" />
-                <path class="cls-1" fill="currentColor" stroke-width="0px"
-                  d="M309.79,649.34c-54.27,0-106.34-16.45-150.59-47.58-11.15-7.84-21.77-16.63-31.57-26.12-1.68-1.62-2.62-3.86-2.62-6.19v-17.99c0-35.61,19.33-71.39,53.03-98.18,35.08-27.89,81.87-43.25,131.75-43.25s97.93,15.37,132.7,43.27c33.11,26.57,52.1,62.35,52.1,98.16v17.98c0,2.34-.95,4.57-2.63,6.2-9.84,9.51-20.47,18.3-31.6,26.13-44.22,31.12-96.29,47.58-150.58,47.58ZM142.24,565.76c8.42,7.91,17.45,15.27,26.88,21.9,41.33,29.07,89.97,44.44,140.67,44.44s99.35-15.37,140.66-44.44c9.42-6.62,18.45-13.99,26.91-21.92v-14.29c0-30.55-16.64-61.43-45.65-84.71-31.72-25.46-75.01-39.48-121.91-39.48-100.22,0-167.55,64.22-167.55,124.19v14.3ZM485.97,569.44h.01-.01Z" />
-              </g>
-              <circle class="cls-3" stroke-width="1rem" fill="none" stroke="currentColor" stroke-miterlimit="10"
-                cx="394" cy="394" r="388" />
-            </g>
-          </svg>
-        </template>
-      </button-with-tooltip>
       <button-with-tooltip v-if="role === 'root' && enableDumper" text-value="Umumy import" position-classes="right-30"
         @clicked="openModalWrap('Umumy import', 'Maglumat gorundaky ähli maglumatlaryň importyny tassyklaýarsyňyzmy?', getDumpFile)">
         <template #btn-content>
@@ -281,30 +257,6 @@ const emit = defineEmits(["toggle-theme"]);
         @after-leave="el => (el.style.display = 'none')">
         <div v-show="isMobileMenuOpen"
           class="absolute overflow-y-auto top-16 right-0 space-y-4 p-4 z-10 mt-2 w-56 max-h-[40vh] origin-top-right rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#171131ef] shadow-lg ring-1 ring-white dark:ring-gray-800 ring-opacity-5">
-          <button v-if="route.name === 'students-list' && role === 'root'" class="flex items-center space-x-2 w-full"
-            @click="openModalWrap('Kursy üýtgetme', 'Ähli talyplaryň kursunyň üýtgetdilmegini tassyklaýarsyňyzmy?', updateStudyYears)">
-            <svg xmlns="http://www.w3.org/2000/svg" id="Layer_2" data-name="Layer 2" viewBox="0 0 788 788" class="w-6">
-              <defs>
-              </defs>
-              <g id="Background">
-                <path class="cls-2" stroke-width="2rem" fill="currentColor"
-                  d="M647.81,373.23h-50.67c-1.44,0-2.61,1.17-2.61,2.61v225.07c0,3.06-2.48,5.53-5.53,5.53h-19c-3.06,0-5.53-2.48-5.53-5.53v-225.07c0-1.44-1.17-2.61-2.61-2.61h-49.95c-5.51,0-9.12-5.78-6.7-10.73l74.65-152.68,74.65,152.68c2.42,4.95-1.18,10.73-6.7,10.73Z" />
-              </g>
-              <g id="Objects">
-                <g>
-                  <path class="cls-1" fill="currentColor" stroke-width="0px"
-                    d="M309.79,395.95c-62.41,0-113.19-50.77-113.19-113.19s50.77-113.19,113.19-113.19,113.19,50.78,113.19,113.19-50.77,113.19-113.19,113.19ZM309.79,186.82c-52.91,0-95.95,43.04-95.95,95.95s43.04,95.95,95.95,95.95,95.95-43.04,95.95-95.95-43.04-95.95-95.95-95.95Z" />
-                  <path class="cls-1" fill="currentColor" stroke-width="0px"
-                    d="M309.79,649.34c-54.27,0-106.34-16.45-150.59-47.58-11.15-7.84-21.77-16.63-31.57-26.12-1.68-1.62-2.62-3.86-2.62-6.19v-17.99c0-35.61,19.33-71.39,53.03-98.18,35.08-27.89,81.87-43.25,131.75-43.25s97.93,15.37,132.7,43.27c33.11,26.57,52.1,62.35,52.1,98.16v17.98c0,2.34-.95,4.57-2.63,6.2-9.84,9.51-20.47,18.3-31.6,26.13-44.22,31.12-96.29,47.58-150.58,47.58ZM142.24,565.76c8.42,7.91,17.45,15.27,26.88,21.9,41.33,29.07,89.97,44.44,140.67,44.44s99.35-15.37,140.66-44.44c9.42-6.62,18.45-13.99,26.91-21.92v-14.29c0-30.55-16.64-61.43-45.65-84.71-31.72-25.46-75.01-39.48-121.91-39.48-100.22,0-167.55,64.22-167.55,124.19v14.3ZM485.97,569.44h.01-.01Z" />
-                </g>
-                <circle class="cls-3" stroke-width="1rem" fill="none" stroke="currentColor" stroke-miterlimit="10"
-                  cx="394" cy="394" r="388" />
-              </g>
-            </svg>
-            <p>
-              Kursy üýtgetmek
-            </p>
-          </button>
           <button v-if="role === 'root' && enableDumper" class="flex items-center space-x-2 w-full"
             @click="openModalWrap('Umumy import', 'Maglumat gorundaky ähli maglumatlaryň importyny tassyklaýarsyňyzmy?', getDumpFile)">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 24 24" fill="none">

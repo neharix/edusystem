@@ -1191,31 +1191,93 @@ export const useStudentsStore = defineStore("students", () => {
   };
 });
 
-export const useGraduatesStore = defineStore({
-  id: "graduates",
-  state: () => ({
-    graduatesAdditional: [],
-    studentInfo: {},
-  }),
-  actions: {
-    async getAllAdditional() {
-      try {
-        const response = await axiosInstance.get("/graduates-with-additional/");
-        this.graduatesAdditional = response.data;
-      } catch (error) {
-        console.error("Error", error);
-      }
-    },
+export const useGraduatesStore = defineStore("graduates", () => {
+  const graduatesAdditional = ref([]);
+  const studentInfo = ref({});
 
-    async getInfo(id) {
-      try {
-        const response = await axiosInstance.get(`/graduates-info/${id}/`);
-        this.studentInfo = response.data;
-      } catch (error) {
-        console.error("Error", error);
+  const currentPage = ref(1);
+  const objCount = ref(0);
+  const dataTablePageCount = ref(1);
+
+  const route = useRoute();
+
+  async function getAllAdditional() {
+    try {
+      let order = route.query.order ? route.query.order : "asc";
+      let column = route.query.column ? route.query.column : "full_name";
+      let search = route.query.search ? route.query.search : false;
+
+      const filterFields = [
+        "faculty",
+        "department",
+        "specialization",
+        "gender",
+        "region",
+        "country",
+        "nationality",
+        "classificator",
+        "degree",
+        "study_year",
+      ];
+
+      let filterQuery = {};
+
+      for (let i = 0; i < filterFields.length; i++) {
+        if (!!route.query[filterFields[i]]) {
+          filterQuery[filterFields[i]] = route.query[filterFields[i]];
+        }
       }
-    },
-  },
+
+      let page = route.query.page ? route.query.page : 1;
+      let pageSize = localStorage.getItem("rowsPerPage");
+      let response = null;
+      if (search) {
+        response = await axiosInstance.get("/graduates-with-additional/", {
+          params: {
+            page,
+            page_size: pageSize,
+            order,
+            column,
+            search,
+            ...filterQuery,
+          },
+        });
+      } else {
+        response = await axiosInstance.get("/graduates-with-additional/", {
+          params: {
+            page,
+            page_size: pageSize,
+            order,
+            column,
+            ...filterQuery,
+          },
+        });
+      }
+      objCount.value = response.data.count;
+      currentPage.value = response.data.results.current_page;
+      graduatesAdditional.value = response.data.results.data;
+      dataTablePageCount.value = response.data.results.total_pages;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  async function getInfo(id) {
+    try {
+      const response = await axiosInstance.get(`/graduates-info/${id}/`);
+      studentInfo.value = response.data;
+    } catch (error) {
+      console.error("Error", error);
+    }
+  }
+  return {
+    dataTablePageCount,
+    currentPage,
+    objCount,
+    graduatesAdditional,
+    studentInfo,
+    getAllAdditional,
+    getInfo,
+  };
 });
 
 export const useExpulsionReasonsStore = defineStore({

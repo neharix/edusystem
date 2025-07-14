@@ -10,14 +10,20 @@ import TheSpinner from "@/components/TheSpinner.vue";
 const uxStore = useUxStore();
 
 const graduatesStore = useGraduatesStore()
-const { graduatesAdditional } = storeToRefs(graduatesStore);
+const { graduatesAdditional, dataTablePageCount } = storeToRefs(graduatesStore);
 
-onMounted(() => {
+
+function updateData() {
   uxStore.isLoading = true;
   graduatesStore.getAllAdditional().then(() => {
     uxStore.isLoading = false;
   })
+}
+
+onMounted(() => {
+  updateData();
 })
+
 
 const breadcrumbPaths = [
   { path: "/graduates", name: "Uçurymlar" },
@@ -33,7 +39,8 @@ const breadcrumbPaths = [
       <the-spinner class="w-24"></the-spinner>
     </div>
     <div v-else>
-      <graduates-data-table :data="graduatesAdditional"></graduates-data-table>
+      <graduates-data-table :data="graduatesAdditional" :total-pages="dataTablePageCount"
+        @update="updateData"></graduates-data-table>
     </div>
   </div>
 </template>
