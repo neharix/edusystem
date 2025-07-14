@@ -165,9 +165,9 @@ class GraduateAdditionalSerializer(serializers.ModelSerializer):
     high_school = HighSchoolSerializer()
     study_period = serializers.SerializerMethodField()
 
-    def get_study_period(self, instance):
+    def get_study_period(self, instance: Student):
         admission_year = instance.admission_date.year
-        return f"{admission_year}-{admission_year + instance.specialization.specialization.degree.duration}"
+        return f"{admission_year}-{instance.graduated_in.year}"
 
     class Meta:
         model = Student
@@ -351,9 +351,9 @@ class GraduateInfoSerializer(serializers.ModelSerializer):
 
     study_period = serializers.SerializerMethodField()
 
-    def get_study_period(self, instance):
+    def get_study_period(self, instance: Student):
         admission_year = instance.admission_date.year
-        return f"{admission_year}-{admission_year + instance.specialization.specialization.degree.duration}"
+        return f"{admission_year}-{instance.graduated_in.year}"
 
     class Meta:
         model = Student

@@ -191,6 +191,8 @@ class Student(models.Model):
     active = models.BooleanField(default=True)
     is_expelled = models.BooleanField(default=False)
     is_obsolete = models.BooleanField(default=False)
+    graduated_in = models.DateField(null=True, blank=True)
+
 
     def __str__(self):
         return f"{self.full_name}"

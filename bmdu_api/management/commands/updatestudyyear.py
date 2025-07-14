@@ -12,13 +12,14 @@ from ...models import AnnualUpdateReport, Student
 
 
 class Command(BaseCommand):
-    help = "Загружает данные из zip-архива и копирует медиафайлы"
+    help = "Перевод студентов в следующий курс"
 
 
     def handle(self, *args, **options):
         if not AnnualUpdateReport.objects.filter(updated_at__year=timezone.now().year):
             students = Student.objects.filter(is_obsolete=False, is_expelled=False)
             default_students = students.exclude(study_year__contains="DÖB")
+            now = timezone.now()
             for idx, student in enumerate(default_students):
                 try:
                     if student.study_year.isdigit():
@@ -26,11 +27,11 @@ class Command(BaseCommand):
                             student.study_year
                         ):
                             student.is_obsolete = True
+                            student.graduated_in = now
                         else:
                             student.study_year = int(student.study_year) + 1
                     student.save()
-                    if idx + 1 % 1000 == 0:
-                        self.stdout.write(self.style.NOTICE(f"Обновлено {idx + 1} студентов"))
+                    self.stdout.write(self.style.NOTICE(f"Обновлено {idx + 1} студентов"))
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f"Ошибка при обновлении {idx + 1} студента (ID: {student.id}): {e}"))
                     break
@@ -39,4 +40,5 @@ class Command(BaseCommand):
             students.filter(study_year__contains="DÖB").update(study_year="1")
             AnnualUpdateReport.objects.create()
             self.stdout.write(self.style.SUCCESS("Команда завершена."))
-        self.stdout.write(self.style.WARNING(f"Уже обновлено в этом году"))
+        else:
+            self.stdout.write(self.style.WARNING(f"Уже обновлено в этом году"))

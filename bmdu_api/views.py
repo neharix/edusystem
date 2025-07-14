@@ -1980,16 +1980,55 @@ def get_students_with_additional_data_api_view(request: HttpRequest):
         )
 
 
+
 @permission_classes([IsAuthenticated])
 @api_view(http_method_names=["GET"])
 def get_graduates_with_additional_data_api_view(request: HttpRequest):
+    page_size = int(request.GET.get("page_size", 10))
+    search = request.GET.get("search", False)
+
     if request.user.is_superuser:
-        students = Student.objects.filter(
-            active=True, is_expelled=False, is_obsolete=True
+        order = "-" if request.GET.get("order", "asc") == "desc" else ""
+        order_by = order + request.GET.get("column", "full_name")
+
+        if search:
+            students = Student.objects.filter(
+                full_name__icontains=search, active=True, is_expelled=False, is_obsolete=True
+            )
+        else:
+            students = Student.objects.filter(
+                active=True, is_expelled=False, is_obsolete=True
+            )
+        result = filter_by_query(students, request.GET).order_by(order_by)
+        paginator = ResponsivePageSizePagination()
+        paginator.page_size = page_size
+        try:
+            paginated_result = paginator.paginate_queryset(result, request)
+        except NotFound:
+            request._request.GET._mutable = True
+            request._request.GET["page"] = 1
+            request._request.GET._mutable = False
+            paginated_result = paginator.paginate_queryset(result, request)
+        serializer = GraduateAdditionalSerializer(paginated_result, many=True)
+
+        return paginator.get_paginated_response(
+            {
+                "data": serializer.data,
+                "total_pages": paginator.page.paginator.num_pages,
+                "current_page": request._request.GET["page"],
+            }
         )
-        return Response(GraduateAdditionalSerializer(students, many=True).data)
-    else:
-        return Response({"detail": "Permission denied"}, status=403)
+
+# @permission_classes([IsAuthenticated])
+# @api_view(http_method_names=["GET"])
+# def get_graduates_with_additional_data_api_view(request: HttpRequest):
+#     if request.user.is_superuser:
+#         students = Student.objects.filter(
+#             active=True, is_expelled=False, is_obsolete=True
+#         )
+#         return Response(GraduateAdditionalSerializer(students, many=True).data)
+#     else:
+#         return Response({"detail": "Permission denied"}, status=403)
 
 
 class StudentListAPIView(ListAPIView):
